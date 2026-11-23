@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ApiError, api, readConfig } from '../api/client';
+import { ApiError, api } from '../api/client';
 import InlineCell from '../components/InlineCell.vue';
+import IssueDetail from '../components/IssueDetail.vue';
 import { locale, t } from '../i18n';
 import { defaultState, nextSort, stateFromQuery, stateToQuery, toApiParams, type ListState } from '../lib/listQuery';
 import { toast } from '../lib/toast';
@@ -10,7 +11,6 @@ import type { IssueList, IssueOptions, IssueRow, Meta } from '../types';
 
 const route = useRoute();
 const router = useRouter();
-const config = readConfig();
 
 const meta = ref<Meta | null>(null);
 const list = ref<IssueList | null>(null);
@@ -25,6 +25,23 @@ const PER_PAGE_OPTIONS = [25, 50, 100];
 const ALL_COLUMNS = ['id', 'subject', 'project', 'tracker', 'status', 'priority', 'assigned_to', 'author', 'start_date', 'due_date', 'done_ratio', 'updated_on', 'created_on'];
 const DEFAULT_COLUMNS = ['id', 'subject', 'project', 'status', 'priority', 'assigned_to', 'due_date', 'updated_on'];
 const columns = ref<string[]>(loadColumns());
+const selectedId = computed(() => (route.params.id ? Number(route.params.id) : null));
+// With the detail panel open the list shrinks to the essentials
+const COMPACT_COLUMNS = ['id', 'subject', 'status'];
+const shownColumns = computed(() => ALL_COLUMNS.filter((c) => (selectedId.value ? COMPACT_COLUMNS.includes(c) : columns.value.includes(c))));
+function openIssue(id: number | null) {
+  router.push({ name: 'issues', params: { id: id ?? undefined }, query: route.query });
+}
+function onRowClick(e: MouseEvent, id: number) {
+  if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return; // let the browser handle new-tab clicks
+  if ((e.target as HTMLElement).closest('.cell, .cell-input, select, input')) return;
+  e.preventDefault();
+  openIssue(id);
+}
+function onDetailUpdated(row: IssueRow) {
+  const i = list.value?.issues.findIndex((x) => x.id === row.id) ?? -1;
+  if (i >= 0) list.value!.issues[i] = row;
+}
 const columnMenu = ref(false);
 function safeGet(k: string): string | null { try { return localStorage.getItem(k); } catch { return null; } }
 function safeSet(k: string, v: string) { try { localStorage.setItem(k, v); } catch { /* ignore */ } }
@@ -105,7 +122,7 @@ async function save(row: IssueRow, field: string, value: string | number | null)
 const fmtDate = (s: string | null) => (s ? new Date(s).toLocaleDateString(locale) : '');
 const fmtDateTime = (s: string) => new Date(s).toLocaleString(locale, { dateStyle: 'short', timeStyle: 'short' });
 const isOverdue = (r: IssueRow) => !!r.due_date && !r.status.is_closed && new Date(r.due_date) < new Date(new Date().toDateString());
-const classicUrl = (id: number) => `${config.root}/issues/${id}`;
+const appUrl = (id: number) => router.resolve({ name: 'issues', params: { id }, query: route.query }).href;
 const sortCol = computed(() => state.value.sort.split(':')[0]);
 const sortDir = computed(() => state.value.sort.split(':')[1]);
 const SORTABLE = new Set(['id', 'subject', 'project', 'tracker', 'status', 'priority', 'assigned_to', 'author', 'start_date', 'due_date', 'done_ratio', 'updated_on', 'created_on']);
@@ -117,7 +134,15 @@ const projectOptions = computed(() => {
 
 function onKey(e: KeyboardEvent) {
   const tag = (e.target as HTMLElement).tagName;
-  if (e.key === '/' && !['INPUT', 'SELECT', 'TEXTAREA'].includes(tag)) { e.preventDefault(); searchBox.value?.focus(); }
+  const typing = ['INPUT', 'SELECT', 'TEXTAREA'].includes(tag);
+  if (e.key === '/' && !typing) { e.preventDefault(); searchBox.value?.focus(); }
+  if (e.key === 'Escape' && selectedId.value && !typing) openIssue(null);
+  if ((e.key === 'j' || e.key === 'k') && !typing && !e.ctrlKey && !e.metaKey && list.value?.issues.length) {
+    const ids = list.value.issues.map((i) => i.id);
+    const cur = selectedId.value ? ids.indexOf(selectedId.value) : -1;
+    const nxt = e.key === 'j' ? Math.min(cur + 1, ids.length - 1) : Math.max(cur - 1, 0);
+    openIssue(ids[nxt]);
+  }
 }
 function onDocClick(e: MouseEvent) { if (!(e.target as HTMLElement).closest('.col-menu-wrap')) columnMenu.value = false; }
 onMounted(async () => {
@@ -168,13 +193,15 @@ onUnmounted(() => { window.removeEventListener('keydown', onKey); document.remov
       </div>
     </div>
 
+    <div class="split" :class="{ open: !!selectedId }">
+    <div class="split-list">
     <p v-if="error" class="error" role="alert">{{ t('error.load', { message: error }) }} <button class="link-btn" @click="load">{{ t('retry') }}</button></p>
 
     <div class="table-wrap" :class="{ busy: loading }">
       <table v-if="list">
         <thead>
           <tr>
-            <th v-for="c in ALL_COLUMNS.filter((x) => columns.includes(x))" :key="c" :class="'c-' + c"
+            <th v-for="c in shownColumns" :key="c" :class="'c-' + c"
                 :aria-sort="sortCol === c ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'">
               <button v-if="SORTABLE.has(c)" class="th-btn" @click="go({ sort: nextSort(state.sort, c) }, false)">
                 {{ t('col.' + c) }}<span class="arrow">{{ sortCol === c ? (sortDir === 'asc' ? ' ▲' : ' ▼') : '' }}</span>
@@ -184,10 +211,11 @@ onUnmounted(() => { window.removeEventListener('keydown', onKey); document.remov
           </tr>
         </thead>
         <tbody>
-          <tr v-for="r in list.issues" :key="r.id" :class="{ closed: r.status.is_closed }">
-            <td v-for="c in ALL_COLUMNS.filter((x) => columns.includes(x))" :key="c" :class="'c-' + c">
-              <template v-if="c === 'id'"><a :href="classicUrl(r.id)">{{ r.id }}</a></template>
-              <template v-else-if="c === 'subject'"><a class="subject" :href="classicUrl(r.id)">{{ r.subject }}</a><span v-if="r.is_private" class="lock" title="private"> 🔒</span></template>
+          <tr v-for="r in list.issues" :key="r.id" :class="{ closed: r.status.is_closed, selected: r.id === selectedId }"
+              :aria-selected="r.id === selectedId" @click="onRowClick($event, r.id)">
+            <td v-for="c in shownColumns" :key="c" :class="'c-' + c">
+              <template v-if="c === 'id'"><a :href="appUrl(r.id)">{{ r.id }}</a></template>
+              <template v-else-if="c === 'subject'"><a class="subject" :href="appUrl(r.id)">{{ r.subject }}</a><span v-if="r.is_private" class="lock" title="private"> 🔒</span></template>
               <template v-else-if="c === 'project'">{{ r.project.name }}</template>
               <template v-else-if="c === 'tracker'">{{ r.tracker.name }}</template>
               <template v-else-if="c === 'author'">{{ r.author?.name }}</template>
@@ -222,5 +250,8 @@ onUnmounted(() => { window.removeEventListener('keydown', onKey); document.remov
       <span>{{ t('page.of', { page: list.page, pages: Math.max(list.pages, 1) }) }}</span>
       <button class="btn" :disabled="list.page >= list.pages" @click="go({ page: list.page + 1 })">{{ t('page.next') }}</button>
     </footer>
+    </div>
+    <IssueDetail v-if="selectedId" :id="selectedId" class="split-detail" @close="openIssue(null)" @updated="onDetailUpdated" />
+    </div>
   </section>
 </template>

@@ -12,7 +12,7 @@ const router = createRouter({
   history: createWebHistory(`${config.base}/`),
   routes: [
     { path: '/', redirect: '/issues' },
-    { path: '/issues', name: 'issues', component: IssueListView },
+    { path: '/issues/:id(\\d+)?', name: 'issues', component: IssueListView },
     { path: '/:pathMatch(.*)*', redirect: '/issues' },
   ],
 });

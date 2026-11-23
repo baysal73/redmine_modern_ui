@@ -13,3 +13,4 @@ de:
   modern_ui_error_forbidden: "Dafür fehlt die Berechtigung"
   modern_ui_error_status_not_allowed: "Dieser Statuswechsel ist nicht erlaubt"
   modern_ui_error_csrf: "Sicherheitstoken ungültig oder abgelaufen. Bitte Seite neu laden."
+  modern_ui_error_notes_blank: "Bitte einen Kommentar eingeben"

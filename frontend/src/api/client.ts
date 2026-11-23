@@ -1,4 +1,4 @@
-import type { AppConfig, IssueList, IssueOptions, IssueRow, Meta } from '../types';
+import type { AppConfig, IssueDetail, IssueList, IssueOptions, IssueRow, Meta } from '../types';
 
 export function readConfig(): AppConfig {
   const el = document.getElementById('app');
@@ -36,6 +36,7 @@ export function toQuery(params: Record<string, string | number | undefined | nul
 export const api = {
   meta: () => request<Meta>('meta'),
   issues: (params: Record<string, string | number | undefined>) => request<IssueList>(`issues${toQuery(params)}`),
+  issue: (id: number) => request<{ issue: IssueDetail }>(`issues/${id}`),
   issueOptions: (id: number) => request<IssueOptions>(`issues/${id}/options`),
   updateIssue: (id: number, issue: Record<string, unknown>) =>
     request<{ issue: IssueRow }>(`issues/${id}`, { method: 'PATCH', body: JSON.stringify({ issue }) }),

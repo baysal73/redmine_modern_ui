@@ -3,9 +3,10 @@
 module ModernUi
   module Api
     class IssuesController < BaseController
+      helper :issues, :custom_fields, :attachments
       MAX_PER_PAGE = 100
       DEFAULT_PER_PAGE = 50
-      EDITABLE_FIELDS = %i[status_id assigned_to_id priority_id due_date start_date done_ratio subject notes].freeze
+      EDITABLE_FIELDS = %i[status_id assigned_to_id priority_id due_date start_date done_ratio subject notes private_notes].freeze
       # whitelist of sortable columns (name => IssueQuery column)
       SORTABLE = %w[id subject project tracker status priority author assigned_to start_date due_date
                     done_ratio created_on updated_on closed_on].freeze
@@ -52,7 +53,11 @@ module ModernUi
       def update
         issue = Issue.visible.find(params[:id])
         attrs = params.require(:issue).permit(*EDITABLE_FIELDS).to_h
-        unless issue.attributes_editable?(User.current) || attrs.keys == %w[notes]
+        private_notes = attrs.delete('private_notes').to_s == 'true'
+        if attrs.keys == %w[notes]
+          return render_json_error(403, l(:modern_ui_error_forbidden)) unless User.current.allowed_to?(:add_issue_notes, issue.project)
+          return render_json_error(422, l(:modern_ui_error_notes_blank)) if attrs['notes'].to_s.strip.empty?
+        elsif !issue.attributes_editable?(User.current)
           return render_json_error(403, l(:modern_ui_error_forbidden))
         end
 
@@ -62,7 +67,11 @@ module ModernUi
         end
 
         notes = attrs.delete('notes')
-        issue.init_journal(User.current, notes)
+        notes = nil unless User.current.allowed_to?(:add_issue_notes, issue.project)
+        journal = issue.init_journal(User.current, notes)
+        if notes.present? && private_notes && User.current.allowed_to?(:set_notes_private, issue.project)
+          journal.private_notes = true
+        end
         issue.safe_attributes = attrs
         if issue.save
           render json: { issue: serializers.issue_row(issue.reload) }

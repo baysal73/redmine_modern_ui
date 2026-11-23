@@ -16,3 +16,17 @@ export interface Meta {
 }
 export interface IssueOptions { allowed_statuses: Status[]; assignees: Ref[]; priorities: Ref[]; editable: boolean }
 export interface AppConfig { base: string; root: string; lang: string; csrf: string }
+
+export interface JournalDetail { property: string; name: string; text: string }
+export interface Journal {
+  id: number; index: number; user: Ref | null; created_on: string; private_notes: boolean;
+  notes_html: string; details: JournalDetail[];
+}
+export interface Attachment { id: number; filename: string; filesize: number; content_type: string | null; author: Ref | null; created_on: string; description: string }
+export interface IssueDetail extends IssueRow {
+  description_html: string; parent_id: number | null; fixed_version: Ref | null; category: Ref | null; estimated_hours: number | null;
+  allowed_statuses: Status[];
+  permissions: { edit: boolean; comment: boolean; private_notes: boolean; delete: boolean };
+  custom_fields: { id: number; name: string; value: string }[];
+  attachments: Attachment[]; journals: Journal[];
+}

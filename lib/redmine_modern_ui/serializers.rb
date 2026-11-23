@@ -47,6 +47,7 @@ module RedmineModernUi
         permissions: {
           edit: user.allowed_to?(:edit_issues, i.project) || i.attributes_editable?(user),
           comment: user.allowed_to?(:add_issue_notes, i.project),
+          private_notes: user.allowed_to?(:set_notes_private, i.project),
           delete: user.allowed_to?(:delete_issues, i.project)
         },
         custom_fields: i.visible_custom_field_values(user).filter_map do |cv|
@@ -70,7 +71,8 @@ module RedmineModernUi
         id: j.id, index: j.indice, user: user_ref(j.user), created_on: j.created_on,
         private_notes: j.private_notes?,
         notes_html: j.notes.present? ? view.textilizable(j, :notes) : '',
-        details: j.visible_details.map { |d| { property: d.property, name: d.prop_key, old: d.old_value, new: d.value } }
+        # plain-text sentence built by Redmine itself, e.g. "Status changed from New to Closed"
+        details: j.visible_details.map { |d| { property: d.property, name: d.prop_key, text: view.show_detail(d, true) } }
       }
     end
   end

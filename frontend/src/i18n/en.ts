@@ -29,4 +29,10 @@ export default {
   'edit.no_permission': 'You are not allowed to edit this issue.',
   'error.load': 'Could not load data: {message}',
   'retry': 'Retry',
+  'detail.close': 'Close', 'detail.classic': 'Open in classic view', 'detail.description': 'Description', 'detail.no_description': 'No description.',
+  'detail.fields': 'Details', 'detail.attachments': 'Attachments', 'detail.history': 'History', 'detail.no_history': 'No activity yet.',
+  'detail.comment': 'Add a comment', 'detail.comment.placeholder': 'Write a comment… (Ctrl+Enter to send)', 'detail.comment.private': 'Private comment',
+  'detail.comment.send': 'Comment', 'detail.private': 'private', 'detail.author': 'Author', 'detail.created': 'Created', 'detail.parent': 'Parent',
+  'detail.version': 'Target version', 'detail.category': 'Category', 'detail.estimated': 'Estimated time', 'detail.not_found': 'This issue does not exist or you are not allowed to see it.',
+  'detail.loading': 'Loading issue…', 'detail.edit_classic': 'Edit all fields',
 } as Record<string, string>;

@@ -28,4 +28,10 @@ export default {
   'edit.no_permission': 'Sie dürfen dieses Ticket nicht bearbeiten.',
   'error.load': 'Daten konnten nicht geladen werden: {message}',
   'retry': 'Erneut versuchen',
+  'detail.close': 'Schließen', 'detail.classic': 'In klassischer Ansicht öffnen', 'detail.description': 'Beschreibung', 'detail.no_description': 'Keine Beschreibung.',
+  'detail.fields': 'Details', 'detail.attachments': 'Anhänge', 'detail.history': 'Verlauf', 'detail.no_history': 'Noch keine Aktivität.',
+  'detail.comment': 'Kommentar hinzufügen', 'detail.comment.placeholder': 'Kommentar schreiben… (Strg+Enter zum Senden)', 'detail.comment.private': 'Privater Kommentar',
+  'detail.comment.send': 'Kommentieren', 'detail.private': 'privat', 'detail.author': 'Autor', 'detail.created': 'Erstellt', 'detail.parent': 'Übergeordnet',
+  'detail.version': 'Zielversion', 'detail.category': 'Kategorie', 'detail.estimated': 'Geschätzter Aufwand', 'detail.not_found': 'Dieses Ticket existiert nicht oder Sie dürfen es nicht sehen.',
+  'detail.loading': 'Ticket wird geladen…', 'detail.edit_classic': 'Alle Felder bearbeiten',
 } as Record<string, string>;

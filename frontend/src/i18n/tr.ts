@@ -28,4 +28,10 @@ export default {
   'edit.no_permission': 'Bu işi düzenleme yetkiniz yok.',
   'error.load': 'Veriler yüklenemedi: {message}',
   'retry': 'Tekrar dene',
+  'detail.close': 'Kapat', 'detail.classic': 'Klasik görünümde aç', 'detail.description': 'Açıklama', 'detail.no_description': 'Açıklama yok.',
+  'detail.fields': 'Ayrıntılar', 'detail.attachments': 'Ekler', 'detail.history': 'Geçmiş', 'detail.no_history': 'Henüz etkinlik yok.',
+  'detail.comment': 'Yorum ekle', 'detail.comment.placeholder': 'Yorum yazın… (göndermek için Ctrl+Enter)', 'detail.comment.private': 'Özel yorum',
+  'detail.comment.send': 'Yorum yap', 'detail.private': 'özel', 'detail.author': 'Yazar', 'detail.created': 'Oluşturulma', 'detail.parent': 'Üst iş',
+  'detail.version': 'Hedef sürüm', 'detail.category': 'Kategori', 'detail.estimated': 'Tahmini süre', 'detail.not_found': 'Bu iş mevcut değil veya görme yetkiniz yok.',
+  'detail.loading': 'İş yükleniyor…', 'detail.edit_classic': 'Tüm alanları düzenle',
 } as Record<string, string>;
