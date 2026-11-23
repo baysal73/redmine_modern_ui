@@ -26,7 +26,7 @@ module RedmineModernUi
   def redirect_after_login?(user)
     return false unless settings['redirect_after_login'] == '1'
 
-    user.pref['modern_ui_redirect'].to_s != '0'
+    user.pref[:modern_ui_redirect].to_s != '0'
   end
 
   def apply_patches!

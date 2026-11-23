@@ -2,6 +2,6 @@
   <p>
     <%= hidden_field_tag 'pref[modern_ui_redirect]', '0', id: nil %>
     <label for="pref_modern_ui_redirect"><%= l(:modern_ui_pref_redirect) %></label>
-    <%= check_box_tag 'pref[modern_ui_redirect]', '1', @user.pref['modern_ui_redirect'].to_s != '0', id: 'pref_modern_ui_redirect' %>
+    <%= check_box_tag 'pref[modern_ui_redirect]', '1', @user.pref[:modern_ui_redirect].to_s != '0', id: 'pref_modern_ui_redirect' %>
   </p>
 <% end %>
