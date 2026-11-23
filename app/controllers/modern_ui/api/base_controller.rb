@@ -12,6 +12,12 @@ module ModernUi
         render_json_error 404, l(:modern_ui_error_not_found)
       end
 
+      # Redmine's text formatter builds links like url_for(controller: 'repositories', ...). Rails would resolve
+      # those relative to this controller's namespace (modern_ui/api/repositories) and fail, so drop the recall.
+      def url_options
+        super.merge(_recall: {})
+      end
+
       private
 
       # Redmine's require_login would redirect to the login page; the SPA needs a 401.

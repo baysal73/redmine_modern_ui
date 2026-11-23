@@ -1,0 +1,37 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm test
+          npm run build
+      - name: Create release package (no Node.js needed on the server)
+        run: |
+          name="redmine_modern_ui-${GITHUB_REF_NAME}"
+          mkdir -p "dist/redmine_modern_ui"
+          rsync -a --exclude '.git' --exclude '.github' --exclude 'frontend' --exclude 'dev' --exclude 'docs' --exclude 'dist' ./ dist/redmine_modern_ui/
+          (cd dist && zip -qr "../${name}.zip" redmine_modern_ui && tar czf "../${name}.tar.gz" redmine_modern_ui)
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            redmine_modern_ui-*.zip
+            redmine_modern_ui-*.tar.gz
+          generate_release_notes: true

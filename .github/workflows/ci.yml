@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: Built assets must be committed
+        working-directory: .
+        run: git diff --exit-code -- assets
+
+  plugin:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - redmine: 6.1-stable
+            ruby: '3.3'
+          - redmine: 7.0-stable
+            ruby: '3.4'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: plugin
+      - uses: actions/checkout@v4
+        with:
+          repository: redmine/redmine
+          ref: ${{ matrix.redmine }}
+          path: redmine
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+          working-directory: redmine
+      - name: Install plugin and prepare database
+        working-directory: redmine
+        env:
+          RAILS_ENV: test
+        run: |
+          ln -s "$GITHUB_WORKSPACE/plugin" plugins/redmine_modern_ui
+          printf 'test:\n  adapter: sqlite3\n  database: db/test.sqlite3\n' > config/database.yml
+          bundle exec rake db:migrate
+      - name: Run plugin tests
+        working-directory: redmine
+        env:
+          RAILS_ENV: test
+        run: bundle exec rake redmine:plugins:test NAME=redmine_modern_ui
