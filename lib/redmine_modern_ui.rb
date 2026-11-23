@@ -35,5 +35,6 @@ module RedmineModernUi
     AccountController.prepend(AccountControllerPatch) unless AccountController < AccountControllerPatch
     UserPreference.prepend(UserPreferencePatch) unless UserPreference < UserPreferencePatch
     require_relative 'redmine_modern_ui/hooks'
+    require_relative 'redmine_modern_ui/serializers'
   end
 end

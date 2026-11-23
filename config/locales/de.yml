@@ -8,3 +8,6 @@ de:
   modern_ui_setting_base_path: "Pfad der neuen Oberfläche"
   modern_ui_setting_base_path_info: "Standard: app. Eine Änderung erfordert einen Neustart von Redmine."
   modern_ui_pref_redirect: "Nach dem Login die neue Oberfläche öffnen"
+  modern_ui_error_not_found: "Nicht gefunden"
+  modern_ui_error_login_required: "Bitte anmelden"
+  modern_ui_error_forbidden: "Dafür fehlt die Berechtigung"

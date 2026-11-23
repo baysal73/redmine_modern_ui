@@ -46,7 +46,11 @@ if Issue.count < 10
       description: "Demo issue #{i + 1}.\n\nSome *formatted* text with a list:\n\n* one\n* two",
       assigned_to: users.sample, due_date: (Date.today + rand(-5..30)))
     issue.save!
-    issue.update_columns(status_id: statuses.sample.id) if i % 3 == 0
+  end
+  # spread issues over all statuses (closed ones get a closed_on date)
+  Issue.order(:id).each_with_index do |is, n|
+    st = statuses[n % statuses.size]
+    is.update_columns(status_id: st.id, closed_on: (st.is_closed? ? Time.now : nil))
   end
 end
 puts "users=#{User.active.count} projects=#{Project.count} issues=#{Issue.count}"
