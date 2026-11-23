@@ -1,0 +1,10 @@
+en:
+  modern_ui_app_title: "Redmine"
+  modern_ui_link_new_ui: "New interface"
+  modern_ui_link_classic: "Classic view"
+  modern_ui_needs_js: "This interface needs JavaScript."
+  modern_ui_setting_redirect: "Redirect to the new interface after login"
+  modern_ui_setting_redirect_info: "Users can opt out under My account."
+  modern_ui_setting_base_path: "Path of the new interface"
+  modern_ui_setting_base_path_info: "Default: app. Changing it requires a restart of Redmine."
+  modern_ui_pref_redirect: "Open the new interface after login"

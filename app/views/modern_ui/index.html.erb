@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="<%= @config[:lang] %>">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="<%= @config[:csrf] %>">
+  <title><%= l(:modern_ui_app_title) %></title>
+  <%= stylesheet_link_tag 'app', plugin: 'redmine_modern_ui', media: 'all' %>
+</head>
+<body>
+  <div id="app" data-config="<%= h @config.to_json %>">
+    <noscript><%= l(:modern_ui_needs_js) %> <a href="<%= @config[:root] %>/my/page"><%= l(:modern_ui_link_classic) %></a></noscript>
+  </div>
+  <%= javascript_include_tag 'app', plugin: 'redmine_modern_ui', type: 'module' %>
+</body>
+</html>

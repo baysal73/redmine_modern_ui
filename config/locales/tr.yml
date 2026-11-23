@@ -1,0 +1,10 @@
+tr:
+  modern_ui_app_title: "Redmine"
+  modern_ui_link_new_ui: "Yeni arayüz"
+  modern_ui_link_classic: "Klasik görünüm"
+  modern_ui_needs_js: "Bu arayüz JavaScript gerektirir."
+  modern_ui_setting_redirect: "Girişten sonra yeni arayüze yönlendir"
+  modern_ui_setting_redirect_info: "Kullanıcılar bunu Hesabım sayfasından kapatabilir."
+  modern_ui_setting_base_path: "Yeni arayüzün yolu"
+  modern_ui_setting_base_path_info: "Varsayılan: app. Değiştirmek Redmine'in yeniden başlatılmasını gerektirir."
+  modern_ui_pref_redirect: "Girişten sonra yeni arayüzü aç"

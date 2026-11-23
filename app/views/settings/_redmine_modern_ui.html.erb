@@ -1,0 +1,11 @@
+<p>
+  <label for="settings_redirect_after_login"><%= l(:modern_ui_setting_redirect) %></label>
+  <%= hidden_field_tag 'settings[redirect_after_login]', '0', id: nil %>
+  <%= check_box_tag 'settings[redirect_after_login]', '1', @settings['redirect_after_login'] == '1' %>
+  <em class="info"><%= l(:modern_ui_setting_redirect_info) %></em>
+</p>
+<p>
+  <label for="settings_base_path"><%= l(:modern_ui_setting_base_path) %></label>
+  <%= text_field_tag 'settings[base_path]', @settings['base_path'], size: 20 %>
+  <em class="info"><%= l(:modern_ui_setting_base_path_info) %></em>
+</p>
