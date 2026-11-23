@@ -2,6 +2,7 @@ import { createApp } from 'vue';
 import { createRouter, createWebHistory } from 'vue-router';
 import App from './App.vue';
 import { readConfig } from './api/client';
+import BoardView from './views/BoardView.vue';
 import IssueListView from './views/IssueListView.vue';
 import { applyTheme } from './lib/theme';
 import './styles.css';
@@ -13,6 +14,7 @@ const router = createRouter({
   routes: [
     { path: '/', redirect: '/issues' },
     { path: '/issues/:id(\\d+)?', name: 'issues', component: IssueListView },
+    { path: '/board/:id(\\d+)?', name: 'board', component: BoardView },
     { path: '/:pathMatch(.*)*', redirect: '/issues' },
   ],
 });

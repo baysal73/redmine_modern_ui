@@ -34,4 +34,6 @@ export default {
   'detail.comment.send': 'Yorum yap', 'detail.private': 'özel', 'detail.author': 'Yazar', 'detail.created': 'Oluşturulma', 'detail.parent': 'Üst iş',
   'detail.version': 'Hedef sürüm', 'detail.category': 'Kategori', 'detail.estimated': 'Tahmini süre', 'detail.not_found': 'Bu iş mevcut değil veya görme yetkiniz yok.',
   'detail.loading': 'İş yükleniyor…', 'detail.edit_classic': 'Tüm alanları düzenle',
+  'nav.board': 'Pano', 'board.hide_closed': 'Kapalı sütunları gizle', 'board.more': '{count} iş daha gösterilmiyor – filtreleri daraltın veya listeyi kullanın.',
+  'board.move_to': 'Taşı…', 'board.not_allowed': 'Bu geçişe iş akışı izin vermiyor.', 'board.empty': 'İş yok',
 } as Record<string, string>;

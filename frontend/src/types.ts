@@ -30,3 +30,7 @@ export interface IssueDetail extends IssueRow {
   custom_fields: { id: number; name: string; value: string }[];
   attachments: Attachment[]; journals: Journal[];
 }
+
+export interface BoardCard extends IssueRow { allowed_status_ids: number[] }
+export interface BoardColumn { status: Status; total: number; issues: BoardCard[] }
+export interface Board { columns: BoardColumn[]; limit: number }

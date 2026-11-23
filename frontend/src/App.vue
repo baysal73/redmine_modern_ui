@@ -13,6 +13,7 @@ const classicUrl = `${config.root}/my/page`;
     <router-link class="brand" to="/issues">{{ t('app.title') }}</router-link>
     <nav aria-label="Main">
       <router-link to="/issues">{{ t('nav.issues') }}</router-link>
+      <router-link to="/board">{{ t('nav.board') }}</router-link>
     </nav>
     <span class="spacer" />
     <button class="icon-btn" :title="t('nav.theme')" :aria-label="t('nav.theme')" @click="toggleTheme">◐</button>

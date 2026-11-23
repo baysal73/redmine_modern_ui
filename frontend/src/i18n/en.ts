@@ -35,4 +35,6 @@ export default {
   'detail.comment.send': 'Comment', 'detail.private': 'private', 'detail.author': 'Author', 'detail.created': 'Created', 'detail.parent': 'Parent',
   'detail.version': 'Target version', 'detail.category': 'Category', 'detail.estimated': 'Estimated time', 'detail.not_found': 'This issue does not exist or you are not allowed to see it.',
   'detail.loading': 'Loading issue…', 'detail.edit_classic': 'Edit all fields',
+  'nav.board': 'Board', 'board.hide_closed': 'Hide closed columns', 'board.more': '{count} more not shown – narrow the filters or use the list.',
+  'board.move_to': 'Move to…', 'board.not_allowed': 'This move is not allowed by the workflow.', 'board.empty': 'No issues',
 } as Record<string, string>;

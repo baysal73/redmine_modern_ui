@@ -6,6 +6,7 @@ module ModernUi
       helper :issues, :custom_fields, :attachments
       MAX_PER_PAGE = 100
       DEFAULT_PER_PAGE = 50
+      BOARD_DEFAULT_LIMIT = 30
       EDITABLE_FIELDS = %i[status_id assigned_to_id priority_id due_date start_date done_ratio subject notes private_notes].freeze
       # whitelist of sortable columns (name => IssueQuery column)
       SORTABLE = %w[id subject project tracker status priority author assigned_to start_date due_date
@@ -29,6 +30,27 @@ module ModernUi
           issues: issues.map { |i| serializers.issue_row(i) },
           total: total, page: page, per_page: per_page, pages: (total.to_f / per_page).ceil
         }
+      end
+
+      # GET /app/api/issues/board - one column per status, same filters as the list
+      # (project_id, tracker_id, priority_id, assigned_to_id, author_id, q). Each card carries the
+      # status ids the current user may move it to (Redmine workflow), so the UI can offer only valid drops.
+      def board
+        limit = [params[:limit].to_i, 1].max.clamp(1, MAX_PER_PAGE)
+        limit = BOARD_DEFAULT_LIMIT if params[:limit].blank?
+        allowed_cache = {}
+        columns = IssueStatus.sorted.map do |status|
+          query = build_query(status: status.id.to_s, sort: 'priority:desc,updated_on:desc')
+          issues = query.issues(include: %i[status priority tracker author assigned_to project], limit: limit)
+          cards = issues.map do |i|
+            key = [i.project_id, i.tracker_id, i.status_id, i.author_id == User.current.id, i.assigned_to_id == User.current.id,
+                   i.attributes_editable?(User.current)]
+            allowed = allowed_cache[key] ||= (key.last ? i.new_statuses_allowed_to(User.current, true).map(&:id) : [])
+            serializers.issue_row(i).merge(allowed_status_ids: allowed)
+          end
+          { status: serializers.status(status), total: query.issue_count, issues: cards }
+        end
+        render json: { columns: columns, limit: limit }
       end
 
       # GET /app/api/issues/:id
@@ -82,11 +104,11 @@ module ModernUi
 
       private
 
-      def build_query
+      def build_query(status: nil, sort: nil)
         project = params[:project_id].present? ? find_visible_project(params[:project_id]) : nil
         query = IssueQuery.new(name: '_', project: project)
-        query.build_from_params(filter_params)
-        query.sort_criteria = sort_criteria
+        query.build_from_params(filter_params(status))
+        query.sort_criteria = sort_criteria(sort)
         query
       end
 
@@ -94,7 +116,7 @@ module ModernUi
         value.to_s.split(',').map(&:strip).reject(&:blank?)
       end
 
-      def filter_params
+      def filter_params(status_override = nil)
         f = []
         op = {}
         v = {}
@@ -104,11 +126,12 @@ module ModernUi
           v[field] = values
         end
 
-        case params[:status].presence || 'open'
+        status = status_override || params[:status].presence || 'open'
+        case status
         when 'open'   then add.('status_id', 'o')
         when 'closed' then add.('status_id', 'c')
         when 'all'    then add.('status_id', '*')
-        else add.('status_id', '=', ids(params[:status]))
+        else add.('status_id', '=', ids(status))
         end
         add.('tracker_id', '=', ids(params[:tracker_id])) if params[:tracker_id].present?
         add.('priority_id', '=', ids(params[:priority_id])) if params[:priority_id].present?
@@ -124,8 +147,8 @@ module ModernUi
         { set_filter: '1', f: f, op: op, v: v }
       end
 
-      def sort_criteria
-        crit = ids(params[:sort]).filter_map do |part|
+      def sort_criteria(override = nil)
+        crit = ids(override || params[:sort]).filter_map do |part|
           col, dir = part.split(':')
           next unless SORTABLE.include?(col)
 

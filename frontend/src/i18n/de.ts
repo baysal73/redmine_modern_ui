@@ -34,4 +34,6 @@ export default {
   'detail.comment.send': 'Kommentieren', 'detail.private': 'privat', 'detail.author': 'Autor', 'detail.created': 'Erstellt', 'detail.parent': 'Übergeordnet',
   'detail.version': 'Zielversion', 'detail.category': 'Kategorie', 'detail.estimated': 'Geschätzter Aufwand', 'detail.not_found': 'Dieses Ticket existiert nicht oder Sie dürfen es nicht sehen.',
   'detail.loading': 'Ticket wird geladen…', 'detail.edit_classic': 'Alle Felder bearbeiten',
+  'nav.board': 'Board', 'board.hide_closed': 'Geschlossene Spalten ausblenden', 'board.more': '{count} weitere nicht angezeigt – Filter eingrenzen oder die Liste nutzen.',
+  'board.move_to': 'Verschieben nach…', 'board.not_allowed': 'Dieser Wechsel ist im Workflow nicht erlaubt.', 'board.empty': 'Keine Tickets',
 } as Record<string, string>;
