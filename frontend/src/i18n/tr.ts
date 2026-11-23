@@ -36,4 +36,9 @@ export default {
   'detail.loading': 'İş yükleniyor…', 'detail.edit_classic': 'Tüm alanları düzenle',
   'nav.board': 'Pano', 'board.hide_closed': 'Kapalı sütunları gizle', 'board.more': '{count} iş daha gösterilmiyor – filtreleri daraltın veya listeyi kullanın.',
   'board.move_to': 'Taşı…', 'board.not_allowed': 'Bu geçişe iş akışı izin vermiyor.', 'board.empty': 'İş yok',
+  'create.button': 'Yeni iş', 'create.title': 'Yeni iş', 'create.subject_ph': 'Ne yapılması gerekiyor?', 'create.more': 'Daha fazla alan',
+  'create.cancel': 'İptal', 'create.submit': 'İşi oluştur', 'create.created': '#{id} numaralı iş oluşturuldu', 'create.no_projects': 'Hiçbir projede iş oluşturma yetkiniz yok.',
+  'create.classic': 'Klasik formu kullan', 'a11y.skip': 'İçeriğe geç',
+  'help.title': 'Klavye kısayolları', 'help.create': 'Yeni iş', 'help.search': 'Ara', 'help.next_prev': 'Sonraki / önceki iş', 'help.close': 'Paneli veya iletişim kutusunu kapat',
+  'help.go_issues': 'İş listesine git', 'help.go_board': 'Panoya git', 'help.send': 'Yorumu gönder', 'help.this': 'Bu yardımı göster',
 } as Record<string, string>;

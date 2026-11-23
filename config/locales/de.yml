@@ -14,3 +14,4 @@ de:
   modern_ui_error_status_not_allowed: "Dieser Statuswechsel ist nicht erlaubt"
   modern_ui_error_csrf: "Sicherheitstoken ungültig oder abgelaufen. Bitte Seite neu laden."
   modern_ui_error_notes_blank: "Bitte einen Kommentar eingeben"
+  modern_ui_error_no_tracker: "Für dieses Projekt ist kein Tracker verfügbar"

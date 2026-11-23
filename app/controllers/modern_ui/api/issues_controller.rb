@@ -7,6 +7,7 @@ module ModernUi
       MAX_PER_PAGE = 100
       DEFAULT_PER_PAGE = 50
       BOARD_DEFAULT_LIMIT = 30
+      CREATABLE_FIELDS = %i[project_id tracker_id subject description assigned_to_id priority_id due_date start_date].freeze
       EDITABLE_FIELDS = %i[status_id assigned_to_id priority_id due_date start_date done_ratio subject notes private_notes].freeze
       # whitelist of sortable columns (name => IssueQuery column)
       SORTABLE = %w[id subject project tracker status priority author assigned_to start_date due_date
@@ -68,6 +69,30 @@ module ModernUi
           priorities: IssuePriority.active.map { |p| serializers.ref(p) },
           editable: issue.attributes_editable?(User.current)
         }
+      end
+
+      # POST /app/api/issues  { issue: { project_id, tracker_id, subject, description, assigned_to_id, priority_id, due_date } }
+      # Same checks as the classic form (add_issues permission, allowed trackers, safe_attributes). Projects that require
+      # custom fields are answered with 422 plus a link to the classic form, which can render those fields.
+      def create
+        attrs = params.require(:issue).permit(*CREATABLE_FIELDS).to_h
+        project = find_visible_project(attrs['project_id'])
+        return render_json_error(403, l(:modern_ui_error_forbidden)) unless User.current.allowed_to?(:add_issues, project)
+
+        trackers = Issue.allowed_target_trackers(project, User.current)
+        tracker = trackers.find { |t| t.id.to_s == attrs['tracker_id'].to_s } || trackers.first
+        return render_json_error(422, l(:modern_ui_error_no_tracker)) unless tracker
+
+        issue = Issue.new(project: project, tracker: tracker, author: User.current)
+        issue.start_date ||= User.current.today if Setting.default_issue_start_date_to_creation_date?
+        issue.safe_attributes = attrs.except('project_id', 'tracker_id')
+        if issue.save
+          render json: { issue: serializers.issue_row(issue.reload) }, status: :created
+        else
+          render json: { error: issue.errors.full_messages.to_sentence, errors: issue.errors.full_messages,
+                         classic_url: "#{Redmine::Utils.relative_url_root}/projects/#{project.identifier}/issues/new?issue[tracker_id]=#{tracker.id}" },
+                 status: 422
+        end
       end
 
       # PATCH /app/api/issues/:id  { issue: { status_id, assigned_to_id, priority_id, due_date, notes } }

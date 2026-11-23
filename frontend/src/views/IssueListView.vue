@@ -7,6 +7,7 @@ import IssueDetail from '../components/IssueDetail.vue';
 import { locale, t } from '../i18n';
 import { defaultState, nextSort, stateFromQuery, stateToQuery, toApiParams, type ListState } from '../lib/listQuery';
 import { toast } from '../lib/toast';
+import { ui } from '../lib/ui';
 import type { IssueList, IssueOptions, IssueRow, Meta } from '../types';
 
 const route = useRoute();
@@ -66,6 +67,8 @@ function go(patch: Partial<ListState>, resetPage = true) {
   router.push({ query: stateToQuery(next) });
 }
 const filtersActive = computed(() => JSON.stringify(stateToQuery({ ...state.value, sort: defaultState.sort, page: 1 })) !== '{}');
+
+watch(() => ui.refresh, () => load());
 
 let seq = 0;
 async function load() {

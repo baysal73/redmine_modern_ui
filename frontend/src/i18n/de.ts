@@ -36,4 +36,9 @@ export default {
   'detail.loading': 'Ticket wird geladen…', 'detail.edit_classic': 'Alle Felder bearbeiten',
   'nav.board': 'Board', 'board.hide_closed': 'Geschlossene Spalten ausblenden', 'board.more': '{count} weitere nicht angezeigt – Filter eingrenzen oder die Liste nutzen.',
   'board.move_to': 'Verschieben nach…', 'board.not_allowed': 'Dieser Wechsel ist im Workflow nicht erlaubt.', 'board.empty': 'Keine Tickets',
+  'create.button': 'Neues Ticket', 'create.title': 'Neues Ticket', 'create.subject_ph': 'Was ist zu tun?', 'create.more': 'Weitere Felder',
+  'create.cancel': 'Abbrechen', 'create.submit': 'Ticket anlegen', 'create.created': 'Ticket #{id} angelegt', 'create.no_projects': 'Sie dürfen in keinem Projekt Tickets anlegen.',
+  'create.classic': 'Klassisches Formular nutzen', 'a11y.skip': 'Zum Inhalt springen',
+  'help.title': 'Tastaturkürzel', 'help.create': 'Neues Ticket', 'help.search': 'Suchen', 'help.next_prev': 'Nächstes / voriges Ticket', 'help.close': 'Panel oder Dialog schließen',
+  'help.go_issues': 'Zur Ticketliste', 'help.go_board': 'Zum Board', 'help.send': 'Kommentar senden', 'help.this': 'Diese Hilfe anzeigen',
 } as Record<string, string>;

@@ -1,0 +1,26 @@
+<script setup lang="ts">
+import { onMounted, onUnmounted, ref } from 'vue';
+import { t } from '../i18n';
+import { trapFocus } from '../lib/dialog';
+import { ui } from '../lib/ui';
+
+const root = ref<HTMLElement | null>(null);
+let release: (() => void) | null = null;
+const close = () => { ui.help = false; };
+const rows: [string, string][] = [
+  ['c', 'help.create'], ['/', 'help.search'], ['j / k', 'help.next_prev'], ['Esc', 'help.close'],
+  ['g i', 'help.go_issues'], ['g b', 'help.go_board'], ['Ctrl + Enter', 'help.send'], ['?', 'help.this'],
+];
+onMounted(() => { release = trapFocus(root.value!, close); });
+onUnmounted(() => release?.());
+</script>
+
+<template>
+  <div class="overlay" @mousedown.self="close">
+    <div ref="root" class="dialog" role="dialog" aria-modal="true" aria-labelledby="sh-title">
+      <h2 id="sh-title">{{ t('help.title') }}</h2>
+      <dl class="shortcuts"><template v-for="[k, d] in rows" :key="k"><dt><kbd>{{ k }}</kbd></dt><dd>{{ t(d) }}</dd></template></dl>
+      <div class="dialog-actions"><button class="btn" @click="close">{{ t('detail.close') }}</button></div>
+    </div>
+  </div>
+</template>

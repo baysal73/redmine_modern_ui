@@ -37,4 +37,9 @@ export default {
   'detail.loading': 'Loading issue…', 'detail.edit_classic': 'Edit all fields',
   'nav.board': 'Board', 'board.hide_closed': 'Hide closed columns', 'board.more': '{count} more not shown – narrow the filters or use the list.',
   'board.move_to': 'Move to…', 'board.not_allowed': 'This move is not allowed by the workflow.', 'board.empty': 'No issues',
+  'create.button': 'New issue', 'create.title': 'New issue', 'create.subject_ph': 'What needs to be done?', 'create.more': 'More fields',
+  'create.cancel': 'Cancel', 'create.submit': 'Create issue', 'create.created': 'Issue #{id} created', 'create.no_projects': 'You are not allowed to create issues in any project.',
+  'create.classic': 'Use the classic form', 'a11y.skip': 'Skip to content',
+  'help.title': 'Keyboard shortcuts', 'help.create': 'New issue', 'help.search': 'Search', 'help.next_prev': 'Next / previous issue', 'help.close': 'Close panel or dialog',
+  'help.go_issues': 'Go to issue list', 'help.go_board': 'Go to board', 'help.send': 'Send comment', 'help.this': 'Show this help',
 } as Record<string, string>;

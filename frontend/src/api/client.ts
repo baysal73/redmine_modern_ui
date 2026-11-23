@@ -1,4 +1,4 @@
-import type { AppConfig, Board, IssueDetail, IssueList, IssueOptions, IssueRow, Meta } from '../types';
+import type { AppConfig, Board, NewIssueOptions, IssueDetail, IssueList, IssueOptions, IssueRow, Meta } from '../types';
 
 export function readConfig(): AppConfig {
   const el = document.getElementById('app');
@@ -7,7 +7,7 @@ export function readConfig(): AppConfig {
 const config = readConfig();
 
 export class ApiError extends Error {
-  constructor(public status: number, message: string) { super(message); }
+  constructor(public status: number, message: string, public data: any = null) { super(message); }
 }
 
 function csrfToken(): string {
@@ -22,7 +22,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (res.status === 401) { window.location.href = `${config.root}/login?back_url=${encodeURIComponent(window.location.href)}`; throw new ApiError(401, 'login'); }
   let body: any = null;
   try { body = await res.json(); } catch { /* non-JSON error page */ }
-  if (!res.ok) throw new ApiError(res.status, body?.error ?? `HTTP ${res.status}`);
+  if (!res.ok) throw new ApiError(res.status, body?.error ?? `HTTP ${res.status}`, body);
   return body as T;
 }
 
@@ -37,6 +37,8 @@ export const api = {
   meta: () => request<Meta>('meta'),
   issues: (params: Record<string, string | number | undefined>) => request<IssueList>(`issues${toQuery(params)}`),
   board: (params: Record<string, string | number | undefined>) => request<Board>(`issues/board${toQuery(params)}`),
+  newIssueOptions: (projectId: number) => request<NewIssueOptions>(`projects/${projectId}/new_issue_options`),
+  createIssue: (issue: Record<string, unknown>) => request<{ issue: IssueRow }>('issues', { method: 'POST', body: JSON.stringify({ issue }) }),
   issue: (id: number) => request<{ issue: IssueDetail }>(`issues/${id}`),
   issueOptions: (id: number) => request<IssueOptions>(`issues/${id}/options`),
   updateIssue: (id: number, issue: Record<string, unknown>) =>

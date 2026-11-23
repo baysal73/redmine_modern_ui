@@ -8,6 +8,8 @@ scope "#{base}/api", module: 'modern_ui/api', as: 'modern_ui_api' do
   get 'meta', to: 'meta#show'
   get 'projects', to: 'projects#index'
   get 'projects/:id/assignees', to: 'projects#assignees'
+  get 'projects/:id/new_issue_options', to: 'projects#new_issue_options'
+  post 'issues', to: 'issues#create'
   get 'issues', to: 'issues#index'
   get 'issues/board', to: 'issues#board'
   get 'issues/:id', to: 'issues#show', constraints: { id: /\d+/ }

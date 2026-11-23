@@ -14,3 +14,4 @@ tr:
   modern_ui_error_status_not_allowed: "Bu durum değişikliğine izin verilmiyor"
   modern_ui_error_csrf: "Güvenlik belirteci geçersiz veya süresi dolmuş. Lütfen sayfayı yenileyin."
   modern_ui_error_notes_blank: "Lütfen bir yorum girin"
+  modern_ui_error_no_tracker: "Bu proje için kullanılabilir tip yok"

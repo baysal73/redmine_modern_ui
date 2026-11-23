@@ -11,6 +11,7 @@ export interface IssueList { issues: IssueRow[]; total: number; page: number; pe
 export interface Meta {
   user: { id: number; name: string; admin: boolean; language: string };
   statuses: Status[]; trackers: Ref[]; priorities: Ref[];
+  addable_project_ids: number[];
   projects: { id: number; identifier: string; name: string; parent_id: number | null; trackers: Ref[] }[];
   settings: { per_page_options: number[]; text_formatting: string };
 }
@@ -34,3 +35,5 @@ export interface IssueDetail extends IssueRow {
 export interface BoardCard extends IssueRow { allowed_status_ids: number[] }
 export interface BoardColumn { status: Status; total: number; issues: BoardCard[] }
 export interface Board { columns: BoardColumn[]; limit: number }
+
+export interface NewIssueOptions { trackers: Ref[]; priorities: (Ref & { is_default: boolean })[]; assignees: Ref[] }

@@ -6,6 +6,7 @@ import IssueDetail from '../components/IssueDetail.vue';
 import { locale, t } from '../i18n';
 import { stateFromQuery, stateToQuery, type ListState } from '../lib/listQuery';
 import { toast } from '../lib/toast';
+import { ui } from '../lib/ui';
 import type { Board, BoardCard, IssueRow, Meta } from '../types';
 
 const route = useRoute();
@@ -22,6 +23,8 @@ const state = computed<ListState>(() => stateFromQuery(route.query as Record<str
 const selectedId = computed(() => (route.params.id ? Number(route.params.id) : null));
 function go(patch: Partial<ListState>) { router.push({ name: 'board', params: {}, query: stateToQuery({ ...state.value, ...patch }) }); }
 function openIssue(id: number | null) { router.push({ name: 'board', params: { id: id ?? undefined }, query: route.query }); }
+
+watch(() => ui.refresh, () => load());
 
 let seq = 0;
 async function load() {

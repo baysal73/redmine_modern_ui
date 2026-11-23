@@ -12,6 +12,7 @@ module ModernUi
           statuses: IssueStatus.sorted.map { |s| serializers.status(s) },
           trackers: Tracker.sorted.map { |t| serializers.ref(t) },
           priorities: IssuePriority.active.map { |p| serializers.ref(p).merge(is_default: p.is_default?) },
+          addable_project_ids: Project.allowed_to(User.current, :add_issues).where(id: projects.map(&:id)).pluck(:id),
           projects: projects.map { |p| serializers.project(p) },
           settings: { per_page_options: Setting.per_page_options_array, text_formatting: Setting.text_formatting }
         }

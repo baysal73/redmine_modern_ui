@@ -14,3 +14,4 @@ en:
   modern_ui_error_status_not_allowed: "This status change is not allowed"
   modern_ui_error_csrf: "Invalid or expired security token. Please reload the page."
   modern_ui_error_notes_blank: "Please enter a comment"
+  modern_ui_error_no_tracker: "No tracker available for this project"
