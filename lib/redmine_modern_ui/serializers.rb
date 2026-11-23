@@ -6,6 +6,22 @@ module RedmineModernUi
   module Serializers
     module_function
 
+    # Defense in depth: Redmine's formatter output is sanitized, but formatter plugins (e.g. CKEditor) may let
+    # tags such as <iframe> through. Everything that reaches the browser via v-html is cleaned once more with
+    # Redmine's own HTML sanitizer (same allow-list as Markdown), falling back to Rails' safe-list sanitizer.
+    FALLBACK_TAGS = (Rails::HTML5::SafeListSanitizer.allowed_tags.to_a + %w[table thead tbody tfoot tr th td caption]).freeze
+    FALLBACK_ATTRIBUTES = (Rails::HTML5::SafeListSanitizer.allowed_attributes.to_a + %w[colspan rowspan]).freeze
+
+    def safe_html(html)
+      return '' if html.blank?
+
+      if defined?(Redmine::WikiFormatting::HtmlSanitizer)
+        Redmine::WikiFormatting::HtmlSanitizer.call(html.to_s)
+      else
+        ActionController::Base.helpers.sanitize(html.to_s, tags: FALLBACK_TAGS, attributes: FALLBACK_ATTRIBUTES)
+      end
+    end
+
     def user_ref(u)
       u && { id: u.id, name: u.name }
     end
@@ -38,7 +54,7 @@ module RedmineModernUi
     # view: ActionView context (for textilizable and URLs)
     def issue_detail(i, user, view)
       issue_row(i).merge(
-        description_html: i.description.present? ? view.textilizable(i, :description) : '',
+        description_html: i.description.present? ? safe_html(view.textilizable(i, :description)) : '',
         parent_id: i.parent_id,
         fixed_version: ref(i.fixed_version),
         category: ref(i.category),
@@ -70,7 +86,7 @@ module RedmineModernUi
       {
         id: j.id, index: j.indice, user: user_ref(j.user), created_on: j.created_on,
         private_notes: j.private_notes?,
-        notes_html: j.notes.present? ? view.textilizable(j, :notes) : '',
+        notes_html: j.notes.present? ? safe_html(view.textilizable(j, :notes)) : '',
         # plain-text sentence built by Redmine itself, e.g. "Status changed from New to Closed"
         details: j.visible_details.map { |d| { property: d.property, name: d.prop_key, text: view.show_detail(d, true) } }
       }

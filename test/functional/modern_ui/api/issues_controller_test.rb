@@ -139,6 +139,18 @@ class ModernUi::Api::IssuesControllerTest < Redmine::ControllerTest
     assert_match %r{/issues/2}, json['issue']['description_html']
   end
 
+  def test_safe_html_removes_dangerous_markup_but_keeps_formatting
+    html = RedmineModernUi::Serializers.safe_html(
+      '<p>hi <strong>bold</strong></p><script>alert(1)</script><iframe src="http://evil.example"></iframe>' \
+      '<img src="x" onerror="alert(2)"><a href="javascript:alert(3)">x</a><ul><li>one</li></ul>' \
+      '<table><tr><td>cell</td></tr></table>'
+    )
+    assert_no_match(/<script|<iframe|onerror|javascript:/i, html)
+    assert_match(%r{<strong>bold</strong>}, html)
+    assert_match(%r{<li>one</li>}, html)
+    assert_match(%r{<td>cell</td>}, html)
+  end
+
   def test_description_is_rendered_by_redmine_and_sanitized
     issue = Issue.find(1)
     issue.update_column(:description, "hello <script>alert(1)</script> *bold*")

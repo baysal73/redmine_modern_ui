@@ -44,4 +44,25 @@ class LoginRedirectTest < Redmine::ControllerTest
     post :login, params: { username: 'dlopper', password: 'foo' }
     assert_redirected_to '/app'
   end
+
+  # Other plugins may replace the default landing page; the new UI still takes precedence when enabled.
+  module OtherPluginLanding
+    private
+
+    def successful_authentication(user)
+      self.logged_user = user
+      call_hook(:controller_account_success_authentication_after, user: user)
+      redirect_back_or_default projects_path(some_hint: 1)
+    end
+  end
+
+  def test_works_together_with_plugins_that_replace_the_landing_page
+    @controller.singleton_class.prepend(OtherPluginLanding) # this instance only, no leaking into other tests
+    login
+    assert_redirected_to '/app'
+    with_plugin_settings('redirect_after_login' => '0') do
+      login
+      assert_redirected_to '/projects?some_hint=1'
+    end
+  end
 end

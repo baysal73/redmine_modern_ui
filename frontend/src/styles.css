@@ -146,3 +146,5 @@ main:focus { outline: none; }
 .shortcuts dd { margin: 0; } kbd { font: 0.85rem ui-monospace, monospace; background: var(--bg); border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 5px; padding: 1px 7px; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 @media (max-width: 560px) { .row2 { grid-template-columns: 1fr; } }
+.card-meta { flex-wrap: wrap; row-gap: 4px; }
+.card-meta .small { white-space: nowrap; }

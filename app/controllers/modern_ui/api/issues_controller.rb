@@ -41,7 +41,8 @@ module ModernUi
         limit = BOARD_DEFAULT_LIMIT if params[:limit].blank?
         allowed_cache = {}
         columns = IssueStatus.sorted.map do |status|
-          query = build_query(status: status.id.to_s, sort: 'priority:desc,updated_on:desc')
+          # closed columns: most recently touched first (old closed issues are rarely interesting)
+          query = build_query(status: status.id.to_s, sort: status.is_closed? ? 'updated_on:desc' : 'priority:desc,updated_on:desc')
           issues = query.issues(include: %i[status priority tracker author assigned_to project], limit: limit)
           cards = issues.map do |i|
             key = [i.project_id, i.tracker_id, i.status_id, i.author_id == User.current.id, i.assigned_to_id == User.current.id,
