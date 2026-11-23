@@ -1,4 +1,4 @@
-import type { AppConfig, Board, NewIssueOptions, IssueDetail, IssueList, IssueOptions, IssueRow, Meta } from '../types';
+import type { AppConfig, Board, IssueForm, NewIssueOptions, IssueDetail, IssueList, IssueOptions, IssueRow, Meta } from '../types';
 
 export function readConfig(): AppConfig {
   const el = document.getElementById('app');
@@ -40,6 +40,7 @@ export const api = {
   newIssueOptions: (projectId: number) => request<NewIssueOptions>(`projects/${projectId}/new_issue_options`),
   createIssue: (issue: Record<string, unknown>) => request<{ issue: IssueRow }>('issues', { method: 'POST', body: JSON.stringify({ issue }) }),
   issue: (id: number) => request<{ issue: IssueDetail }>(`issues/${id}`),
+  issueForm: (id: number) => request<IssueForm>(`issues/${id}/form`),
   issueOptions: (id: number) => request<IssueOptions>(`issues/${id}/options`),
   updateIssue: (id: number, issue: Record<string, unknown>) =>
     request<{ issue: IssueRow }>(`issues/${id}`, { method: 'PATCH', body: JSON.stringify({ issue }) }),

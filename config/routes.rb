@@ -13,6 +13,7 @@ scope "#{base}/api", module: 'modern_ui/api', as: 'modern_ui_api' do
   get 'issues', to: 'issues#index'
   get 'issues/board', to: 'issues#board'
   get 'issues/:id', to: 'issues#show', constraints: { id: /\d+/ }
+  get 'issues/:id/form', to: 'issues#form', constraints: { id: /\d+/ }
   get 'issues/:id/options', to: 'issues#options', constraints: { id: /\d+/ }
   patch 'issues/:id', to: 'issues#update', constraints: { id: /\d+/ }
 end

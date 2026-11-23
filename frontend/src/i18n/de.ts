@@ -41,4 +41,6 @@ export default {
   'create.classic': 'Klassisches Formular nutzen', 'a11y.skip': 'Zum Inhalt springen',
   'help.title': 'Tastaturkürzel', 'help.create': 'Neues Ticket', 'help.search': 'Suchen', 'help.next_prev': 'Nächstes / voriges Ticket', 'help.close': 'Panel oder Dialog schließen',
   'help.go_issues': 'Zur Ticketliste', 'help.go_board': 'Zum Board', 'help.send': 'Kommentar senden', 'help.this': 'Diese Hilfe anzeigen',
+  'edit.title': 'Ticket bearbeiten', 'edit.save': 'Speichern', 'edit.cancel': 'Abbrechen', 'edit.all': 'Alle Felder bearbeiten', 'edit.description_classic': 'Die Beschreibung nutzt den Rich-Text-Editor – bitte in der klassischen Ansicht bearbeiten.',
+  'edit.category': 'Kategorie', 'edit.version': 'Zielversion', 'edit.estimated': 'Geschätzter Aufwand (h)', 'edit.private': 'Privates Ticket', 'edit.none': '—', 'edit.custom': 'Weitere Felder', 'edit.unchanged': 'Keine Änderungen.',
 } as Record<string, string>;

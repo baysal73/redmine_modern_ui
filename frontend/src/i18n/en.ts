@@ -42,4 +42,6 @@ export default {
   'create.classic': 'Use the classic form', 'a11y.skip': 'Skip to content',
   'help.title': 'Keyboard shortcuts', 'help.create': 'New issue', 'help.search': 'Search', 'help.next_prev': 'Next / previous issue', 'help.close': 'Close panel or dialog',
   'help.go_issues': 'Go to issue list', 'help.go_board': 'Go to board', 'help.send': 'Send comment', 'help.this': 'Show this help',
+  'edit.title': 'Edit issue', 'edit.save': 'Save', 'edit.cancel': 'Cancel', 'edit.all': 'Edit all fields', 'edit.description_classic': 'The description uses the rich-text editor – edit it in the classic view.',
+  'edit.category': 'Category', 'edit.version': 'Target version', 'edit.estimated': 'Estimated time (h)', 'edit.private': 'Private issue', 'edit.none': '—', 'edit.custom': 'Additional fields', 'edit.unchanged': 'No changes.',
 } as Record<string, string>;

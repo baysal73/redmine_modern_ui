@@ -37,3 +37,14 @@ export interface BoardColumn { status: Status; total: number; issues: BoardCard[
 export interface Board { columns: BoardColumn[]; limit: number }
 
 export interface NewIssueOptions { trackers: Ref[]; priorities: (Ref & { is_default: boolean })[]; assignees: Ref[] }
+
+export interface CustomFieldForm {
+  id: number; name: string; format: string; kind: string; multiple: boolean; required: boolean; description: string;
+  value: string | string[]; options: { label: string; value: string }[];
+}
+export interface IssueForm {
+  values: Record<string, string | number | boolean | null>;
+  editable: string[]; required: string[]; description_as_text: boolean;
+  options: { statuses: Status[]; priorities: Ref[]; assignees: Ref[]; categories: Ref[]; versions: Ref[] };
+  custom_fields: CustomFieldForm[];
+}

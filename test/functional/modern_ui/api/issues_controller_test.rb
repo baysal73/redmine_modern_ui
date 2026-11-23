@@ -259,6 +259,56 @@ class ModernUi::Api::IssuesControllerTest < Redmine::ControllerTest
     assert json['priorities'].any?
   end
 
+  # ---- full edit form ----------------------------------------------------------------------------------
+
+  def test_form_describes_editable_fields_choices_and_custom_fields
+    cf = IssueCustomField.create!(name: 'Kind', field_format: 'list', possible_values: %w[A B], is_for_all: true,
+                                  tracker_ids: Tracker.pluck(:id), visible: true)
+    log_in 2
+    get :form, params: { id: 1 }
+    assert_response :success
+    assert_includes json['editable'], 'subject'
+    assert_equal Issue.find(1).subject, json['values']['subject']
+    assert json['options']['statuses'].any?
+    field = json['custom_fields'].find { |f| f['id'] == cf.id }
+    assert_equal 'select', field['kind']
+    assert_equal %w[A B], field['options'].map { |o| o['value'] }
+  end
+
+  def test_form_is_refused_without_edit_permission
+    Role.find(2).remove_permission!(:edit_issues)
+    log_in 3
+    get :form, params: { id: 1 }
+    assert_response :forbidden
+  end
+
+  def test_form_hides_fields_that_the_workflow_makes_read_only
+    WorkflowPermission.create!(role_id: 1, tracker_id: 1, old_status_id: 1, field_name: 'due_date', rule: 'readonly')
+    log_in 2
+    get :form, params: { id: 1 }
+    assert_not_includes json['editable'], 'due_date' if Issue.find(1).tracker_id == 1 && Issue.find(1).status_id == 1
+  end
+
+  def test_update_changes_extended_fields_and_custom_fields
+    cf = IssueCustomField.create!(name: 'Kind', field_format: 'list', possible_values: %w[A B], is_for_all: true,
+                                  tracker_ids: Tracker.pluck(:id), visible: true)
+    log_in 2
+    patch :update, params: { id: 1, issue: { subject: 'Renamed', estimated_hours: 3.5, custom_field_values: { cf.id.to_s => 'B' } } }
+    assert_response :success
+    issue = Issue.find(1)
+    assert_equal 'Renamed', issue.subject
+    assert_equal 3.5, issue.estimated_hours
+    assert_equal 'B', issue.custom_field_value(cf)
+  end
+
+  def test_update_ignores_custom_fields_the_user_may_not_edit
+    cf = IssueCustomField.create!(name: 'Secret', field_format: 'string', is_for_all: true,
+                                  tracker_ids: Tracker.pluck(:id), visible: false, role_ids: [1], editable: false)
+    log_in 3 # developer: role 2 is not in role_ids
+    patch :update, params: { id: 1, issue: { custom_field_values: { cf.id.to_s => 'hacked' } } }
+    assert_not_equal 'hacked', Issue.find(1).custom_field_value(cf)
+  end
+
   # ---- create ----------------------------------------------------------------------------------------
 
   def test_create_issue

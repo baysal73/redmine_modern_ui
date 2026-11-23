@@ -41,4 +41,6 @@ export default {
   'create.classic': 'Klasik formu kullan', 'a11y.skip': 'İçeriğe geç',
   'help.title': 'Klavye kısayolları', 'help.create': 'Yeni iş', 'help.search': 'Ara', 'help.next_prev': 'Sonraki / önceki iş', 'help.close': 'Paneli veya iletişim kutusunu kapat',
   'help.go_issues': 'İş listesine git', 'help.go_board': 'Panoya git', 'help.send': 'Yorumu gönder', 'help.this': 'Bu yardımı göster',
+  'edit.title': 'İşi düzenle', 'edit.save': 'Kaydet', 'edit.cancel': 'İptal', 'edit.all': 'Tüm alanları düzenle', 'edit.description_classic': 'Açıklama zengin metin düzenleyici kullanıyor – lütfen klasik görünümde düzenleyin.',
+  'edit.category': 'Kategori', 'edit.version': 'Hedef sürüm', 'edit.estimated': 'Tahmini süre (sa)', 'edit.private': 'Özel iş', 'edit.none': '—', 'edit.custom': 'Ek alanlar', 'edit.unchanged': 'Değişiklik yok.',
 } as Record<string, string>;

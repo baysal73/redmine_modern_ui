@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { ApiError, api, readConfig } from '../api/client';
 import InlineCell from './InlineCell.vue';
+import IssueEditDialog from './IssueEditDialog.vue';
 import { locale, t } from '../i18n';
 import { toast } from '../lib/toast';
 import type { IssueDetail, IssueRow } from '../types';
@@ -16,6 +17,7 @@ const error = ref('');
 const comment = ref('');
 const privateNote = ref(false);
 const sending = ref(false);
+const editing = ref(false);
 
 let seq = 0;
 async function load(showSpinner = true) {
@@ -100,7 +102,7 @@ const canEdit = computed(() => !!issue.value?.permissions.edit);
         <template v-if="issue.estimated_hours"><dt>{{ t('detail.estimated') }}</dt><dd>{{ issue.estimated_hours }} h</dd></template>
         <template v-for="cf in issue.custom_fields" :key="cf.id"><dt>{{ cf.name }}</dt><dd>{{ cf.value }}</dd></template>
       </dl>
-      <p v-if="canEdit" class="small"><a :href="classic + '/edit'" class="muted">{{ t('detail.edit_classic') }}</a></p>
+      <p v-if="canEdit" class="small"><button class="btn" @click="editing = true">✎ {{ t('edit.all') }}</button></p>
 
       <h3>{{ t('detail.description') }}</h3>
       <!-- server-rendered by Redmine's own (sanitizing) text formatter -->
@@ -136,5 +138,6 @@ const canEdit = computed(() => !!issue.value?.permissions.edit);
         </div>
       </form>
     </div>
+    <IssueEditDialog v-if="editing" :id="id" @close="editing = false" @saved="(row) => { editing = false; emit('updated', row); load(false); }" />
   </aside>
 </template>

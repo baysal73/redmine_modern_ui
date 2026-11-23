@@ -77,6 +77,22 @@ module RedmineModernUi
       )
     end
 
+    SELECT_FORMATS = %w[list user version enumeration bool key_value].freeze
+    SUPPORTED_FORMATS = (SELECT_FORMATS + %w[string text link int float date]).freeze
+
+    # Definition of one custom field for the edit form (nil for formats the UI cannot edit, e.g. attachments)
+    def custom_field_form(cv, issue)
+      cf = cv.custom_field
+      return nil unless SUPPORTED_FORMATS.include?(cf.field_format)
+
+      kind = SELECT_FORMATS.include?(cf.field_format) ? 'select' : cf.field_format
+      {
+        id: cf.id, name: cf.name, format: cf.field_format, kind: kind, multiple: cf.multiple?, required: cf.is_required?,
+        description: cf.description.to_s, value: cf.multiple? ? Array.wrap(cv.value).map(&:to_s) : cv.value.to_s,
+        options: kind == 'select' ? cf.possible_values_options(issue).map { |label, value| { label: label.to_s, value: (value || label).to_s } } : []
+      }
+    end
+
     def attachment(a)
       { id: a.id, filename: a.filename, filesize: a.filesize, content_type: a.content_type,
         author: user_ref(a.author), created_on: a.created_on, description: a.description }

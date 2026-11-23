@@ -161,3 +161,11 @@ main:focus { outline: none; }
 .wiki :is(h1, h2, h3, h4, h5, h6) > a[href^='#']:last-child { display: none; }
 .wiki [style*='background'] { background: none !important; }
 .wiki a:not([href]) { color: inherit; font-weight: inherit; cursor: default; text-decoration: none; }
+.dialog.wide { width: min(760px, 100%); max-height: 86vh; overflow-y: auto; }
+.dialog h3 { margin: 18px 0 6px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid2 .full { grid-column: 1 / -1; }
+.dialog label.check { display: flex; align-items: center; gap: 8px; font-weight: 400; color: var(--fg); }
+.dialog label.check input { width: auto; }
+.dialog select[multiple] { min-height: 90px; }
+@media (max-width: 560px) { .grid2 { grid-template-columns: 1fr; } }

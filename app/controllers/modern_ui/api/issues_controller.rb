@@ -8,7 +8,8 @@ module ModernUi
       DEFAULT_PER_PAGE = 50
       BOARD_DEFAULT_LIMIT = 30
       CREATABLE_FIELDS = %i[project_id tracker_id subject description assigned_to_id priority_id due_date start_date].freeze
-      EDITABLE_FIELDS = %i[status_id assigned_to_id priority_id due_date start_date done_ratio subject notes private_notes].freeze
+      EDITABLE_FIELDS = %i[status_id assigned_to_id priority_id due_date start_date done_ratio subject description category_id
+                           fixed_version_id estimated_hours is_private notes private_notes].freeze
       # whitelist of sortable columns (name => IssueQuery column)
       SORTABLE = %w[id subject project tracker status priority author assigned_to start_date due_date
                     done_ratio created_on updated_on closed_on].freeze
@@ -72,6 +73,38 @@ module ModernUi
         }
       end
 
+      # GET /app/api/issues/:id/form - everything the full edit dialog needs: current values, which fields this user may
+      # change (Redmine's safe_attribute_names, i.e. role + workflow aware), required fields, choices and custom fields.
+      def form
+        issue = Issue.visible.includes(:project).find(params[:id])
+        user = User.current
+        return render_json_error(403, l(:modern_ui_error_forbidden)) unless issue.attributes_editable?(user)
+
+        names = issue.safe_attribute_names(user)
+        editable = EDITABLE_FIELDS.map(&:to_s) & names
+        read_only = issue.read_only_attribute_names(user)
+        render json: {
+          values: {
+            subject: issue.subject, description: issue.description.to_s, status_id: issue.status_id, priority_id: issue.priority_id,
+            assigned_to_id: issue.assigned_to_id, category_id: issue.category_id, fixed_version_id: issue.fixed_version_id,
+            start_date: issue.start_date, due_date: issue.due_date, done_ratio: issue.done_ratio,
+            estimated_hours: issue.estimated_hours, is_private: issue.is_private?
+          },
+          editable: (editable - read_only).uniq,
+          required: %w[subject status_id priority_id assigned_to_id category_id fixed_version_id start_date due_date done_ratio
+                       estimated_hours description].select { |n| issue.required_attribute?(n, user) },
+          description_as_text: %w[textile common_mark markdown].include?(Setting.text_formatting.to_s),
+          options: {
+            statuses: issue.new_statuses_allowed_to(user, true).map { |st| serializers.status(st) },
+            priorities: IssuePriority.active.map { |pr| serializers.ref(pr) },
+            assignees: issue.assignable_users.map { |u| serializers.user_ref(u) },
+            categories: issue.project.issue_categories.map { |c| serializers.ref(c) },
+            versions: issue.assignable_versions.map { |v| serializers.ref(v) }
+          },
+          custom_fields: issue.editable_custom_field_values(user).filter_map { |cv| serializers.custom_field_form(cv, issue) }
+        }
+      end
+
       # POST /app/api/issues  { issue: { project_id, tracker_id, subject, description, assigned_to_id, priority_id, due_date } }
       # Same checks as the classic form (add_issues permission, allowed trackers, safe_attributes). Projects that require
       # custom fields are answered with 422 plus a link to the classic form, which can render those fields.
@@ -102,6 +135,11 @@ module ModernUi
         issue = Issue.visible.find(params[:id])
         attrs = params.require(:issue).permit(*EDITABLE_FIELDS).to_h
         private_notes = attrs.delete('private_notes').to_s == 'true'
+        if params[:issue][:custom_field_values].respond_to?(:to_unsafe_h)
+          # {custom_field_id => value or [values]}; Redmine's safe_attributes drops fields the user may not edit
+          attrs['custom_field_values'] = params[:issue][:custom_field_values].to_unsafe_h
+                                                                              .transform_values { |v| v.is_a?(Array) ? v.map(&:to_s) : v.to_s }
+        end
         if attrs.keys == %w[notes]
           return render_json_error(403, l(:modern_ui_error_forbidden)) unless User.current.allowed_to?(:add_issue_notes, issue.project)
           return render_json_error(422, l(:modern_ui_error_notes_blank)) if attrs['notes'].to_s.strip.empty?
