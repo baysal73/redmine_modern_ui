@@ -139,6 +139,20 @@ class ModernUi::Api::IssuesControllerTest < Redmine::ControllerTest
     assert_match %r{/issues/2}, json['issue']['description_html']
   end
 
+  def test_multi_user_custom_fields_are_rendered_as_plain_names
+    cf = IssueCustomField.create!(name: 'Reviewers', field_format: 'user', multiple: true, is_for_all: true,
+                                  tracker_ids: Tracker.pluck(:id), visible: true)
+    issue = Issue.find(1)
+    issue.custom_field_values = { cf.id.to_s => %w[2 3] }
+    issue.save!
+    log_in 2
+    get :show, params: { id: 1 }
+    value = json['issue']['custom_fields'].find { |f| f['id'] == cf.id }['value']
+    assert_includes value, User.find(2).name
+    assert_includes value, User.find(3).name
+    assert_no_match(/#<|hashed_password|User id/, value)
+  end
+
   def test_safe_html_removes_dangerous_markup_but_keeps_formatting
     html = RedmineModernUi::Serializers.safe_html(
       '<p>hi <strong>bold</strong></p><script>alert(1)</script><iframe src="http://evil.example"></iframe>' \

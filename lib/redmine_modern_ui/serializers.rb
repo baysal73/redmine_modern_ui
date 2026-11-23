@@ -69,8 +69,8 @@ module RedmineModernUi
         custom_fields: i.visible_custom_field_values(user).filter_map do |cv|
           next if cv.value.blank?
 
-          { id: cv.custom_field.id, name: cv.custom_field.name,
-            value: cv.custom_field.format.formatted_value(view, cv.custom_field, cv.value, i, false).to_s }
+          # show_value handles multiple values and every field format (users, versions, lists, ...) as plain text
+          { id: cv.custom_field.id, name: cv.custom_field.name, value: view.show_value(cv, false).to_s }
         end,
         attachments: i.attachments.map { |a| attachment(a) },
         journals: i.visible_journals_with_index(user).map { |j| journal(j, view) }
