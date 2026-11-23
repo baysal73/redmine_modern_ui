@@ -153,3 +153,11 @@ main:focus { outline: none; }
 .wiki h1 { font-size: 1.2rem; } .wiki h2 { font-size: 1.1rem; }
 .wiki .wiki-anchor { display: none; }
 .wiki a { overflow-wrap: anywhere; }
+/* Pasted Word/HTML content carries inline font sizes, colors and families: normalise them inside the panel. */
+.wiki span[style], .wiki b[style], .wiki strong[style], .wiki p[style], .wiki div[style] { font-size: inherit !important; line-height: inherit !important; font-family: inherit !important; color: inherit !important; }
+.wiki h1[style], .wiki h2[style], .wiki h3[style], .wiki h4[style] { text-align: left !important; margin: 1em 0 0.4em !important; }
+.wiki :is(h1, h2, h3, h4, h5, h6) { font-size: 1.05rem !important; font-weight: 700 !important; color: var(--fg) !important; }
+.wiki h1 { font-size: 1.2rem !important; } .wiki h2 { font-size: 1.1rem !important; }
+.wiki :is(h1, h2, h3, h4, h5, h6) > a[href^='#']:last-child { display: none; }
+.wiki [style*='background'] { background: none !important; }
+.wiki a:not([href]) { color: inherit; font-weight: inherit; cursor: default; text-decoration: none; }
