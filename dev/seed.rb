@@ -30,6 +30,18 @@ projects[0].update!(is_public: true)
 [[alice, mgr], [bob, dev], [cem, rep]].each { |u, r| projects.each { |p| Member.where(project_id: p.id, user_id: u.id).first_or_create!(roles: [r]) } }
 Member.where(project_id: projects[0].id, user_id: dana.id).first_or_create!(roles: [rep]) # dana sees only Website
 
+# Redmine's default data has no workflow rules: allow every status transition for every role/tracker
+# (except Reporter, who may only move issues he authored from New to Feedback/Closed - good for permission tests)
+if WorkflowTransition.count.zero?
+  Role.givable.each do |role|
+    next if role == rep
+    Tracker.all.each do |tr|
+      IssueStatus.all.each { |from| IssueStatus.all.each { |to| next if from == to; WorkflowTransition.create!(role_id: role.id, tracker_id: tr.id, old_status_id: from.id, new_status_id: to.id) } }
+    end
+  end
+  Tracker.all.each { |tr| WorkflowTransition.create!(role_id: rep.id, tracker_id: tr.id, old_status_id: IssueStatus.first.id, new_status_id: IssueStatus.find_by(name: 'Closed').id, author: true) }
+end
+
 srand 42
 statuses = IssueStatus.all.to_a; prios = IssuePriority.all.to_a; trackers = Tracker.all.to_a
 subjects = ['Fix login redirect', 'Update membership form', 'Design new banner', 'Prepare keynote slides',

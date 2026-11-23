@@ -22,6 +22,11 @@ module ModernUi
         false
       end
 
+      # Redmine renders an HTML error page (and drops the session) on a bad CSRF token; the SPA needs JSON.
+      def handle_unverified_request
+        render_json_error 422, l(:modern_ui_error_csrf)
+      end
+
       # Redmine's default handler redirects; the SPA needs JSON.
       def deny_access
         User.current.logged? ? render_json_error(403, l(:modern_ui_error_forbidden)) : require_login

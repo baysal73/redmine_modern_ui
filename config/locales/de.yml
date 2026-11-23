@@ -11,3 +11,5 @@ de:
   modern_ui_error_not_found: "Nicht gefunden"
   modern_ui_error_login_required: "Bitte anmelden"
   modern_ui_error_forbidden: "Dafür fehlt die Berechtigung"
+  modern_ui_error_status_not_allowed: "Dieser Statuswechsel ist nicht erlaubt"
+  modern_ui_error_csrf: "Sicherheitstoken ungültig oder abgelaufen. Bitte Seite neu laden."

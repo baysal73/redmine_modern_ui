@@ -5,6 +5,7 @@ module ModernUi
     class IssuesController < BaseController
       MAX_PER_PAGE = 100
       DEFAULT_PER_PAGE = 50
+      EDITABLE_FIELDS = %i[status_id assigned_to_id priority_id due_date start_date done_ratio subject notes].freeze
       # whitelist of sortable columns (name => IssueQuery column)
       SORTABLE = %w[id subject project tracker status priority author assigned_to start_date due_date
                     done_ratio created_on updated_on closed_on].freeze
@@ -33,6 +34,41 @@ module ModernUi
       def show
         issue = Issue.visible.includes(:attachments, :project, :tracker, :status).find(params[:id])
         render json: { issue: serializers.issue_detail(issue, User.current, view_context) }
+      end
+
+      # GET /app/api/issues/:id/options - what the current user may choose when editing (workflow aware)
+      def options
+        issue = Issue.visible.find(params[:id])
+        render json: {
+          allowed_statuses: issue.new_statuses_allowed_to(User.current, true).map { |s| serializers.status(s) },
+          assignees: issue.assignable_users.map { |u| serializers.user_ref(u) },
+          priorities: IssuePriority.active.map { |p| serializers.ref(p) },
+          editable: issue.attributes_editable?(User.current)
+        }
+      end
+
+      # PATCH /app/api/issues/:id  { issue: { status_id, assigned_to_id, priority_id, due_date, notes } }
+      # Uses Redmine's safe_attributes, so field permissions and workflow rules apply exactly as in the classic UI.
+      def update
+        issue = Issue.visible.find(params[:id])
+        attrs = params.require(:issue).permit(*EDITABLE_FIELDS).to_h
+        unless issue.attributes_editable?(User.current) || attrs.keys == %w[notes]
+          return render_json_error(403, l(:modern_ui_error_forbidden))
+        end
+
+        if attrs.key?('status_id') && attrs['status_id'].to_s != issue.status_id.to_s &&
+           issue.new_statuses_allowed_to(User.current).map(&:id).exclude?(attrs['status_id'].to_i)
+          return render_json_error(422, l(:modern_ui_error_status_not_allowed))
+        end
+
+        notes = attrs.delete('notes')
+        issue.init_journal(User.current, notes)
+        issue.safe_attributes = attrs
+        if issue.save
+          render json: { issue: serializers.issue_row(issue.reload) }
+        else
+          render json: { error: issue.errors.full_messages.to_sentence, errors: issue.errors.full_messages }, status: 422
+        end
       end
 
       private
