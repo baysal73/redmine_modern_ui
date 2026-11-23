@@ -33,6 +33,9 @@ Then open <http://127.0.0.1:3710/app>.
 
 ### Why one JS and one CSS file?
 
+Styling uses Tailwind CSS 3 with Preflight disabled (colours are CSS variables defined in `frontend/src/styles.css`, so
+light/dark mode and the accent colour need no rebuild). Icons come from `lucide-vue-next`; import single icons only.
+
 Redmine 7 serves plugin assets through Propshaft, which adds a content hash to every file name.
 Relative imports between chunks would break, so the Vite build is configured as one bundle.
 

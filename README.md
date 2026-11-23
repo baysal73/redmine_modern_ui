@@ -6,9 +6,13 @@ from Redmine; the plugin only adds a new front end under `/app`.
 
 *[Deutsche Kurzfassung weiter unten.](#deutsch)*
 
-| Issue list with split view | Kanban board |
+| Start page "My week" | Issue list with split view |
 |---|---|
-| ![Split view](docs/screenshots/split-view.png) | ![Board](docs/screenshots/board.png) |
+| ![My week](docs/screenshots/home.png) | ![Split view](docs/screenshots/split-view.png) |
+
+| Kanban board | Issue list |
+|---|---|
+| ![Board](docs/screenshots/board.png) | ![List](docs/screenshots/list.png) |
 
 | Quick create | Dark mode | Mobile |
 |---|---|---|
@@ -18,12 +22,16 @@ from Redmine; the plugin only adds a new front end under `/app`.
 
 ## Features
 
+- **Start page "My week"** – overdue, due soon, without due date and recently updated issues at a glance.
+- **Sidebar navigation** with links to everything the new UI does not replace yet. The links come from Redmine's own
+  menus, so pages added by other plugins show up as well.
 - **Issue table** – filters (project, status, tracker, priority, assignee, search), sortable columns, column chooser,
   paging, shareable URLs, **inline editing** of status (workflow aware), priority, assignee and due date.
 - **Split view** – list on the left, details on the right: description, fields, history, attachments, comments
   (including private ones).
 - **Kanban board** – one column per status, **drag & drop** that only offers the transitions your workflow allows;
   a move menu for keyboard and touch users.
+- **Edit dialog** – all fields the user may change (role and workflow aware), including custom fields.
 - **Quick create** – a small dialog (`c`) with the essentials, more fields on demand.
 - Dark mode, responsive layout, keyboard shortcuts (press `?`), accessible dialogs.
 - **German, English and Turkish** – follows the user's Redmine language. Easy to extend.
@@ -97,7 +105,7 @@ settings and the per-user opt-out flag inside the user preferences; both are har
 ## Development
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the dev setup (Docker, demo data, building the front end) and the tests.
-Front end sources: `frontend/` (Vue 3 + TypeScript + Vite). Server code: `app/`, `lib/`.
+Front end sources: `frontend/` (Vue 3, TypeScript, Vite, Tailwind CSS, Lucide icons). Server code: `app/`, `lib/`.
 
 ## Roadmap
 

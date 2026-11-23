@@ -44,4 +44,10 @@ export default {
   'help.go_issues': 'Go to issue list', 'help.go_board': 'Go to board', 'help.send': 'Send comment', 'help.this': 'Show this help',
   'edit.title': 'Edit issue', 'edit.save': 'Save', 'edit.cancel': 'Cancel', 'edit.all': 'Edit all fields', 'edit.description_classic': 'The description uses the rich-text editor – edit it in the classic view.',
   'edit.category': 'Category', 'edit.version': 'Target version', 'edit.estimated': 'Estimated time (h)', 'edit.private': 'Private issue', 'edit.none': '—', 'edit.custom': 'Additional fields', 'edit.unchanged': 'No changes.',
+  'nav.home': 'My week', 'nav.more': 'Classic Redmine', 'nav.menu': 'Menu', 'nav.help': 'Shortcuts',
+  'home.greeting_morning': 'Good morning', 'home.greeting_day': 'Hello', 'home.greeting_evening': 'Good evening',
+  'home.subtitle': 'Here is what needs your attention.',
+  'home.overdue': 'Overdue', 'home.due_soon': 'Due in the next 7 days', 'home.undated': 'No due date', 'home.recent': 'Recently updated',
+  'home.assigned_open': 'Open, assigned to me', 'home.nothing': 'Nothing here – nice.', 'home.show_all': 'Show all',
+  'filter.due': 'Any due date', 'filter.due.overdue': 'Overdue', 'filter.due.week': 'Due this week', 'filter.due.none': 'No due date',
 } as Record<string, string>;

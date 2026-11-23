@@ -43,4 +43,10 @@ export default {
   'help.go_issues': 'İş listesine git', 'help.go_board': 'Panoya git', 'help.send': 'Yorumu gönder', 'help.this': 'Bu yardımı göster',
   'edit.title': 'İşi düzenle', 'edit.save': 'Kaydet', 'edit.cancel': 'İptal', 'edit.all': 'Tüm alanları düzenle', 'edit.description_classic': 'Açıklama zengin metin düzenleyici kullanıyor – lütfen klasik görünümde düzenleyin.',
   'edit.category': 'Kategori', 'edit.version': 'Hedef sürüm', 'edit.estimated': 'Tahmini süre (sa)', 'edit.private': 'Özel iş', 'edit.none': '—', 'edit.custom': 'Ek alanlar', 'edit.unchanged': 'Değişiklik yok.',
+  'nav.home': 'Haftam', 'nav.more': 'Klasik Redmine', 'nav.menu': 'Menü', 'nav.help': 'Kısayollar',
+  'home.greeting_morning': 'Günaydın', 'home.greeting_day': 'Merhaba', 'home.greeting_evening': 'İyi akşamlar',
+  'home.subtitle': 'İlgilenmeniz gerekenler burada.',
+  'home.overdue': 'Gecikmiş', 'home.due_soon': 'Önümüzdeki 7 gün içinde', 'home.undated': 'Bitiş tarihi yok', 'home.recent': 'Son güncellenenler',
+  'home.assigned_open': 'Açık, bana atanan', 'home.nothing': 'Burada bir şey yok – harika.', 'home.show_all': 'Tümünü göster',
+  'filter.due': 'Tüm tarihler', 'filter.due.overdue': 'Gecikmiş', 'filter.due.week': 'Bu hafta bitecek', 'filter.due.none': 'Tarihsiz',
 } as Record<string, string>;

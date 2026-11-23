@@ -4,6 +4,20 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 ## [Unreleased]
 
+### Added
+- Start page "My week" (`GET /app/api/home`), sidebar navigation with links to Redmine's other menus.
+- Edit dialog for all editable fields including custom fields (`GET /app/api/issues/:id/form`).
+- Status, priority and avatar icons; due-date filter (overdue, this week, none).
+
+### Changed
+- New visual design based on Tailwind CSS (build time only) and Lucide icons.
+
+### Fixed
+- Custom field values were rendered as raw objects for multi-user fields.
+- Redmine links in texts (e.g. `r2`) caused errors inside the namespaced API.
+- Rendered HTML is sanitized once more on the server (formatter plugins may let tags like `<iframe>` through).
+- Login redirect now works together with plugins that replace the landing page.
+
 ## [0.1.0] - 2026-11-23
 
 First public version.

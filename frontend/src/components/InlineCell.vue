@@ -40,7 +40,7 @@ function commit(v: string) {
 <template>
   <span v-if="!editing" class="cell" :class="{ editable }" :tabindex="editable ? 0 : -1" role="button"
         :aria-label="label" @click="open" @keydown.enter.prevent="open" @keydown.space.prevent="open">
-    <span :class="badge">{{ label || '—' }}</span>
+    <slot><span :class="badge">{{ label || '—' }}</span></slot>
   </span>
   <select v-else-if="kind === 'select'" ref="field" class="cell-input" :value="value ?? ''"
           @change="commit(($event.target as HTMLSelectElement).value)" @blur="editing = false" @keydown.esc="editing = false">

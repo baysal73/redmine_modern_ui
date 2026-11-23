@@ -2,17 +2,18 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ApiError, api, readConfig } from '../api/client';
+import { loadMeta, store } from '../lib/store';
 import { t } from '../i18n';
 import { trapFocus } from '../lib/dialog';
 import { toast } from '../lib/toast';
 import { ui } from '../lib/ui';
-import type { Meta, NewIssueOptions } from '../types';
+import type { NewIssueOptions } from '../types';
 
 const route = useRoute();
 const router = useRouter();
 const config = readConfig();
 const root = ref<HTMLElement | null>(null);
-const meta = ref<Meta | null>(null);
+const meta = computed(() => store.meta);
 const opts = ref<NewIssueOptions | null>(null);
 const projectId = ref<number | ''>('');
 const trackerId = ref<number | ''>('');
@@ -69,7 +70,7 @@ async function submit() {
 const close = () => { ui.quickCreate = false; };
 
 onMounted(async () => {
-  try { meta.value = await api.meta(); } catch (e) { error.value = (e as Error).message; return; }
+  try { await loadMeta(); } catch (e) { error.value = (e as Error).message; return; }
   projectId.value = lastProject();
   release = trapFocus(root.value!, close);
 });

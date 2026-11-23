@@ -18,6 +18,7 @@ module ModernUi
       #   project_id    id or identifier (default: all visible projects)
       #   status        open (default) | closed | all | comma separated status ids
       #   tracker_id, priority_id, assigned_to_id, author_id   comma separated ids; assigned_to_id also "me" / "none"
+      #   due           overdue | week | none
       #   q             subject / description contains
       #   sort          e.g. "updated_on:desc,id:asc"
       #   page, per_page
@@ -206,6 +207,12 @@ module ModernUi
           else
             add.('assigned_to_id', '=', ids(params[:assigned_to_id]))
           end
+        end
+        today = User.current.today
+        case params[:due]
+        when 'overdue' then add.('due_date', '<=', [(today - 1).to_s]) && add.('status_id', 'o') # open issues only
+        when 'week'    then add.('due_date', '><', [today.to_s, (today + 7).to_s])
+        when 'none'    then add.('due_date', '!*')
         end
         add.('subject', '~', [params[:q].to_s]) if params[:q].present?
         { set_filter: '1', f: f, op: op, v: v }

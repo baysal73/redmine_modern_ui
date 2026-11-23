@@ -1,8 +1,12 @@
 <script setup lang="ts">
+import { Lock, Paperclip } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import { ApiError, api, readConfig } from '../api/client';
 import InlineCell from './InlineCell.vue';
 import IssueEditDialog from './IssueEditDialog.vue';
+import Avatar from './ui/Avatar.vue';
+import PriorityIcon from './ui/PriorityIcon.vue';
+import StatusBadge from './ui/StatusBadge.vue';
 import { locale, t } from '../i18n';
 import { toast } from '../lib/toast';
 import type { IssueDetail, IssueRow } from '../types';
@@ -78,19 +82,19 @@ const canEdit = computed(() => !!issue.value?.permissions.edit);
 
     <div v-else-if="issue" class="detail-body">
       <p class="muted small">{{ issue.tracker.name }} · {{ issue.project.name }}</p>
-      <h2>{{ issue.subject }} <span v-if="issue.is_private" title="private">🔒</span></h2>
+      <h2>{{ issue.subject }} <Lock v-if="issue.is_private" :size="16" class="inline text-muted" aria-label="private" /></h2>
 
       <dl class="fields">
         <dt>{{ t('col.status') }}</dt>
         <dd><InlineCell kind="select" :editable="canEdit" :label="issue.status.name" :value="issue.status.id"
-                        :badge="'pill ' + (issue.status.is_closed ? 'pill-closed' : 'pill-open')" :load-options="loadStatuses"
-                        @save="(v) => patch({ status_id: v })" /></dd>
+                        :load-options="loadStatuses" @save="(v) => patch({ status_id: v })"><StatusBadge :status="issue.status" /></InlineCell></dd>
         <dt>{{ t('col.priority') }}</dt>
         <dd><InlineCell kind="select" :editable="canEdit" :label="issue.priority.name" :value="issue.priority.id"
-                        :load-options="() => loadOpt('priorities')" @save="(v) => patch({ priority_id: v })" /></dd>
+                        :load-options="() => loadOpt('priorities')" @save="(v) => patch({ priority_id: v })"><PriorityIcon :priority="issue.priority" /></InlineCell></dd>
         <dt>{{ t('col.assigned_to') }}</dt>
         <dd><InlineCell kind="select" :editable="canEdit" allow-empty :label="issue.assigned_to?.name ?? ''" :value="issue.assigned_to?.id ?? null"
-                        :load-options="() => loadOpt('assignees')" @save="(v) => patch({ assigned_to_id: v })" /></dd>
+                        :load-options="() => loadOpt('assignees')" @save="(v) => patch({ assigned_to_id: v })">
+          <span v-if="issue.assigned_to" class="inline-flex items-center gap-2"><Avatar :name="issue.assigned_to.name" :size="20" />{{ issue.assigned_to.name }}</span><span v-else class="muted">—</span></InlineCell></dd>
         <dt>{{ t('col.due_date') }}</dt>
         <dd><InlineCell kind="date" :editable="canEdit" :label="fmtDate(issue.due_date)" :value="issue.due_date" @save="(v) => patch({ due_date: v })" /></dd>
         <dt>{{ t('col.start_date') }}</dt><dd>{{ fmtDate(issue.start_date) || '—' }}</dd>
@@ -112,7 +116,7 @@ const canEdit = computed(() => !!issue.value?.permissions.edit);
       <template v-if="issue.attachments.length">
         <h3>{{ t('detail.attachments') }}</h3>
         <ul class="attachments">
-          <li v-for="a in issue.attachments" :key="a.id">📎 <a :href="attUrl(a)">{{ a.filename }}</a> <span class="muted small">{{ size(a.filesize) }} · {{ a.author?.name }}</span></li>
+          <li v-for="a in issue.attachments" :key="a.id" class="flex items-center gap-2"><Paperclip :size="14" class="text-muted" /> <a :href="attUrl(a)">{{ a.filename }}</a> <span class="muted small">{{ size(a.filesize) }} · {{ a.author?.name }}</span></li>
         </ul>
       </template>
 
@@ -120,7 +124,7 @@ const canEdit = computed(() => !!issue.value?.permissions.edit);
       <p v-if="!issue.journals.length" class="muted">{{ t('detail.no_history') }}</p>
       <ol class="journal">
         <li v-for="j in issue.journals" :key="j.id" :class="{ private: j.private_notes }">
-          <div class="j-head"><strong>{{ j.user?.name }}</strong> <span class="muted small">{{ fmt(j.created_on) }}</span>
+          <div class="j-head"><Avatar v-if="j.user" :name="j.user.name" :size="20" /><strong>{{ j.user?.name }}</strong> <span class="muted small">{{ fmt(j.created_on) }}</span>
             <span v-if="j.private_notes" class="pill pill-closed">{{ t('detail.private') }}</span></div>
           <ul v-if="j.details.length" class="j-details"><li v-for="(d, i) in j.details" :key="i">{{ d.text }}</li></ul>
           <div v-if="j.notes_html" class="wiki" v-html="j.notes_html" />

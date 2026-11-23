@@ -1,19 +1,24 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { Lock } from 'lucide-vue-next';
 import { useRoute, useRouter } from 'vue-router';
 import { ApiError, api } from '../api/client';
 import InlineCell from '../components/InlineCell.vue';
 import IssueDetail from '../components/IssueDetail.vue';
+import Avatar from '../components/ui/Avatar.vue';
+import PriorityIcon from '../components/ui/PriorityIcon.vue';
+import StatusBadge from '../components/ui/StatusBadge.vue';
+import { loadMeta, store } from '../lib/store';
 import { locale, t } from '../i18n';
 import { defaultState, nextSort, stateFromQuery, stateToQuery, toApiParams, type ListState } from '../lib/listQuery';
 import { toast } from '../lib/toast';
 import { ui } from '../lib/ui';
-import type { IssueList, IssueOptions, IssueRow, Meta } from '../types';
+import type { IssueList, IssueOptions, IssueRow } from '../types';
 
 const route = useRoute();
 const router = useRouter();
 
-const meta = ref<Meta | null>(null);
+const meta = computed(() => store.meta);
 const list = ref<IssueList | null>(null);
 const loading = ref(true);
 const error = ref('');
@@ -151,13 +156,14 @@ function onDocClick(e: MouseEvent) { if (!(e.target as HTMLElement).closest('.co
 onMounted(async () => {
   window.addEventListener('keydown', onKey);
   document.addEventListener('click', onDocClick);
-  try { meta.value = await api.meta(); } catch (e) { error.value = (e as Error).message; }
+  try { await loadMeta(); } catch (e) { error.value = (e as Error).message; }
 });
 onUnmounted(() => { window.removeEventListener('keydown', onKey); document.removeEventListener('click', onDocClick); });
 </script>
 
 <template>
   <section class="list-view">
+    <div class="page-head"><h1>{{ t('nav.issues') }}</h1><span v-if="list" class="muted">{{ t('results', { total: list.total }) }}</span></div>
     <div class="filters" role="search">
       <input ref="searchBox" v-model="searchText" class="search" type="search" :placeholder="t('filter.search') + '  ( / )'"
              :aria-label="t('filter.search')" @input="onSearchInput">
@@ -183,6 +189,12 @@ onUnmounted(() => { window.removeEventListener('keydown', onKey); document.remov
         <option value="">{{ t('filter.assignee') }}</option>
         <option value="me">{{ t('filter.assignee.me') }}</option>
         <option value="none">{{ t('filter.assignee.none') }}</option>
+      </select>
+      <select :value="state.due" :aria-label="t('col.due_date')" @change="go({ due: ($event.target as HTMLSelectElement).value })">
+        <option value="">{{ t('filter.due') }}</option>
+        <option value="overdue">{{ t('filter.due.overdue') }}</option>
+        <option value="week">{{ t('filter.due.week') }}</option>
+        <option value="none">{{ t('filter.due.none') }}</option>
       </select>
       <button v-if="filtersActive" class="link-btn" @click="router.push({ query: {} })">{{ t('filter.reset') }}</button>
       <span class="spacer" />
@@ -218,17 +230,18 @@ onUnmounted(() => { window.removeEventListener('keydown', onKey); document.remov
               :aria-selected="r.id === selectedId" @click="onRowClick($event, r.id)">
             <td v-for="c in shownColumns" :key="c" :class="'c-' + c">
               <template v-if="c === 'id'"><a :href="appUrl(r.id)">{{ r.id }}</a></template>
-              <template v-else-if="c === 'subject'"><a class="subject" :href="appUrl(r.id)">{{ r.subject }}</a><span v-if="r.is_private" class="lock" title="private"> 🔒</span></template>
+              <template v-else-if="c === 'subject'"><a class="subject" :href="appUrl(r.id)">{{ r.subject }}</a><Lock v-if="r.is_private" :size="12" class="ml-1 inline text-muted" aria-label="private" /></template>
               <template v-else-if="c === 'project'">{{ r.project.name }}</template>
               <template v-else-if="c === 'tracker'">{{ r.tracker.name }}</template>
-              <template v-else-if="c === 'author'">{{ r.author?.name }}</template>
+              <template v-else-if="c === 'author'"><span v-if="r.author" class="inline-flex items-center gap-2"><Avatar :name="r.author.name" :size="20" />{{ r.author.name }}</span></template>
               <InlineCell v-else-if="c === 'status'" kind="select" editable :label="r.status.name" :value="r.status.id"
-                          :badge="'pill ' + (r.status.is_closed ? 'pill-closed' : 'pill-open')"
-                          :load-options="() => loadOpts(r.id, 'statuses')" @save="(v) => save(r, 'status_id', v)" />
+                          :load-options="() => loadOpts(r.id, 'statuses')" @save="(v) => save(r, 'status_id', v)"><StatusBadge :status="r.status" plain /></InlineCell>
               <InlineCell v-else-if="c === 'priority'" kind="select" editable :label="r.priority.name" :value="r.priority.id"
-                          :load-options="() => loadOpts(r.id, 'priorities')" @save="(v) => save(r, 'priority_id', v)" />
+                          :load-options="() => loadOpts(r.id, 'priorities')" @save="(v) => save(r, 'priority_id', v)"><PriorityIcon :priority="r.priority" /></InlineCell>
               <InlineCell v-else-if="c === 'assigned_to'" kind="select" editable allow-empty :label="r.assigned_to?.name ?? ''" :value="r.assigned_to?.id ?? null"
-                          :load-options="() => loadOpts(r.id, 'assignees')" @save="(v) => save(r, 'assigned_to_id', v)" />
+                          :load-options="() => loadOpts(r.id, 'assignees')" @save="(v) => save(r, 'assigned_to_id', v)">
+                <span v-if="r.assigned_to" class="inline-flex items-center gap-2"><Avatar :name="r.assigned_to.name" :size="20" />{{ r.assigned_to.name }}</span><span v-else class="muted">—</span>
+              </InlineCell>
               <InlineCell v-else-if="c === 'due_date'" kind="date" editable :label="fmtDate(r.due_date)" :value="r.due_date"
                           :badge="isOverdue(r) ? 'overdue' : ''" @save="(v) => save(r, 'due_date', v)" />
               <template v-else-if="c === 'start_date'">{{ fmtDate(r.start_date) }}</template>

@@ -1,10 +1,10 @@
 // Filter/sort/page state <-> URL query string (so views are shareable links).
 export interface ListState {
-  project: string; status: string; tracker: string; priority: string; assignee: string;
+  project: string; status: string; tracker: string; priority: string; assignee: string; due: string;
   q: string; sort: string; page: number;
 }
 export const defaultState: ListState = {
-  project: '', status: 'open', tracker: '', priority: '', assignee: '', q: '', sort: 'updated_on:desc', page: 1,
+  project: '', status: 'open', tracker: '', priority: '', assignee: '', due: '', q: '', sort: 'updated_on:desc', page: 1,
 };
 type Q = Record<string, string | (string | null)[] | null | undefined>;
 const one = (v: Q[string]): string => (Array.isArray(v) ? (v[0] ?? '') : (v ?? '')) as string;
@@ -12,7 +12,7 @@ const one = (v: Q[string]): string => (Array.isArray(v) ? (v[0] ?? '') : (v ?? '
 export function stateFromQuery(query: Q): ListState {
   return {
     project: one(query.project), status: one(query.status) || defaultState.status,
-    tracker: one(query.tracker), priority: one(query.priority), assignee: one(query.assignee),
+    tracker: one(query.tracker), priority: one(query.priority), assignee: one(query.assignee), due: one(query.due),
     q: one(query.q), sort: one(query.sort) || defaultState.sort,
     page: Math.max(parseInt(one(query.page), 10) || 1, 1),
   };
@@ -30,7 +30,7 @@ export function stateToQuery(s: ListState): Record<string, string> {
 export function toApiParams(s: ListState, perPage: number) {
   return {
     project_id: s.project, status: s.status, tracker_id: s.tracker, priority_id: s.priority,
-    assigned_to_id: s.assignee, q: s.q, sort: s.sort, page: s.page, per_page: perPage,
+    assigned_to_id: s.assignee, due: s.due, q: s.q, sort: s.sort, page: s.page, per_page: perPage,
   };
 }
 

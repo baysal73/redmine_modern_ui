@@ -1,17 +1,22 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { CalendarDays } from 'lucide-vue-next';
 import { useRoute, useRouter } from 'vue-router';
 import { api } from '../api/client';
 import IssueDetail from '../components/IssueDetail.vue';
+import Avatar from '../components/ui/Avatar.vue';
+import PriorityIcon from '../components/ui/PriorityIcon.vue';
+import StatusBadge from '../components/ui/StatusBadge.vue';
+import { loadMeta, store } from '../lib/store';
 import { locale, t } from '../i18n';
 import { stateFromQuery, stateToQuery, type ListState } from '../lib/listQuery';
 import { toast } from '../lib/toast';
 import { ui } from '../lib/ui';
-import type { Board, BoardCard, IssueRow, Meta } from '../types';
+import type { Board, BoardCard, IssueRow } from '../types';
 
 const route = useRoute();
 const router = useRouter();
-const meta = ref<Meta | null>(null);
+const meta = computed(() => store.meta);
 const board = ref<Board | null>(null);
 const loading = ref(true);
 const error = ref('');
@@ -101,7 +106,6 @@ function onDetailUpdated(row: IssueRow) {
 
 const fmtDate = (s: string | null) => (s ? new Date(s).toLocaleDateString(locale, { day: '2-digit', month: 'short' }) : '');
 const overdue = (r: IssueRow) => !!r.due_date && !r.status.is_closed && new Date(r.due_date) < new Date(new Date().toDateString());
-const initials = (n: string) => n.split(/\s+/).map((p) => p[0]).slice(0, 2).join('').toUpperCase();
 const projectOptions = computed(() => (meta.value?.projects ?? []).map((p) => ({ id: p.identifier, name: p.name })));
 function targets(card: BoardCard) { return (board.value?.columns ?? []).filter((c) => card.allowed_status_ids.includes(c.status.id) && c.status.id !== card.status.id); }
 
@@ -109,12 +113,13 @@ function onKey(e: KeyboardEvent) {
   const typing = ['INPUT', 'SELECT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName);
   if (e.key === 'Escape' && selectedId.value && !typing) openIssue(null);
 }
-onMounted(async () => { window.addEventListener('keydown', onKey); try { meta.value = await api.meta(); } catch { /* shown by load */ } });
+onMounted(async () => { window.addEventListener('keydown', onKey); try { await loadMeta(); } catch { /* shown by load */ } });
 onUnmounted(() => window.removeEventListener('keydown', onKey));
 </script>
 
 <template>
   <section class="board-view">
+    <div class="page-head"><h1>{{ t('nav.board') }}</h1></div>
     <div class="filters" role="search">
       <input v-model="searchText" class="search" type="search" :placeholder="t('filter.search')" :aria-label="t('filter.search')" @input="onSearch">
       <select :value="state.project" :aria-label="t('filter.project')" @change="go({ project: ($event.target as HTMLSelectElement).value })">
@@ -142,19 +147,19 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
         <section v-for="col in columns" :key="col.status.id" class="column"
                  :class="{ 'drop-ok': dragging && canDrop(col.status.id), 'drop-no': dragging && !canDrop(col.status.id) && dragging.status.id !== col.status.id, over: overColumn === col.status.id }"
                  :aria-label="col.status.name" @dragover="onDragOver($event, col.status.id)" @dragleave="overColumn = null" @drop="onDrop($event, col.status.id)">
-          <header><span class="pill" :class="col.status.is_closed ? 'pill-closed' : 'pill-open'">{{ col.status.name }}</span><span class="muted">{{ col.total }}</span></header>
+          <header><StatusBadge :status="col.status" plain class="font-semibold" /><span class="muted">{{ col.total }}</span></header>
           <div class="cards">
             <article v-for="c in col.issues" :key="c.id" class="card" :class="{ selected: c.id === selectedId, dragging: dragging?.id === c.id }"
                      draggable="true" tabindex="0" @dragstart="onDragStart($event, c)" @dragend="onDragEnd"
                      @click="openIssue(c.id)" @keydown.enter="openIssue(c.id)">
               <div class="card-top"><span class="muted small">#{{ c.id }} · {{ c.tracker.name }}</span>
-                <span class="prio" :title="c.priority.name">{{ c.priority.name }}</span></div>
+                <PriorityIcon :priority="c.priority" :label="false" class="ml-auto" /></div>
               <div class="card-title">{{ c.subject }}</div>
               <div class="card-meta">
                 <span v-if="!state.project" class="muted small">{{ c.project.name }}</span>
-                <span v-if="c.due_date" class="small" :class="{ overdue: overdue(c) }">📅 {{ fmtDate(c.due_date) }}</span>
+                <span v-if="c.due_date" class="small" :class="{ overdue: overdue(c) }"><CalendarDays :size="12" class="-mt-px mr-0.5 inline" />{{ fmtDate(c.due_date) }}</span>
                 <span class="spacer" />
-                <span v-if="c.assigned_to" class="avatar" :title="c.assigned_to.name">{{ initials(c.assigned_to.name) }}</span>
+                <Avatar v-if="c.assigned_to" :name="c.assigned_to.name" :size="22" />
               </div>
               <select v-if="targets(c).length" class="move-select" :aria-label="t('board.move_to')" @click.stop @change="onSelectMove(c, $event)">
                 <option value="">{{ t('board.move_to') }}</option>

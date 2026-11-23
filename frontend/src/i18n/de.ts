@@ -43,4 +43,10 @@ export default {
   'help.go_issues': 'Zur Ticketliste', 'help.go_board': 'Zum Board', 'help.send': 'Kommentar senden', 'help.this': 'Diese Hilfe anzeigen',
   'edit.title': 'Ticket bearbeiten', 'edit.save': 'Speichern', 'edit.cancel': 'Abbrechen', 'edit.all': 'Alle Felder bearbeiten', 'edit.description_classic': 'Die Beschreibung nutzt den Rich-Text-Editor – bitte in der klassischen Ansicht bearbeiten.',
   'edit.category': 'Kategorie', 'edit.version': 'Zielversion', 'edit.estimated': 'Geschätzter Aufwand (h)', 'edit.private': 'Privates Ticket', 'edit.none': '—', 'edit.custom': 'Weitere Felder', 'edit.unchanged': 'Keine Änderungen.',
+  'nav.home': 'Meine Woche', 'nav.more': 'Klassisches Redmine', 'nav.menu': 'Menü', 'nav.help': 'Tastaturkürzel',
+  'home.greeting_morning': 'Guten Morgen', 'home.greeting_day': 'Hallo', 'home.greeting_evening': 'Guten Abend',
+  'home.subtitle': 'Das braucht heute Ihre Aufmerksamkeit.',
+  'home.overdue': 'Überfällig', 'home.due_soon': 'Fällig in den nächsten 7 Tagen', 'home.undated': 'Ohne Fälligkeit', 'home.recent': 'Zuletzt aktualisiert',
+  'home.assigned_open': 'Offen, mir zugewiesen', 'home.nothing': 'Nichts offen – sehr gut.', 'home.show_all': 'Alle anzeigen',
+  'filter.due': 'Jede Fälligkeit', 'filter.due.overdue': 'Überfällig', 'filter.due.week': 'Diese Woche fällig', 'filter.due.none': 'Ohne Fälligkeit',
 } as Record<string, string>;

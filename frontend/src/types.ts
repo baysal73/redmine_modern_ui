@@ -12,6 +12,7 @@ export interface Meta {
   user: { id: number; name: string; admin: boolean; language: string };
   statuses: Status[]; trackers: Ref[]; priorities: Ref[];
   addable_project_ids: number[];
+  classic_menu: { name: string; caption: string; url: string }[];
   projects: { id: number; identifier: string; name: string; parent_id: number | null; trackers: Ref[] }[];
   settings: { per_page_options: number[]; text_formatting: string };
 }
@@ -47,4 +48,9 @@ export interface IssueForm {
   editable: string[]; required: string[]; description_as_text: boolean;
   options: { statuses: Status[]; priorities: Ref[]; assignees: Ref[]; categories: Ref[]; versions: Ref[] };
   custom_fields: CustomFieldForm[];
+}
+
+export interface Home {
+  today: string; overdue: IssueRow[]; due_soon: IssueRow[]; undated: IssueRow[]; recent: IssueRow[];
+  counts: { overdue: number; due_soon: number; undated: number; assigned_open: number };
 }

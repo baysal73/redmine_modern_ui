@@ -1,4 +1,4 @@
-import type { AppConfig, Board, IssueForm, NewIssueOptions, IssueDetail, IssueList, IssueOptions, IssueRow, Meta } from '../types';
+import type { AppConfig, Board, Home, IssueForm, NewIssueOptions, IssueDetail, IssueList, IssueOptions, IssueRow, Meta } from '../types';
 
 export function readConfig(): AppConfig {
   const el = document.getElementById('app');
@@ -34,6 +34,7 @@ export function toQuery(params: Record<string, string | number | undefined | nul
 }
 
 export const api = {
+  home: () => request<Home>('home'),
   meta: () => request<Meta>('meta'),
   issues: (params: Record<string, string | number | undefined>) => request<IssueList>(`issues${toQuery(params)}`),
   board: (params: Record<string, string | number | undefined>) => request<Board>(`issues/board${toQuery(params)}`),
