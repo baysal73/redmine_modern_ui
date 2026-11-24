@@ -111,3 +111,22 @@ class ModernUi::Api::EditorControllerTest < Redmine::ControllerTest
     assert_equal 'plain', JSON.parse(response.body)['kind']
   end
 end
+
+class ModernUi::Api::ReportsControllerTest < Redmine::ControllerTest
+  include ModernUiTestHelpers
+  fixtures(*FIXTURES)
+
+  def test_requires_login
+    get :templates
+    assert_response :unauthorized
+  end
+
+  def test_reports_unavailable_without_the_reporter_plugin
+    skip 'Reporter plugin installed' if defined?(::ReportTemplate)
+    log_in 2
+    get :templates
+    assert_response :success
+    assert_equal false, json['available']
+    assert_empty json['templates']
+  end
+end

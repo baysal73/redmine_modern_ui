@@ -1,4 +1,4 @@
-import type { AppConfig, Home, IssueForm, NewIssueOptions, IssueDetail, IssueList, IssueOptions, IssueRow, Meta, Upload } from '../types';
+import type { AppConfig, ReportTemplates, Home, IssueForm, NewIssueOptions, IssueDetail, IssueList, IssueOptions, IssueRow, Meta, Upload } from '../types';
 
 export function readConfig(): AppConfig {
   const el = document.getElementById('app');
@@ -45,15 +45,10 @@ async function uploadFile(file: File): Promise<Upload> {
   return data.upload as Upload;
 }
 
-// Plain GET URLs (opened in a new tab) for Redmine's PDF reports; the session cookie authorizes them.
-export const pdfUrl = {
-  list: (params: Record<string, string | number | undefined>) => `${config.base}/api/issues/export${toQuery({ ...params, page: undefined, per_page: undefined })}`,
-  issue: (id: number) => `${config.base}/api/issues/${id}/pdf`,
-};
-
 export const api = {
   editor: (projectId?: string | number) => request<import('../lib/ckeditor').EditorConfig>(`editor${toQuery({ project_id: projectId })}`),
   upload: uploadFile,
+  reportTemplates: (params: Record<string, string | number | undefined>) => request<ReportTemplates>(`report_templates${toQuery(params)}`),
   home: () => request<Home>('home'),
   meta: () => request<Meta>('meta'),
   issues: (params: Record<string, string | number | undefined>) => request<IssueList>(`issues${toQuery(params)}`),

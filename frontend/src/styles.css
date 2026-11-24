@@ -210,3 +210,7 @@ td.c-assigned_to .cell, td.c-assigned_to > span { max-width: 140px; overflow: hi
 .toast-action { margin-left: 12px; font: inherit; font-weight: 700; color: inherit; background: none; border: 0; border-bottom: 1px solid currentColor; cursor: pointer; padding: 0; }
 .pdf-link { display: inline-flex; align-items: center; gap: 4px; }
 a.tb-btn { text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+.link-like { background: none; border: 0; cursor: pointer; font: inherit; }
+.report-menu { min-width: 220px; right: 0; left: auto; }
+.report-item { display: block; padding: 6px 10px; border-radius: 6px; color: var(--fg); text-decoration: none; }
+.report-item:hover { background: var(--hover); }

@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
-import { Bookmark, ChevronDown, ChevronRight, FileText, Layers, Lock, Trash2 } from 'lucide-vue-next';
+import { Bookmark, ChevronDown, ChevronRight, Layers, Lock, Trash2 } from 'lucide-vue-next';
 import { useRoute, useRouter } from 'vue-router';
-import { ApiError, api, pdfUrl } from '../api/client';
+import { ApiError, api } from '../api/client';
+import ReportMenu from '../components/ReportMenu.vue';
 import FilterBar from '../components/FilterBar.vue';
 import InlineCell from '../components/InlineCell.vue';
 import IssueDetail from '../components/IssueDetail.vue';
@@ -53,6 +54,8 @@ function onDetailUpdated(row: IssueRow) {
 const columnMenu = ref(false);
 const viewsMenu = ref(false);
 const selected = ref<Set<number>>(new Set());
+// reports cover the selected issues, or the issues on the current page when nothing is selected
+const reportIds = computed(() => selected.value.size ? [...selected.value] : (list.value?.issues.map((i) => i.id) ?? []));
 function safeGet(k: string): string | null { try { return localStorage.getItem(k); } catch { return null; } }
 function safeSet(k: string, v: string) { try { localStorage.setItem(k, v); } catch { /* ignore */ } }
 function loadColumns(): string[] {
@@ -291,7 +294,7 @@ onUnmounted(() => { window.removeEventListener('keydown', onKey); document.remov
           <option v-for="g in GROUPS" :key="g" :value="g">{{ t('group.by') }}: {{ t('col.' + g) }}</option>
         </select>
       </label>
-      <a class="btn tb-btn" :href="pdfUrl.list(toApiParams(state, perPage))" target="_blank" rel="noopener" :title="t('pdf.list_hint')"><FileText :size="14" /> PDF</a>
+      <ReportMenu :issue-ids="reportIds" :project-id="state.project || undefined" />
       <div class="col-menu-wrap">
         <button class="btn tb-btn" aria-haspopup="true" :aria-expanded="viewsMenu" @click.stop="viewsMenu = !viewsMenu"><Bookmark :size="14" /> {{ currentViewName || t('views.title') }} <ChevronDown :size="13" /></button>
         <div v-if="viewsMenu" class="col-menu views-menu" role="menu" @click.stop>

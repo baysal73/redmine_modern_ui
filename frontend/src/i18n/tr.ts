@@ -17,7 +17,7 @@ export default {
   'col.status': 'Durum', 'col.priority': 'Öncelik', 'col.assigned_to': 'Atanan', 'col.author': 'Yazar',
   'col.due_date': 'Bitiş', 'col.start_date': 'Başlangıç', 'col.done_ratio': '% Tamamlandı', 'col.updated_on': 'Güncellenme',
   'col.created_on': 'Oluşturulma',
-  'pdf.list_hint': 'Geçerli listeyi PDF olarak indir', 'pdf.issue_hint': 'Bu bileti geçmişiyle PDF olarak indir',
+  'report.title': 'Rapor', 'report.hint': 'Redmine Reporter ile rapor oluştur', 'report.unavailable': 'Raporlar kullanılamıyor (Redmine Reporter eklentisi yüklü değil).', 'report.none': 'Kullanılabilir rapor şablonu yok.', 'report.for_n': '{n} bilet için rapor',
   'columns': 'Sütunlar',
   'unassigned': 'Atanmamış',
   'loading': 'Yükleniyor…',

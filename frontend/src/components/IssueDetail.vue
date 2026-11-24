@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { FileText, Lock, Paperclip } from 'lucide-vue-next';
+import ReportMenu from './ReportMenu.vue';
+import { Lock, Paperclip } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
-import { ApiError, api, pdfUrl, readConfig } from '../api/client';
+import { ApiError, api, readConfig } from '../api/client';
 import AttachmentPicker from './AttachmentPicker.vue';
 import EditableField from './EditableField.vue';
 import RichText from './RichText.vue';
@@ -121,7 +122,7 @@ const canEdit = computed(() => !!issue.value?.permissions.edit);
       <button class="icon-btn" :aria-label="t('detail.close')" :title="t('detail.close') + ' (Esc)'" @click="emit('close')">✕</button>
       <span class="muted">#{{ id }}</span>
       <span class="spacer" />
-      <a :href="pdfUrl.issue(id)" target="_blank" rel="noopener" class="muted small pdf-link" :title="t('pdf.issue_hint')"><FileText :size="13" /> PDF</a>
+      <ReportMenu :issue-ids="[id]" single compact />
       <a :href="classic" class="muted small">{{ t('detail.classic') }}</a>
     </header>
 

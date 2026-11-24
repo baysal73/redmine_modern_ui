@@ -5,7 +5,7 @@ All notable changes are documented here. The project follows [Semantic Versionin
 ## [Unreleased]
 
 ### Added
-- PDF reports: a PDF button on the issue list (current filters and sort, up to the "issues export limit") and on each issue; both use Redmine's own PDF exporter, so output and permissions match the classic UI (`GET /app/api/issues/export`, `GET /app/api/issues/:id/pdf`).
+- Reports via the Redmine Reporter plugin (when installed): a "Report" menu on the issue list (selected issues, or the current page) and in each issue lists the user's report templates and opens the plugin's own preview/download page, so templates, prompts, e-mailing and permissions are exactly as in the classic UI (`GET /app/api/report_templates`).
 - Undo: every saved field change, inline edit and bulk edit offers "Undo" in the toast (and Ctrl/⌘ + Z outside text fields).
 - Every editable field in the issue panel is edited in place: click to edit, click away to save (Enter saves, Esc cancels); subject, description, dates, % done, category, version, estimated time, private flag and custom fields.
 - Multi-value fields (e.g. participants) use a searchable chip picker instead of a `<select multiple>`; adding one value no longer means re-selecting all others.

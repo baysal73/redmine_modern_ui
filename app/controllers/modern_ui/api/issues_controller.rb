@@ -3,7 +3,7 @@
 module ModernUi
   module Api
     class IssuesController < BaseController
-      helper :issues, :custom_fields, :attachments, :queries, :journals
+      helper :issues, :custom_fields, :attachments
       MAX_PER_PAGE = 100
       DEFAULT_PER_PAGE = 50
       CREATABLE_FIELDS = %i[project_id tracker_id subject description assigned_to_id priority_id due_date start_date].freeze
@@ -32,25 +32,6 @@ module ModernUi
           issues: issues.map { |i| serializers.issue_row(i) },
           total: total, page: page, per_page: per_page, pages: (total.to_f / per_page).ceil
         }
-      end
-
-      # GET /app/api/issues/export.pdf - the current list (same filters/sort as #index) as Redmine's own PDF report
-      def export_list
-        query = build_query
-        return render_json_error(422, query.errors.full_messages.to_sentence) unless query.valid?
-
-        issues = query.issues(limit: Setting.issues_export_limit.to_i)
-        send_data view_context.issues_to_pdf(issues, query.project, query), type: 'application/pdf',
-                                                                            filename: "#{params[:project_id].presence || 'issues'}.pdf"
-      end
-
-      # GET /app/api/issues/:id/pdf - one ticket with its history, rendered by Redmine's PDF exporter
-      def export_one
-        issue = Issue.visible.find(params[:id])
-        journals = issue.visible_journals_with_index
-        journals.reverse! if User.current.wants_comments_in_reverse_order?
-        send_data view_context.issue_to_pdf(issue, journals: journals), type: 'application/pdf',
-                                                                         filename: "#{issue.project.identifier}-#{issue.id}.pdf"
       end
 
       # GET /app/api/issues/:id

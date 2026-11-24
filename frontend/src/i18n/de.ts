@@ -17,7 +17,7 @@ export default {
   'col.status': 'Status', 'col.priority': 'Priorität', 'col.assigned_to': 'Zugewiesen an', 'col.author': 'Autor',
   'col.due_date': 'Fällig', 'col.start_date': 'Beginn', 'col.done_ratio': '% erledigt', 'col.updated_on': 'Aktualisiert',
   'col.created_on': 'Erstellt',
-  'pdf.list_hint': 'Aktuelle Liste als PDF herunterladen', 'pdf.issue_hint': 'Dieses Ticket mit Verlauf als PDF herunterladen',
+  'report.title': 'Bericht', 'report.hint': 'Bericht mit Redmine Reporter erstellen', 'report.unavailable': 'Berichte sind nicht verfügbar (Plugin Redmine Reporter nicht installiert).', 'report.none': 'Keine Berichtsvorlagen verfügbar.', 'report.for_n': 'Bericht für {n} Tickets',
   'columns': 'Spalten',
   'unassigned': 'Nicht zugewiesen',
   'loading': 'Lädt…',

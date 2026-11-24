@@ -14,29 +14,6 @@ class ModernUi::Api::IssuesControllerTest < Redmine::ControllerTest
     assert json['error'].present?
   end
 
-  # ---- PDF reports -------------------------------------------------------------------------------
-
-  def test_list_pdf_is_a_pdf_and_requires_login
-    get :export_list
-    assert_response :unauthorized
-    log_in 2
-    get :export_list, params: { status: 'all' }
-    assert_response :success
-    assert_equal 'application/pdf', response.media_type
-    assert response.body.start_with?('%PDF')
-  end
-
-  def test_issue_pdf_respects_visibility
-    log_in 2
-    get :export_one, params: { id: 1 }
-    assert_response :success
-    assert response.body.start_with?('%PDF')
-    log_in 9
-    hidden = Issue.where.not(id: Issue.visible(User.find(9)).select(:id)).first
-    get :export_one, params: { id: hidden.id } if hidden
-    assert_response :not_found if hidden
-  end
-
   # ---- list: visibility ----------------------------------------------------------------------------
 
   def test_list_only_contains_visible_issues

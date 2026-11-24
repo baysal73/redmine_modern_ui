@@ -17,6 +17,7 @@ export interface Meta {
   settings: { per_page_options: number[]; text_formatting: string; attachment_max_size: number };
 }
 export interface IssueOptions { allowed_statuses: Status[]; assignees: Ref[]; priorities: Ref[]; editable: boolean }
+export interface ReportTemplates { available: boolean; can_preview: boolean; can_generate: boolean; templates: { id: number; name: string; description: string }[] }
 export interface AppConfig { base: string; root: string; lang: string; csrf: string }
 
 export interface JournalDetail { property: string; name: string; text: string }
