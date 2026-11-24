@@ -4,8 +4,8 @@ import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { t } from '../i18n';
 import { loadCkeditor } from '../lib/ckeditor';
 
-const props = withDefaults(defineProps<{ modelValue: string; project?: string | number | null; rows?: number; placeholder?: string; label?: string; height?: number }>(), {
-  project: null, rows: 4, placeholder: '', label: '', height: 180,
+const props = withDefaults(defineProps<{ modelValue: string; project?: string | number | null; rows?: number; placeholder?: string; label?: string; height?: number; autofocus?: boolean }>(), {
+  project: null, rows: 4, placeholder: '', label: '', height: 180, autofocus: false,
 });
 const emit = defineEmits<{ (e: 'update:modelValue', v: string): void; (e: 'submit'): void; (e: 'blur'): void }>();
 
@@ -28,7 +28,7 @@ onMounted(async () => {
     const { ck, options } = loaded;
     ck.config.versionCheck = false;
     editor = ck.replace(area.value, {
-      ...options, height: props.height, width: '100%', startupFocus: false,
+      ...options, height: props.height, width: '100%', startupFocus: props.autofocus ? 'end' : false,
       resize_enabled: true,
       removePlugins: `${(options.removePlugins as string) ?? ''},elementspath`,
     });
@@ -45,7 +45,7 @@ onBeforeUnmount(() => { try { editor?.destroy(true); } catch { /* ignore */ } ed
 
 // reset from outside (e.g. comment cleared after sending)
 watch(() => props.modelValue, (v) => { if (editor && v !== last) { editor.setData(v ?? '', { callback: () => { last = editor.getSnapshot(); editor.resetDirty(); } }); } });
-defineExpose({ focus: () => (editor ? editor.focus() : area.value?.focus()) });
+defineExpose({ flush: push, focus: () => (editor ? editor.focus() : area.value?.focus()) });
 </script>
 
 <template>
