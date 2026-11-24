@@ -11,6 +11,7 @@ import StatusBadge from './ui/StatusBadge.vue';
 import { locale, t } from '../i18n';
 import { hasContent } from '../lib/ckeditor';
 import { toast } from '../lib/toast';
+import { offerUndo } from '../lib/undo';
 import type { CustomFieldForm, IssueDetail, IssueForm, IssueRow, Upload } from '../types';
 
 const props = defineProps<{ id: number }>();
@@ -47,12 +48,39 @@ async function loadForm(mine: number, allowed: boolean) {
 }
 watch(() => props.id, () => { comment.value = ''; uploads.value = []; privateNote.value = false; load(); }, { immediate: true });
 
+// The same fields with their current values, to undo a change (null when it cannot be undone, e.g. comments)
+function inverse(fields: Record<string, unknown>): Record<string, unknown> | null {
+  const f = form.value;
+  if (!f) return null;
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(fields)) {
+    if (k === 'custom_field_values') {
+      const cf: Record<string, unknown> = {};
+      for (const id of Object.keys(v as object)) {
+        const c = f.custom_fields.find((x) => String(x.id) === id);
+        if (!c) return null;
+        cf[id] = Array.isArray(c.value) && !c.value.length ? [''] : c.value;
+      }
+      out[k] = cf;
+    } else if (k in f.values) out[k] = f.values[k];
+    else return null;
+  }
+  return out;
+}
 async function patch(fields: Record<string, unknown>, okMessage = true) {
+  const id = props.id;
+  const undo = okMessage ? inverse(fields) : null;
   try {
-    const res = await api.updateIssue(props.id, fields);
+    const res = await api.updateIssue(id, fields);
     emit('updated', res.issue);
     await load(false);
-    if (okMessage) toast(t('edit.saved'));
+    if (undo) {
+      offerUndo(t('edit.saved'), async () => {
+        const back = await api.updateIssue(id, undo);
+        emit('updated', back.issue);
+        if (props.id === id) await load(false);
+      });
+    } else if (okMessage) toast(t('edit.saved'));
     return true;
   } catch (e) { toast(t('edit.failed', { message: (e as Error).message }), 'error'); return false; }
 }

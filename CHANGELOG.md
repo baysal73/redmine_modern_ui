@@ -5,6 +5,7 @@ All notable changes are documented here. The project follows [Semantic Versionin
 ## [Unreleased]
 
 ### Added
+- Undo: every saved field change, inline edit and bulk edit offers "Undo" in the toast (and Ctrl/⌘ + Z outside text fields).
 - Every editable field in the issue panel is edited in place: click to edit, click away to save (Enter saves, Esc cancels); subject, description, dates, % done, category, version, estimated time, private flag and custom fields.
 - Multi-value fields (e.g. participants) use a searchable chip picker instead of a `<select multiple>`; adding one value no longer means re-selecting all others.
 - Rich text: when Redmine's text formatting is CKEditor (redmine_ckeditor), descriptions and comments use that same editor (`GET /app/api/editor`), so content is stored and shown identically in the classic UI. Other formats get a plain textarea.

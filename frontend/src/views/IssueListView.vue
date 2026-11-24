@@ -13,6 +13,7 @@ import { loadMeta, store } from '../lib/store';
 import { locale, t } from '../i18n';
 import { GROUPS, defaultState, nextSort, stateFromQuery, stateToQuery, toApiParams, type ListState } from '../lib/listQuery';
 import { toast } from '../lib/toast';
+import { offerUndo } from '../lib/undo';
 import { ui } from '../lib/ui';
 import type { IssueList, IssueOptions, IssueRow } from '../types';
 
@@ -117,13 +118,28 @@ async function loadOpts(id: number, what: 'statuses' | 'assignees' | 'priorities
     return what === 'statuses' ? o.allowed_statuses : what === 'assignees' ? o.assignees : o.priorities;
   } catch (e) { toast(t('error.load', { message: (e as Error).message }), 'error'); throw e; }
 }
+function previousValue(row: IssueRow, field: string): string | number | null {
+  switch (field) {
+    case 'status_id': return row.status.id;
+    case 'priority_id': return row.priority.id;
+    case 'assigned_to_id': return row.assigned_to?.id ?? null;
+    case 'due_date': return row.due_date;
+    default: return null;
+  }
+}
 async function save(row: IssueRow, field: string, value: string | number | null) {
   const idx = list.value!.issues.findIndex((i) => i.id === row.id);
+  const before = previousValue(row, field);
   try {
     const res = await api.updateIssue(row.id, { [field]: value });
     optionsCache.delete(row.id);
     if (idx >= 0) list.value!.issues[idx] = res.issue;
-    toast(t('edit.saved'));
+    offerUndo(t('edit.saved'), async () => {
+      const back = await api.updateIssue(row.id, { [field]: before });
+      optionsCache.delete(row.id);
+      const i = list.value?.issues.findIndex((x) => x.id === row.id) ?? -1;
+      if (i >= 0) list.value!.issues[i] = back.issue;
+    });
   } catch (e) {
     toast(t('edit.failed', { message: (e as ApiError).message }), 'error');
   }
@@ -144,12 +160,19 @@ async function bulk(field: 'status_id' | 'assigned_to_id' | 'priority_id', raw: 
   el.value = '';
   if (raw === '') return;
   const ids = [...selected.value];
+  const before = new Map<number, string | number | null>((list.value?.issues ?? []).filter((i) => selected.value.has(i.id)).map((i) => [i.id, previousValue(i, field)]));
   bulkBusy.value = true;
   try {
     const value = raw === 'none' ? null : Number(raw);
     const res = await api.bulkUpdate(ids, { [field]: value });
     if (res.failed.length) toast(t('bulk.partial', { ok: res.updated.length, failed: res.failed.length, reason: res.failed[0].error }), 'error');
-    else toast(t('bulk.done', { n: res.updated.length }));
+    else offerUndo(t('bulk.done', { n: res.updated.length }), async () => {
+      const groups = new Map<string, number[]>();
+      for (const u of res.updated) { const k = JSON.stringify(before.get(u.id) ?? null); groups.set(k, [...(groups.get(k) ?? []), u.id]); }
+      for (const [k, gids] of groups) await api.bulkUpdate(gids, { [field]: JSON.parse(k) });
+      optionsCache.clear();
+      await load();
+    });
     selected.value = new Set(res.failed.map((f) => f.id));
     optionsCache.clear();
     await load();

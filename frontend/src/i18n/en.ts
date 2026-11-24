@@ -92,4 +92,7 @@ export default {
   'picker.clear': 'Clear all',
   'edit.field': 'Edit {name}',
   'detail.add_description': 'Click to add a description',
+  'undo': 'Undo',
+  'undo.done': 'Change undone',
+  'help.undo': 'Undo last change',
 } as Record<string, string>;

@@ -91,4 +91,7 @@ export default {
   'picker.clear': 'Alle entfernen',
   'edit.field': '{name} bearbeiten',
   'detail.add_description': 'Klicken, um eine Beschreibung einzutragen',
+  'undo': 'Rückgängig',
+  'undo.done': 'Änderung rückgängig gemacht',
+  'help.undo': 'Letzte Änderung rückgängig',
 } as Record<string, string>;

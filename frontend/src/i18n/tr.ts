@@ -91,4 +91,7 @@ export default {
   'picker.clear': 'Tümünü kaldır',
   'edit.field': '{name} düzenle',
   'detail.add_description': 'Açıklama eklemek için tıklayın',
+  'undo': 'Geri al',
+  'undo.done': 'Değişiklik geri alındı',
+  'help.undo': 'Son değişikliği geri al',
 } as Record<string, string>;

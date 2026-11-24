@@ -9,7 +9,8 @@ import Avatar from './components/ui/Avatar.vue';
 import { t } from './i18n';
 import { loadMeta, store } from './lib/store';
 import { toggleTheme } from './lib/theme';
-import { toasts } from './lib/toast';
+import { dismiss, toasts } from './lib/toast';
+import { hasUndo, undoLast } from './lib/undo';
 import { ui } from './lib/ui';
 
 const config = readConfig();
@@ -32,6 +33,9 @@ watch(() => route.fullPath, () => { navOpen.value = false; });
 let chord = false; let chordTimer: number | undefined;
 function onKey(e: KeyboardEvent) {
   const el = e.target as HTMLElement;
+  if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z' && !['INPUT', 'SELECT', 'TEXTAREA'].includes(el.tagName) && !el.isContentEditable && hasUndo()) {
+    e.preventDefault(); undoLast(); return;
+  }
   if (['INPUT', 'SELECT', 'TEXTAREA'].includes(el.tagName) || el.isContentEditable || e.ctrlKey || e.metaKey || e.altKey) return;
   if (ui.quickCreate || ui.help) return;
   if (chord) {
@@ -87,6 +91,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
   <QuickCreate v-if="ui.quickCreate" />
   <ShortcutHelp v-if="ui.help" />
   <div class="toasts" aria-live="polite">
-    <div v-for="x in toasts" :key="x.id" class="toast" :class="x.kind" role="status">{{ x.text }}</div>
+    <div v-for="x in toasts" :key="x.id" class="toast" :class="x.kind" role="status">{{ x.text }}
+      <button v-if="x.action" class="toast-action" @click="x.action.run(); dismiss(x.id)">{{ x.action.label }}</button></div>
   </div>
 </template>
