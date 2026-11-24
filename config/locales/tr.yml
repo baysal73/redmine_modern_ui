@@ -17,5 +17,6 @@ tr:
   modern_ui_error_csrf: "Güvenlik belirteci geçersiz veya süresi dolmuş. Lütfen sayfayı yenileyin."
   modern_ui_error_notes_blank: "Lütfen bir yorum girin"
   modern_ui_error_no_tracker: "Bu proje için kullanılabilir tip yok"
+  modern_ui_error_upload_missing: "Dosya alınamadı"
   modern_ui_error_bulk_empty: "En az bir iş ve bir değişiklik seçin"
   modern_ui_error_bulk_too_many: "Çok fazla iş (en fazla %{max})"

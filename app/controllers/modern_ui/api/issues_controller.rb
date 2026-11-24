@@ -98,6 +98,7 @@ module ModernUi
         issue = Issue.new(project: project, tracker: tracker, author: User.current)
         issue.start_date ||= User.current.today if Setting.default_issue_start_date_to_creation_date?
         issue.safe_attributes = attrs.except('project_id', 'tracker_id')
+        issue.save_attachments(upload_params)
         if issue.save
           render json: { issue: serializers.issue_row(issue.reload) }, status: :created
         else
@@ -118,9 +119,10 @@ module ModernUi
           attrs['custom_field_values'] = params[:issue][:custom_field_values].to_unsafe_h
                                                                               .transform_values { |v| v.is_a?(Array) ? v.map(&:to_s) : v.to_s }
         end
-        if attrs.keys == %w[notes]
+        uploads = upload_params
+        if (attrs.keys - %w[notes]).empty?
           return render_json_error(403, l(:modern_ui_error_forbidden)) unless User.current.allowed_to?(:add_issue_notes, issue.project)
-          return render_json_error(422, l(:modern_ui_error_notes_blank)) if attrs['notes'].to_s.strip.empty?
+          return render_json_error(422, l(:modern_ui_error_notes_blank)) if attrs['notes'].to_s.strip.empty? && uploads.empty?
         elsif !issue.attributes_editable?(User.current)
           return render_json_error(403, l(:modern_ui_error_forbidden))
         end
@@ -137,6 +139,7 @@ module ModernUi
           journal.private_notes = true
         end
         issue.safe_attributes = attrs
+        issue.save_attachments(uploads) if uploads.any? && User.current.allowed_to?(:add_issue_notes, issue.project)
         if issue.save
           render json: { issue: serializers.issue_row(issue.reload) }
         else
@@ -175,6 +178,24 @@ module ModernUi
       end
 
       private
+
+      # [{ token:, filename: }] from issue[uploads]; Redmine matches them to the files stored by UploadsController
+      def upload_params
+        raw = params.dig(:issue, :uploads)
+        return [] unless raw.is_a?(Array)
+
+        raw.filter_map do |u|
+          next unless u.respond_to?(:permit)
+
+          u.permit(:token, :filename, :content_type, :description).to_h
+        end.select { |u| own_upload?(u['token']) }.first(10)
+      end
+
+      # Only files the current user uploaded themselves can be attached (Redmine alone would accept any valid token)
+      def own_upload?(token)
+        a = token.present? ? Attachment.find_by_token(token) : nil
+        a.present? && a.container_id.nil? && a.author_id == User.current.id
+      end
 
       def bulk_update_error(issue, attrs)
         return l(:modern_ui_error_forbidden) unless issue.attributes_editable?(User.current)

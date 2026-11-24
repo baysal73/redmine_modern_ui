@@ -412,4 +412,71 @@ class ModernUi::Api::IssuesControllerTest < Redmine::ControllerTest
       assert row['status']['is_closed']
     end
   end
+
+  # ---- attachments -----------------------------------------------------------------------------------
+
+  def upload_file
+    Rack::Test::UploadedFile.new(Rails.root.join('test/fixtures/files/testfile.txt').to_s, 'text/plain')
+  end
+
+  def test_two_step_upload_attaches_file_to_issue_with_comment
+    log_in 2
+    @controller = ModernUi::Api::UploadsController.new
+    post :create, params: { file: upload_file }
+    assert_response :created
+    token = json['upload']['token']
+    assert token.present?
+    @controller = ModernUi::Api::IssuesController.new
+    assert_difference 'Attachment.where(container_type: "Issue", container_id: 1).count', 1 do
+      patch :update, params: { id: 1, issue: { notes: 'see file', uploads: [{ token: token, filename: 'testfile.txt' }] } }
+    end
+    assert_response :success
+    assert_equal 'testfile.txt', Issue.find(1).attachments.order(:id).last.filename
+  end
+
+  def test_upload_only_without_comment_is_accepted
+    log_in 2
+    @controller = ModernUi::Api::UploadsController.new
+    post :create, params: { file: upload_file }
+    token = json['upload']['token']
+    @controller = ModernUi::Api::IssuesController.new
+    patch :update, params: { id: 1, issue: { uploads: [{ token: token, filename: 'testfile.txt' }] } }
+    assert_response :success
+  end
+
+  def test_upload_without_file_is_rejected
+    log_in 2
+    @controller = ModernUi::Api::UploadsController.new
+    post :create
+    assert_response :unprocessable_content
+  end
+
+  def test_upload_requires_login
+    @controller = ModernUi::Api::UploadsController.new
+    post :create, params: { file: upload_file }
+    assert_response :unauthorized
+  end
+
+  def test_create_with_upload
+    log_in 2
+    @controller = ModernUi::Api::UploadsController.new
+    post :create, params: { file: upload_file }
+    token = json['upload']['token']
+    @controller = ModernUi::Api::IssuesController.new
+    post :create, params: { issue: { project_id: 1, tracker_id: 1, subject: 'with file', uploads: [{ token: token, filename: 'testfile.txt' }] } }
+    assert_response :created
+    assert_equal 1, Issue.find(json['issue']['id']).attachments.count
+  end
+
+  def test_foreign_token_is_not_attached
+    log_in 2
+    @controller = ModernUi::Api::UploadsController.new
+    post :create, params: { file: upload_file }
+    token = json['upload']['token']
+    log_in 3
+    @controller = ModernUi::Api::IssuesController.new
+    assert_no_difference 'Attachment.where(container_type: "Issue").count' do
+      patch :update, params: { id: 1, issue: { notes: 'x', uploads: [{ token: token, filename: 'testfile.txt' }] } }
+    end
+  end
 end

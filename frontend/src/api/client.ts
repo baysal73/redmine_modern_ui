@@ -1,4 +1,4 @@
-import type { AppConfig, Home, IssueForm, NewIssueOptions, IssueDetail, IssueList, IssueOptions, IssueRow, Meta } from '../types';
+import type { AppConfig, Home, IssueForm, NewIssueOptions, IssueDetail, IssueList, IssueOptions, IssueRow, Meta, Upload } from '../types';
 
 export function readConfig(): AppConfig {
   const el = document.getElementById('app');
@@ -33,7 +33,20 @@ export function toQuery(params: Record<string, string | number | undefined | nul
   return s ? `?${s}` : '';
 }
 
+// Multipart upload (no JSON content type); returns the token to send with the issue.
+async function uploadFile(file: File): Promise<Upload> {
+  const body = new FormData();
+  body.append('file', file, file.name);
+  const res = await fetch(`${config.base}/api/uploads`, { method: 'POST', credentials: 'same-origin', headers: { Accept: 'application/json', 'X-CSRF-Token': csrfToken() }, body });
+  let data: any = null;
+  try { data = await res.json(); } catch { /* non-JSON error page */ }
+  if (res.status === 401) { window.location.href = `${config.root}/login?back_url=${encodeURIComponent(window.location.href)}`; throw new ApiError(401, 'login'); }
+  if (!res.ok) throw new ApiError(res.status, data?.error ?? `HTTP ${res.status}`, data);
+  return data.upload as Upload;
+}
+
 export const api = {
+  upload: uploadFile,
   home: () => request<Home>('home'),
   meta: () => request<Meta>('meta'),
   issues: (params: Record<string, string | number | undefined>) => request<IssueList>(`issues${toQuery(params)}`),

@@ -2,12 +2,13 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ApiError, api, readConfig } from '../api/client';
+import AttachmentPicker from './AttachmentPicker.vue';
 import { loadMeta, store } from '../lib/store';
 import { t } from '../i18n';
 import { trapFocus } from '../lib/dialog';
 import { toast } from '../lib/toast';
 import { ui } from '../lib/ui';
-import type { NewIssueOptions } from '../types';
+import type { NewIssueOptions, Upload } from '../types';
 
 const route = useRoute();
 const router = useRouter();
@@ -23,6 +24,8 @@ const description = ref('');
 const priorityId = ref<number | ''>('');
 const dueDate = ref('');
 const more = ref(false);
+const uploads = ref<Upload[]>([]);
+const picker = ref<InstanceType<typeof AttachmentPicker> | null>(null);
 const busy = ref(false);
 const error = ref('');
 const classicUrl = ref('');
@@ -50,13 +53,14 @@ async function loadOptions() {
 watch(projectId, loadOptions);
 
 async function submit() {
-  if (!subject.value.trim() || !projectId.value || busy.value) return;
+  if (!subject.value.trim() || !projectId.value || busy.value || picker.value?.busy) return;
   busy.value = true; error.value = ''; classicUrl.value = '';
   try {
     const res = await api.createIssue({
       project_id: projectId.value, tracker_id: trackerId.value, subject: subject.value.trim(),
       assigned_to_id: assignee.value || null, description: description.value || null,
       priority_id: priorityId.value || null, due_date: dueDate.value || null,
+      uploads: uploads.value.map((u) => ({ token: u.token, filename: u.filename, content_type: u.content_type })),
     });
     try { localStorage.setItem('modern_ui_last_project', String(projectId.value)); } catch { /* ignore */ }
     toast(t('create.created', { id: res.issue.id }));
@@ -101,6 +105,7 @@ void config;
         <button type="button" class="link-btn" :aria-expanded="more" @click="more = !more">{{ more ? '▾' : '▸' }} {{ t('create.more') }}</button>
         <template v-if="more">
           <label>{{ t('detail.description') }}<textarea v-model="description" rows="4" /></label>
+          <AttachmentPicker ref="picker" v-model="uploads" />
           <div class="row2">
             <label>{{ t('col.priority') }}
               <select v-model="priorityId"><option v-for="p in opts?.priorities" :key="p.id" :value="p.id">{{ p.name }}</option></select>

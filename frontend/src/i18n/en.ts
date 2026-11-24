@@ -77,4 +77,10 @@ export default {
   'bulk.select_row': 'Select issue {id}',
   'bulk.done': '{n} issues updated',
   'bulk.partial': '{ok} updated, {failed} failed: {reason}',
+  'attach.add': 'Attach files',
+  'attach.hint': 'or drop / paste here',
+  'attach.too_big': '{name} is larger than the allowed {max}',
+  'attach.failed': '{name}: {message}',
+  'attach.remove': 'Remove {name}',
+  'attach.uploading': 'Uploading…',
 } as Record<string, string>;

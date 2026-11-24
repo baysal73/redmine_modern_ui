@@ -16,7 +16,8 @@ module ModernUi
           addable_project_ids: Project.allowed_to(User.current, :add_issues).where(id: projects.map(&:id)).pluck(:id),
           projects: projects.map { |p| serializers.project(p) },
           classic_menu: classic_menu,
-          settings: { per_page_options: Setting.per_page_options_array, text_formatting: Setting.text_formatting }
+          settings: { per_page_options: Setting.per_page_options_array, text_formatting: Setting.text_formatting,
+                      attachment_max_size: Setting.attachment_max_size.to_i * 1024 }
         }
       end
 

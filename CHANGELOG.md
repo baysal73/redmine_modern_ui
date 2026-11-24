@@ -5,6 +5,7 @@ All notable changes are documented here. The project follows [Semantic Versionin
 ## [Unreleased]
 
 ### Added
+- Attachments: pick, drop or paste files in the comment box and the quick-create dialog (`POST /app/api/uploads`, then `uploads` on create/update; only the user's own uploads can be attached).
 - Setting "Statuses counted as done": lets the new UI treat statuses as finished that Redmine does not flag as closed.
 - Filter chips with "Add filter" (multi-select status, tracker, priority, assignee; single project, due), person search.
 - Grouping (status, priority, assignee, project, tracker) and saved views (stored in the browser).

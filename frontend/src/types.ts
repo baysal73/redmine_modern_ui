@@ -14,7 +14,7 @@ export interface Meta {
   addable_project_ids: number[];
   classic_menu: { name: string; caption: string; url: string }[];
   projects: { id: number; identifier: string; name: string; parent_id: number | null; trackers: Ref[] }[];
-  settings: { per_page_options: number[]; text_formatting: string };
+  settings: { per_page_options: number[]; text_formatting: string; attachment_max_size: number };
 }
 export interface IssueOptions { allowed_statuses: Status[]; assignees: Ref[]; priorities: Ref[]; editable: boolean }
 export interface AppConfig { base: string; root: string; lang: string; csrf: string }
@@ -51,3 +51,5 @@ export interface Home {
   today: string; overdue: IssueRow[]; due_soon: IssueRow[]; undated: IssueRow[]; recent: IssueRow[];
   counts: { overdue: number; due_soon: number; undated: number; assigned_open: number };
 }
+
+export interface Upload { token: string; filename: string; filesize: number; content_type?: string }

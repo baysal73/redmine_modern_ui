@@ -76,4 +76,10 @@ export default {
   'bulk.select_row': 'Ticket {id} wählen',
   'bulk.done': '{n} Tickets geändert',
   'bulk.partial': '{ok} geändert, {failed} fehlgeschlagen: {reason}',
+  'attach.add': 'Dateien anhängen',
+  'attach.hint': 'oder hierher ziehen / einfügen',
+  'attach.too_big': '{name} ist größer als erlaubt ({max})',
+  'attach.failed': '{name}: {message}',
+  'attach.remove': '{name} entfernen',
+  'attach.uploading': 'Wird hochgeladen…',
 } as Record<string, string>;

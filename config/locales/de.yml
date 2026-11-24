@@ -17,5 +17,6 @@ de:
   modern_ui_error_csrf: "Sicherheitstoken ungültig oder abgelaufen. Bitte Seite neu laden."
   modern_ui_error_notes_blank: "Bitte einen Kommentar eingeben"
   modern_ui_error_no_tracker: "Für dieses Projekt ist kein Tracker verfügbar"
+  modern_ui_error_upload_missing: "Keine Datei empfangen"
   modern_ui_error_bulk_empty: "Bitte mindestens ein Ticket und eine Änderung wählen"
   modern_ui_error_bulk_too_many: "Zu viele Tickets (höchstens %{max})"

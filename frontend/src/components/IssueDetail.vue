@@ -2,6 +2,7 @@
 import { Lock, Paperclip } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import { ApiError, api, readConfig } from '../api/client';
+import AttachmentPicker from './AttachmentPicker.vue';
 import InlineCell from './InlineCell.vue';
 import IssueEditDialog from './IssueEditDialog.vue';
 import Avatar from './ui/Avatar.vue';
@@ -9,7 +10,7 @@ import PriorityIcon from './ui/PriorityIcon.vue';
 import StatusBadge from './ui/StatusBadge.vue';
 import { locale, t } from '../i18n';
 import { toast } from '../lib/toast';
-import type { IssueDetail, IssueRow } from '../types';
+import type { IssueDetail, IssueRow, Upload } from '../types';
 
 const props = defineProps<{ id: number }>();
 const emit = defineEmits<{ (e: 'close'): void; (e: 'updated', row: IssueRow): void }>();
@@ -22,6 +23,8 @@ const comment = ref('');
 const privateNote = ref(false);
 const sending = ref(false);
 const editing = ref(false);
+const uploads = ref<Upload[]>([]);
+const picker = ref<InstanceType<typeof AttachmentPicker> | null>(null);
 
 let seq = 0;
 async function load(showSpinner = true) {
@@ -35,7 +38,7 @@ async function load(showSpinner = true) {
     if (mine === seq) error.value = (e as ApiError).status === 404 ? t('detail.not_found') : (e as Error).message;
   } finally { if (mine === seq) loading.value = false; }
 }
-watch(() => props.id, () => { comment.value = ''; privateNote.value = false; load(); }, { immediate: true });
+watch(() => props.id, () => { comment.value = ''; uploads.value = []; privateNote.value = false; load(); }, { immediate: true });
 
 async function patch(fields: Record<string, unknown>, okMessage = true) {
   try {
@@ -47,11 +50,13 @@ async function patch(fields: Record<string, unknown>, okMessage = true) {
   } catch (e) { toast(t('edit.failed', { message: (e as Error).message }), 'error'); return false; }
 }
 async function sendComment() {
-  if (!comment.value.trim() || sending.value) return;
+  if ((!comment.value.trim() && !uploads.value.length) || sending.value || picker.value?.busy) return;
   sending.value = true;
-  const ok = await patch({ notes: comment.value, private_notes: privateNote.value });
+  const body: Record<string, unknown> = { notes: comment.value, private_notes: privateNote.value };
+  if (uploads.value.length) body.uploads = uploads.value.map((u) => ({ token: u.token, filename: u.filename, content_type: u.content_type }));
+  const ok = await patch(body);
   sending.value = false;
-  if (ok) { comment.value = ''; privateNote.value = false; }
+  if (ok) { comment.value = ''; privateNote.value = false; uploads.value = []; }
 }
 
 // Workflow-aware option lists for the inline fields
@@ -135,10 +140,11 @@ const canEdit = computed(() => !!issue.value?.permissions.edit);
         <label for="mui-comment"><strong>{{ t('detail.comment') }}</strong></label>
         <textarea id="mui-comment" v-model="comment" rows="4" :placeholder="t('detail.comment.placeholder')"
                   @keydown.ctrl.enter.prevent="sendComment" @keydown.meta.enter.prevent="sendComment" />
+        <AttachmentPicker ref="picker" v-model="uploads" />
         <div class="comment-actions">
           <label v-if="issue.permissions.private_notes" class="inline"><input v-model="privateNote" type="checkbox"> {{ t('detail.comment.private') }}</label>
           <span class="spacer" />
-          <button class="btn primary" type="submit" :disabled="!comment.trim() || sending">{{ t('detail.comment.send') }}</button>
+          <button class="btn primary" type="submit" :disabled="(!comment.trim() && !uploads.length) || sending">{{ t('detail.comment.send') }}</button>
         </div>
       </form>
     </div>

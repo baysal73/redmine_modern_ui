@@ -76,4 +76,10 @@ export default {
   'bulk.select_row': '{id} numaralı işi seç',
   'bulk.done': '{n} iş güncellendi',
   'bulk.partial': '{ok} güncellendi, {failed} başarısız: {reason}',
+  'attach.add': 'Dosya ekle',
+  'attach.hint': 'veya buraya sürükleyin / yapıştırın',
+  'attach.too_big': '{name} izin verilen {max} boyutundan büyük',
+  'attach.failed': '{name}: {message}',
+  'attach.remove': '{name} kaldır',
+  'attach.uploading': 'Yükleniyor…',
 } as Record<string, string>;
