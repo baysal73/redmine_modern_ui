@@ -15,6 +15,12 @@ scope "#{base}/api", module: 'modern_ui/api', as: 'modern_ui_api' do
   post 'uploads', to: 'uploads#create'
   post 'issues/bulk', to: 'issues#bulk'
   get 'issues', to: 'issues#index'
+  get 'contacts', to: 'contacts#index'
+  post 'contacts', to: 'contacts#create'
+  get 'contacts/options', to: 'contacts#options'
+  get 'contacts/:id', to: 'contacts#show', constraints: { id: /\d+/ }
+  patch 'contacts/:id', to: 'contacts#update', constraints: { id: /\d+/ }
+  post 'contacts/:id/notes', to: 'contacts#add_note', constraints: { id: /\d+/ }
   get 'report_templates', to: 'reports#templates'
   get 'issues/:id', to: 'issues#show', constraints: { id: /\d+/ }
   get 'issues/:id/form', to: 'issues#form', constraints: { id: /\d+/ }

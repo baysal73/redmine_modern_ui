@@ -10,6 +10,7 @@ export interface IssueRow {
 export interface IssueList { issues: IssueRow[]; total: number; page: number; per_page: number; pages: number }
 export interface Meta {
   user: { id: number; name: string; admin: boolean; language: string };
+  features?: { contacts: boolean };
   statuses: Status[]; trackers: Ref[]; priorities: Ref[]; users: Ref[];
   addable_project_ids: number[];
   classic_menu: { name: string; caption: string; url: string }[];
@@ -18,6 +19,20 @@ export interface Meta {
 }
 export interface IssueOptions { allowed_statuses: Status[]; assignees: Ref[]; priorities: Ref[]; editable: boolean }
 export interface ReportTemplates { available: boolean; can_preview: boolean; can_generate: boolean; templates: { id: number; name: string; description: string }[] }
+export interface ContactRow { id: number; name: string; is_company: boolean; company: string; job_title: string; email: string; phone: string; city: string; assigned_to: Ref | null; updated_on: string }
+export interface ContactList { contacts: ContactRow[]; total: number; page: number; per_page: number; pages: number }
+export interface ContactNote { id: number; author: Ref | null; created_on: string; type_id: number | null; subject: string; content_html: string }
+export interface ContactDetail {
+  id: number; name: string; is_company: boolean; editable: boolean; can_add_note: boolean; project_id: string | null;
+  projects: { id: number; identifier: string; name: string }[];
+  values: Record<string, string | number | null | string[]>; address: Record<string, string>;
+  assignees: Ref[]; assigned_to: Ref | null; author: Ref | null; created_on: string; updated_on: string; avatar_url: string | null;
+  company_contact: Ref | null; employees: { id: number; name: string; job_title: string }[];
+  custom_fields: CustomFieldForm[];
+  deals: { id: number; name: string; status: string | null; price: number | null; currency: string | null; project: string | null }[];
+  issues: { id: number; subject: string; status: Status; project: string }[]; notes: ContactNote[];
+}
+export interface ContactOptions { can_add: boolean; projects: { id: number; identifier: string; name: string }[]; custom_fields: { id: number; name: string; values: string[] }[]; assignees: Ref[] }
 export interface AppConfig { base: string; root: string; lang: string; csrf: string }
 
 export interface JournalDetail { property: string; name: string; text: string }

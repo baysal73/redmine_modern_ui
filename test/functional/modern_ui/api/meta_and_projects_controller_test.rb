@@ -130,3 +130,31 @@ class ModernUi::Api::ReportsControllerTest < Redmine::ControllerTest
     assert_empty json['templates']
   end
 end
+
+class ModernUi::Api::ContactsControllerTest < Redmine::ControllerTest
+  include ModernUiTestHelpers
+  fixtures(*FIXTURES)
+
+  def test_requires_login
+    get :index
+    assert_response :unauthorized
+  end
+
+  # The CRM plugin is not part of the test image: without it the endpoints must not fail with a 500
+  def test_not_found_without_the_crm_plugin
+    skip 'CRM plugin installed' if defined?(::Contact)
+    log_in 2
+    get :index
+    assert_response :not_found
+    get :show, params: { id: 1 }
+    assert_response :not_found
+  end
+
+  def test_meta_reports_contacts_feature_off_without_plugin
+    skip 'CRM plugin installed' if defined?(::Contact)
+    @controller = ModernUi::Api::MetaController.new
+    log_in 2
+    get :show
+    assert_equal false, json['features']['contacts']
+  end
+end
