@@ -5,6 +5,7 @@ All notable changes are documented here. The project follows [Semantic Versionin
 ## [Unreleased]
 
 ### Added
+- Setting "Statuses counted as done": lets the new UI treat statuses as finished that Redmine does not flag as closed.
 - Filter chips with "Add filter" (multi-select status, tracker, priority, assignee; single project, due), person search.
 - Grouping (status, priority, assignee, project, tracker) and saved views (stored in the browser).
 - Bulk edit (`POST /app/api/issues/bulk`): status, assignee, priority, due date for up to 100 selected issues, workflow aware.

@@ -7,6 +7,8 @@ de:
   modern_ui_setting_redirect_info: "Benutzer können das unter „Mein Konto“ abwählen."
   modern_ui_setting_base_path: "Pfad der neuen Oberfläche"
   modern_ui_setting_base_path_info: "Standard: app. Eine Änderung erfordert einen Neustart von Redmine."
+  modern_ui_setting_done_statuses: "Als erledigt gezählte Status"
+  modern_ui_setting_done_statuses_info: "Wirkt nur in der neuen Oberfläche (Zähler, Filter „Offen“). Von Redmine als geschlossen markierte Status zählen immer."
   modern_ui_pref_redirect: "Nach dem Login die neue Oberfläche öffnen"
   modern_ui_error_not_found: "Nicht gefunden"
   modern_ui_error_login_required: "Bitte anmelden"

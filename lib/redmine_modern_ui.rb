@@ -22,6 +22,28 @@ module RedmineModernUi
     p.match?(/\A[a-z0-9_\-]+\z/i) ? p : DEFAULTS['base_path']
   end
 
+  # Statuses the admin wants treated as "done" in the new UI although Redmine does not flag them as closed.
+  def done_status_ids
+    Array(settings['done_status_ids']).map(&:to_i).reject(&:zero?)
+  end
+
+  # status_id filter [operator, values] for "open" issues; plain Redmine "open" unless done statuses are configured.
+  def open_status_filter
+    return ['o', ['']] if done_status_ids.empty?
+
+    ['!', (IssueStatus.where(is_closed: true).pluck(:id) + done_status_ids).uniq.map(&:to_s)]
+  end
+
+  def closed_status_filter
+    return ['c', ['']] if done_status_ids.empty?
+
+    ['=', (IssueStatus.where(is_closed: true).pluck(:id) + done_status_ids).uniq.map(&:to_s)]
+  end
+
+  def done_status?(status)
+    status.is_closed? || done_status_ids.include?(status.id)
+  end
+
   # Should this user land on the new UI after login?
   def redirect_after_login?(user)
     return false unless settings['redirect_after_login'] == '1'

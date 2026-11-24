@@ -393,4 +393,23 @@ class ModernUi::Api::IssuesControllerTest < Redmine::ControllerTest
     post :bulk, params: { ids: (1..101).to_a, issue: { priority_id: 5 } }
     assert_response :unprocessable_content
   end
+
+  # ---- configurable "done" statuses ------------------------------------------------------------------
+
+  def test_done_statuses_are_treated_as_closed_in_open_filter_and_status_json
+    log_in 2
+    get :index, params: { status: 'open', per_page: 100 }
+    open_before = json['total']
+    in_progress = IssueStatus.find(2) # open in the fixtures
+    count = Issue.visible(User.find(2)).where(status_id: in_progress.id).count
+    assert_operator count, :>, 0
+    with_plugin_settings('done_status_ids' => [in_progress.id.to_s]) do
+      get :index, params: { status: 'open', per_page: 100 }
+      assert_equal open_before - count, json['total']
+      assert_not_includes json['issues'].map { |i| i['status']['id'] }, in_progress.id
+      get :index, params: { status: 'all', per_page: 100 }
+      row = json['issues'].find { |i| i['status']['id'] == in_progress.id }
+      assert row['status']['is_closed']
+    end
+  end
 end

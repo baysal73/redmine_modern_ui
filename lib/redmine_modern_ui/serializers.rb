@@ -31,7 +31,7 @@ module RedmineModernUi
     end
 
     def status(s)
-      { id: s.id, name: s.name, is_closed: s.is_closed? }
+      { id: s.id, name: s.name, is_closed: RedmineModernUi.done_status?(s) }
     end
 
     def project(p)

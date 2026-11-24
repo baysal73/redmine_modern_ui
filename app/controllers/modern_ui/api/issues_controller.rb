@@ -213,8 +213,8 @@ module ModernUi
 
         status = status_override || params[:status].presence || 'open'
         case status
-        when 'open'   then add.('status_id', 'o')
-        when 'closed' then add.('status_id', 'c')
+        when 'open'   then add.('status_id', *RedmineModernUi.open_status_filter)
+        when 'closed' then add.('status_id', *RedmineModernUi.closed_status_filter)
         when 'all'    then add.('status_id', '*')
         else add.('status_id', '=', ids(status))
         end
@@ -230,7 +230,7 @@ module ModernUi
         end
         today = User.current.today
         case params[:due]
-        when 'overdue' then add.('due_date', '<=', [(today - 1).to_s]) && add.('status_id', 'o') # open issues only
+        when 'overdue' then add.('due_date', '<=', [(today - 1).to_s]) && add.('status_id', *RedmineModernUi.open_status_filter) # open issues only
         when 'week'    then add.('due_date', '><', [today.to_s, (today + 7).to_s])
         when 'none'    then add.('due_date', '!*')
         end

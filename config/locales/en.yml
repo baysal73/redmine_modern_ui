@@ -7,6 +7,8 @@ en:
   modern_ui_setting_redirect_info: "Users can opt out under My account."
   modern_ui_setting_base_path: "Path of the new interface"
   modern_ui_setting_base_path_info: "Default: app. Changing it requires a restart of Redmine."
+  modern_ui_setting_done_statuses: "Statuses counted as done"
+  modern_ui_setting_done_statuses_info: "Only changes the new interface (open/overdue counts, filters). Statuses that Redmine marks as closed are always included."
   modern_ui_pref_redirect: "Open the new interface after login"
   modern_ui_error_not_found: "Not found"
   modern_ui_error_login_required: "Please log in"

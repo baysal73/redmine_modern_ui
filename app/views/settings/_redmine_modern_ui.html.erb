@@ -5,6 +5,18 @@
   <em class="info"><%= l(:modern_ui_setting_redirect_info) %></em>
 </p>
 <p>
+  <label><%= l(:modern_ui_setting_done_statuses) %></label>
+  <%= hidden_field_tag 'settings[done_status_ids][]', '', id: nil %>
+  <% IssueStatus.sorted.each do |status| %>
+    <label class="inline" style="margin-right: 1em">
+      <%= check_box_tag 'settings[done_status_ids][]', status.id, RedmineModernUi.done_status_ids.include?(status.id) || status.is_closed?,
+                        id: "settings_done_status_#{status.id}", disabled: status.is_closed? %>
+      <%= status.name %>
+    </label>
+  <% end %>
+  <em class="info"><%= l(:modern_ui_setting_done_statuses_info) %></em>
+</p>
+<p>
   <label for="settings_base_path"><%= l(:modern_ui_setting_base_path) %></label>
   <%= text_field_tag 'settings[base_path]', @settings['base_path'], size: 20 %>
   <em class="info"><%= l(:modern_ui_setting_base_path_info) %></em>

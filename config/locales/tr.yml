@@ -7,6 +7,8 @@ tr:
   modern_ui_setting_redirect_info: "Kullanıcılar bunu Hesabım sayfasından kapatabilir."
   modern_ui_setting_base_path: "Yeni arayüzün yolu"
   modern_ui_setting_base_path_info: "Varsayılan: app. Değiştirmek Redmine'in yeniden başlatılmasını gerektirir."
+  modern_ui_setting_done_statuses: "Tamamlandı sayılan durumlar"
+  modern_ui_setting_done_statuses_info: "Yalnızca yeni arayüzü etkiler (sayaçlar, “Açık” filtresi). Redmine'ın kapalı işaretlediği durumlar her zaman dahildir."
   modern_ui_pref_redirect: "Girişten sonra yeni arayüzü aç"
   modern_ui_error_not_found: "Bulunamadı"
   modern_ui_error_login_required: "Lütfen giriş yapın"
