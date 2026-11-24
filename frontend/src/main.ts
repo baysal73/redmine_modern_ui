@@ -3,7 +3,6 @@ import { createRouter, createWebHistory } from 'vue-router';
 import App from './App.vue';
 import { readConfig } from './api/client';
 import HomeView from './views/HomeView.vue';
-import BoardView from './views/BoardView.vue';
 import IssueListView from './views/IssueListView.vue';
 import { applyTheme } from './lib/theme';
 import './tailwind.css';
@@ -17,7 +16,6 @@ const router = createRouter({
     { path: '/', redirect: '/home' },
     { path: '/home', name: 'home', component: HomeView },
     { path: '/issues/:id(\\d+)?', name: 'issues', component: IssueListView },
-    { path: '/board/:id(\\d+)?', name: 'board', component: BoardView },
     { path: '/:pathMatch(.*)*', redirect: '/home' },
   ],
 });

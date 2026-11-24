@@ -61,7 +61,7 @@ async function submit() {
     try { localStorage.setItem('modern_ui_last_project', String(projectId.value)); } catch { /* ignore */ }
     toast(t('create.created', { id: res.issue.id }));
     ui.quickCreate = false; ui.refresh++;
-    router.push({ name: route.name === 'board' ? 'board' : 'issues', params: { id: res.issue.id }, query: route.query });
+    router.push({ name: 'issues', params: { id: res.issue.id }, query: route.query });
   } catch (e) {
     error.value = (e as Error).message;
     classicUrl.value = (e as ApiError).data?.classic_url ?? '';

@@ -33,9 +33,6 @@ export interface IssueDetail extends IssueRow {
   attachments: Attachment[]; journals: Journal[];
 }
 
-export interface BoardCard extends IssueRow { allowed_status_ids: number[] }
-export interface BoardColumn { status: Status; total: number; issues: BoardCard[] }
-export interface Board { columns: BoardColumn[]; limit: number }
 
 export interface NewIssueOptions { trackers: Ref[]; priorities: (Ref & { is_default: boolean })[]; assignees: Ref[] }
 

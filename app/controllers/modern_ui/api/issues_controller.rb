@@ -6,7 +6,6 @@ module ModernUi
       helper :issues, :custom_fields, :attachments
       MAX_PER_PAGE = 100
       DEFAULT_PER_PAGE = 50
-      BOARD_DEFAULT_LIMIT = 30
       CREATABLE_FIELDS = %i[project_id tracker_id subject description assigned_to_id priority_id due_date start_date].freeze
       EDITABLE_FIELDS = %i[status_id assigned_to_id priority_id due_date start_date done_ratio subject description category_id
                            fixed_version_id estimated_hours is_private notes private_notes].freeze
@@ -33,28 +32,6 @@ module ModernUi
           issues: issues.map { |i| serializers.issue_row(i) },
           total: total, page: page, per_page: per_page, pages: (total.to_f / per_page).ceil
         }
-      end
-
-      # GET /app/api/issues/board - one column per status, same filters as the list
-      # (project_id, tracker_id, priority_id, assigned_to_id, author_id, q). Each card carries the
-      # status ids the current user may move it to (Redmine workflow), so the UI can offer only valid drops.
-      def board
-        limit = [params[:limit].to_i, 1].max.clamp(1, MAX_PER_PAGE)
-        limit = BOARD_DEFAULT_LIMIT if params[:limit].blank?
-        allowed_cache = {}
-        columns = IssueStatus.sorted.map do |status|
-          # closed columns: most recently touched first (old closed issues are rarely interesting)
-          query = build_query(status: status.id.to_s, sort: status.is_closed? ? 'updated_on:desc' : 'priority:desc,updated_on:desc')
-          issues = query.issues(include: %i[status priority tracker author assigned_to project], limit: limit)
-          cards = issues.map do |i|
-            key = [i.project_id, i.tracker_id, i.status_id, i.author_id == User.current.id, i.assigned_to_id == User.current.id,
-                   i.attributes_editable?(User.current)]
-            allowed = allowed_cache[key] ||= (key.last ? i.new_statuses_allowed_to(User.current, true).map(&:id) : [])
-            serializers.issue_row(i).merge(allowed_status_ids: allowed)
-          end
-          { status: serializers.status(status), total: query.issue_count, issues: cards }
-        end
-        render json: { columns: columns, limit: limit }
       end
 
       # GET /app/api/issues/:id

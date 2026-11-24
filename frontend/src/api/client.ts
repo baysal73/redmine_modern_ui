@@ -1,4 +1,4 @@
-import type { AppConfig, Board, Home, IssueForm, NewIssueOptions, IssueDetail, IssueList, IssueOptions, IssueRow, Meta } from '../types';
+import type { AppConfig, Home, IssueForm, NewIssueOptions, IssueDetail, IssueList, IssueOptions, IssueRow, Meta } from '../types';
 
 export function readConfig(): AppConfig {
   const el = document.getElementById('app');
@@ -37,7 +37,6 @@ export const api = {
   home: () => request<Home>('home'),
   meta: () => request<Meta>('meta'),
   issues: (params: Record<string, string | number | undefined>) => request<IssueList>(`issues${toQuery(params)}`),
-  board: (params: Record<string, string | number | undefined>) => request<Board>(`issues/board${toQuery(params)}`),
   newIssueOptions: (projectId: number) => request<NewIssueOptions>(`projects/${projectId}/new_issue_options`),
   createIssue: (issue: Record<string, unknown>) => request<{ issue: IssueRow }>('issues', { method: 'POST', body: JSON.stringify({ issue }) }),
   issue: (id: number) => request<{ issue: IssueDetail }>(`issues/${id}`),

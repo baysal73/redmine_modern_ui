@@ -345,31 +345,4 @@ class ModernUi::Api::IssuesControllerTest < Redmine::ControllerTest
     assert_match %r{/projects/ecookbook/issues/new}, json['classic_url']
   end
 
-  # ---- board -----------------------------------------------------------------------------------------
-
-  def test_board_has_one_column_per_status
-    log_in 2
-    get :board
-    assert_response :success
-    assert_equal IssueStatus.count, json['columns'].size
-    total = json['columns'].sum { |c| c['total'] }
-    get :index, params: { status: 'all' }
-    assert_equal json['total'], total
-  end
-
-  def test_board_cards_carry_allowed_transitions
-    log_in 2
-    get :board
-    card = json['columns'].flat_map { |c| c['issues'] }.first
-    assert card['allowed_status_ids'].include?(card['status']['id'])
-  end
-
-  def test_board_gives_no_transitions_without_edit_permission
-    Role.find(2).remove_permission!(:edit_issues)
-    log_in 3
-    get :board
-    cards = json['columns'].flat_map { |c| c['issues'] }
-    assert cards.any?
-    assert cards.all? { |c| c['allowed_status_ids'].empty? || Issue.find(c['id']).attributes_editable?(User.find(3)) }
-  end
 end

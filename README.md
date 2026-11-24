@@ -10,13 +10,13 @@ from Redmine; the plugin only adds a new front end under `/app`.
 |---|---|
 | ![My week](docs/screenshots/home.png) | ![Split view](docs/screenshots/split-view.png) |
 
-| Kanban board | Issue list |
-|---|---|
-| ![Board](docs/screenshots/board.png) | ![List](docs/screenshots/list.png) |
+| Issue list |
+|---|
+| ![List](docs/screenshots/list.png) |
 
 | Quick create | Dark mode | Mobile |
 |---|---|---|
-| ![Quick create](docs/screenshots/quick-create.png) | ![Dark mode](docs/screenshots/board-dark.png) | ![Mobile](docs/screenshots/mobile.png) |
+| ![Quick create](docs/screenshots/quick-create.png) | ![Dark mode](docs/screenshots/list-dark.png) | ![Mobile](docs/screenshots/mobile.png) |
 
 (All screenshots show fictional demo data.)
 
@@ -29,8 +29,6 @@ from Redmine; the plugin only adds a new front end under `/app`.
   paging, shareable URLs, **inline editing** of status (workflow aware), priority, assignee and due date.
 - **Split view** – list on the left, details on the right: description, fields, history, attachments, comments
   (including private ones).
-- **Kanban board** – one column per status, **drag & drop** that only offers the transitions your workflow allows;
-  a move menu for keyboard and touch users.
 - **Edit dialog** – all fields the user may change (role and workflow aware), including custom fields.
 - **Quick create** – a small dialog (`c`) with the essentials, more fields on demand.
 - Dark mode, responsive layout, keyboard shortcuts (press `?`), accessible dialogs.
@@ -109,7 +107,7 @@ Front end sources: `frontend/` (Vue 3, TypeScript, Vite, Tailwind CSS, Lucide ic
 
 ## Roadmap
 
-Gantt chart with drag & drop, time tracking, documents/files, notifications, a "My week" dashboard.
+Gantt chart with drag & drop, time tracking, documents/files, notifications.
 The structure (one API controller and one Vue view per module) is prepared for them.
 
 ## License
@@ -121,7 +119,7 @@ The structure (one API controller and one Vue view per module) is prepared for t
 ## Deutsch
 
 **Redmine Modern UI** ist ein Redmine-Plugin mit einer schnellen, modernen Oberfläche unter `/app`
-(Ticket-Tabelle mit Inline-Bearbeitung, Split-View, Kanban-Board mit Drag & Drop, Schnell-Anlegen, Dunkelmodus,
+(Ticket-Tabelle mit Inline-Bearbeitung, Split-View, Schnell-Anlegen, Dunkelmodus,
 Tastaturkürzel; Deutsch, Englisch, Türkisch). Redmine bleibt im Hintergrund Datenbank-, Rechte- und Workflow-Engine –
 die Oberfläche zeigt und ändert nur, was der angemeldete Benutzer auch im klassischen Redmine dürfte.
 
