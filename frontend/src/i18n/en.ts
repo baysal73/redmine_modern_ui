@@ -18,6 +18,7 @@ export default {
   'col.status': 'Status', 'col.priority': 'Priority', 'col.assigned_to': 'Assignee', 'col.author': 'Author',
   'col.due_date': 'Due date', 'col.start_date': 'Start date', 'col.done_ratio': '% Done', 'col.updated_on': 'Updated',
   'col.created_on': 'Created',
+  'pdf.list_hint': 'Download the current list as PDF', 'pdf.issue_hint': 'Download this ticket with its history as PDF',
   'columns': 'Columns',
   'unassigned': 'Unassigned',
   'loading': 'Loading…',

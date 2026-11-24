@@ -17,6 +17,7 @@ export default {
   'col.status': 'Durum', 'col.priority': 'Öncelik', 'col.assigned_to': 'Atanan', 'col.author': 'Yazar',
   'col.due_date': 'Bitiş', 'col.start_date': 'Başlangıç', 'col.done_ratio': '% Tamamlandı', 'col.updated_on': 'Güncellenme',
   'col.created_on': 'Oluşturulma',
+  'pdf.list_hint': 'Geçerli listeyi PDF olarak indir', 'pdf.issue_hint': 'Bu bileti geçmişiyle PDF olarak indir',
   'columns': 'Sütunlar',
   'unassigned': 'Atanmamış',
   'loading': 'Yükleniyor…',

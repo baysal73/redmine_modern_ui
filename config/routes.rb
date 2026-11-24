@@ -15,6 +15,8 @@ scope "#{base}/api", module: 'modern_ui/api', as: 'modern_ui_api' do
   post 'uploads', to: 'uploads#create'
   post 'issues/bulk', to: 'issues#bulk'
   get 'issues', to: 'issues#index'
+  get 'issues/export', to: 'issues#export_list'
+  get 'issues/:id/pdf', to: 'issues#export_one', constraints: { id: /\d+/ }
   get 'issues/:id', to: 'issues#show', constraints: { id: /\d+/ }
   get 'issues/:id/form', to: 'issues#form', constraints: { id: /\d+/ }
   get 'issues/:id/options', to: 'issues#options', constraints: { id: /\d+/ }

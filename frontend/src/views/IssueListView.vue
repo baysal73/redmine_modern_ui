@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
-import { Bookmark, ChevronDown, ChevronRight, Layers, Lock, Trash2 } from 'lucide-vue-next';
+import { Bookmark, ChevronDown, ChevronRight, FileText, Layers, Lock, Trash2 } from 'lucide-vue-next';
 import { useRoute, useRouter } from 'vue-router';
-import { ApiError, api } from '../api/client';
+import { ApiError, api, pdfUrl } from '../api/client';
 import FilterBar from '../components/FilterBar.vue';
 import InlineCell from '../components/InlineCell.vue';
 import IssueDetail from '../components/IssueDetail.vue';
@@ -291,6 +291,7 @@ onUnmounted(() => { window.removeEventListener('keydown', onKey); document.remov
           <option v-for="g in GROUPS" :key="g" :value="g">{{ t('group.by') }}: {{ t('col.' + g) }}</option>
         </select>
       </label>
+      <a class="btn tb-btn" :href="pdfUrl.list(toApiParams(state, perPage))" target="_blank" rel="noopener" :title="t('pdf.list_hint')"><FileText :size="14" /> PDF</a>
       <div class="col-menu-wrap">
         <button class="btn tb-btn" aria-haspopup="true" :aria-expanded="viewsMenu" @click.stop="viewsMenu = !viewsMenu"><Bookmark :size="14" /> {{ currentViewName || t('views.title') }} <ChevronDown :size="13" /></button>
         <div v-if="viewsMenu" class="col-menu views-menu" role="menu" @click.stop>

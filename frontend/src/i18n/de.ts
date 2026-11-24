@@ -17,6 +17,7 @@ export default {
   'col.status': 'Status', 'col.priority': 'Priorität', 'col.assigned_to': 'Zugewiesen an', 'col.author': 'Autor',
   'col.due_date': 'Fällig', 'col.start_date': 'Beginn', 'col.done_ratio': '% erledigt', 'col.updated_on': 'Aktualisiert',
   'col.created_on': 'Erstellt',
+  'pdf.list_hint': 'Aktuelle Liste als PDF herunterladen', 'pdf.issue_hint': 'Dieses Ticket mit Verlauf als PDF herunterladen',
   'columns': 'Spalten',
   'unassigned': 'Nicht zugewiesen',
   'loading': 'Lädt…',

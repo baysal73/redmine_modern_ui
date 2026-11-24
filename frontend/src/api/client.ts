@@ -45,6 +45,12 @@ async function uploadFile(file: File): Promise<Upload> {
   return data.upload as Upload;
 }
 
+// Plain GET URLs (opened in a new tab) for Redmine's PDF reports; the session cookie authorizes them.
+export const pdfUrl = {
+  list: (params: Record<string, string | number | undefined>) => `${config.base}/api/issues/export${toQuery({ ...params, page: undefined, per_page: undefined })}`,
+  issue: (id: number) => `${config.base}/api/issues/${id}/pdf`,
+};
+
 export const api = {
   editor: (projectId?: string | number) => request<import('../lib/ckeditor').EditorConfig>(`editor${toQuery({ project_id: projectId })}`),
   upload: uploadFile,

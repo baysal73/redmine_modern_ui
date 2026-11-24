@@ -208,3 +208,5 @@ td.c-subject, th.c-subject { min-width: 220px; max-width: 380px; }
 td.c-project, td.c-assigned_to { max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
 td.c-assigned_to .cell, td.c-assigned_to > span { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .toast-action { margin-left: 12px; font: inherit; font-weight: 700; color: inherit; background: none; border: 0; border-bottom: 1px solid currentColor; cursor: pointer; padding: 0; }
+.pdf-link { display: inline-flex; align-items: center; gap: 4px; }
+a.tb-btn { text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
