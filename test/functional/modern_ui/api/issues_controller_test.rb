@@ -345,4 +345,52 @@ class ModernUi::Api::IssuesControllerTest < Redmine::ControllerTest
     assert_match %r{/projects/ecookbook/issues/new}, json['classic_url']
   end
 
+
+  # ---- bulk ------------------------------------------------------------------------------------------
+
+  def test_bulk_updates_visible_editable_issues
+    log_in 2
+    post :bulk, params: { ids: [1, 2], issue: { priority_id: 5 } }
+    assert_response :success
+    assert_equal [1, 2], json['updated'].map { |i| i['id'] }.sort
+    assert_equal [5, 5], Issue.where(id: [1, 2]).pluck(:priority_id)
+  end
+
+  def test_bulk_reports_issues_that_cannot_be_changed
+    log_in 2
+    # issue 4 is not editable for the workflow here: 99999 does not exist, private issue of another project is invisible
+    post :bulk, params: { ids: [1, 99_999], issue: { priority_id: 5 } }
+    assert_response :success
+    assert_equal [1], json['updated'].map { |i| i['id'] }
+    assert_equal [99_999], json['failed'].map { |f| f['id'] }
+  end
+
+  def test_bulk_respects_workflow
+    WorkflowTransition.where(role_id: 1).delete_all
+    log_in 2
+    post :bulk, params: { ids: [1], issue: { status_id: 3 } }
+    assert_response :success
+    assert_empty json['updated']
+    assert_equal 1, json['failed'].size
+    assert_not_equal 3, Issue.find(1).status_id
+  end
+
+  def test_bulk_requires_login_and_csrf_free_json_error
+    post :bulk, params: { ids: [1], issue: { priority_id: 5 } }
+    assert_response :unauthorized
+  end
+
+  def test_bulk_without_ids_or_changes_is_rejected
+    log_in 2
+    post :bulk, params: { ids: [], issue: { priority_id: 5 } }
+    assert_response :unprocessable_content
+    post :bulk, params: { ids: [1], issue: { subject: 'x' } }
+    assert_response :unprocessable_content
+  end
+
+  def test_bulk_limits_batch_size
+    log_in 2
+    post :bulk, params: { ids: (1..101).to_a, issue: { priority_id: 5 } }
+    assert_response :unprocessable_content
+  end
 end

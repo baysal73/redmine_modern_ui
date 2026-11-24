@@ -15,3 +15,5 @@ en:
   modern_ui_error_csrf: "Invalid or expired security token. Please reload the page."
   modern_ui_error_notes_blank: "Please enter a comment"
   modern_ui_error_no_tracker: "No tracker available for this project"
+  modern_ui_error_bulk_empty: "Select at least one issue and a change"
+  modern_ui_error_bulk_too_many: "Too many issues (maximum %{max})"

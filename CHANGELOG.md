@@ -5,6 +5,9 @@ All notable changes are documented here. The project follows [Semantic Versionin
 ## [Unreleased]
 
 ### Added
+- Filter chips with "Add filter" (multi-select status, tracker, priority, assignee; single project, due), person search.
+- Grouping (status, priority, assignee, project, tracker) and saved views (stored in the browser).
+- Bulk edit (`POST /app/api/issues/bulk`): status, assignee, priority, due date for up to 100 selected issues, workflow aware.
 - Start page "My week" (`GET /app/api/home`), sidebar navigation with links to Redmine's other menus.
 - Edit dialog for all editable fields including custom fields (`GET /app/api/issues/:id/form`).
 - Status, priority and avatar icons; due-date filter (overdue, this week, none).

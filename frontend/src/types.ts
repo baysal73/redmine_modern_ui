@@ -10,7 +10,7 @@ export interface IssueRow {
 export interface IssueList { issues: IssueRow[]; total: number; page: number; per_page: number; pages: number }
 export interface Meta {
   user: { id: number; name: string; admin: boolean; language: string };
-  statuses: Status[]; trackers: Ref[]; priorities: Ref[];
+  statuses: Status[]; trackers: Ref[]; priorities: Ref[]; users: Ref[];
   addable_project_ids: number[];
   classic_menu: { name: string; caption: string; url: string }[];
   projects: { id: number; identifier: string; name: string; parent_id: number | null; trackers: Ref[] }[];

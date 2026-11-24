@@ -42,6 +42,8 @@ export const api = {
   issue: (id: number) => request<{ issue: IssueDetail }>(`issues/${id}`),
   issueForm: (id: number) => request<IssueForm>(`issues/${id}/form`),
   issueOptions: (id: number) => request<IssueOptions>(`issues/${id}/options`),
+  bulkUpdate: (ids: number[], issue: Record<string, unknown>) =>
+    request<{ updated: IssueRow[]; failed: { id: number; error: string }[] }>('issues/bulk', { method: 'POST', body: JSON.stringify({ ids, issue }) }),
   updateIssue: (id: number, issue: Record<string, unknown>) =>
     request<{ issue: IssueRow }>(`issues/${id}`, { method: 'PATCH', body: JSON.stringify({ issue }) }),
 };

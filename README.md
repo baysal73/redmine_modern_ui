@@ -31,6 +31,7 @@ from Redmine; the plugin only adds a new front end under `/app`.
   (including private ones).
 - **Edit dialog** – all fields the user may change (role and workflow aware), including custom fields.
 - **Quick create** – a small dialog (`c`) with the essentials, more fields on demand.
+- **Filter chips**, grouping, saved views (per browser) and **bulk edit** for selected issues;
 - Dark mode, responsive layout, keyboard shortcuts (press `?`), accessible dialogs.
 - **German, English and Turkish** – follows the user's Redmine language. Easy to extend.
 - Optional **redirect after login** to the new UI (admin switch, opt-out per user under *My account*).

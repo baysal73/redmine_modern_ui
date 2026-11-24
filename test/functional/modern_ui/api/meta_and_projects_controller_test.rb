@@ -6,6 +6,15 @@ class ModernUi::Api::MetaControllerTest < Redmine::ControllerTest
   include ModernUiTestHelpers
   fixtures(*FIXTURES)
 
+  def test_meta_lists_people_for_the_assignee_filter_without_private_data
+    log_in 2
+    get :show
+    users = JSON.parse(response.body)['users']
+    assert users.any?
+    assert_equal %w[id name], users.first.keys.sort
+    assert_not_includes users.map { |u| u['id'] }, User.anonymous.id
+  end
+
   def test_requires_login
     get :show
     assert_response :unauthorized

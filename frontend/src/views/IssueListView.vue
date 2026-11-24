@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
-import { Lock } from 'lucide-vue-next';
+import { Bookmark, ChevronDown, ChevronRight, Layers, Lock, Trash2 } from 'lucide-vue-next';
 import { useRoute, useRouter } from 'vue-router';
 import { ApiError, api } from '../api/client';
+import FilterBar from '../components/FilterBar.vue';
 import InlineCell from '../components/InlineCell.vue';
 import IssueDetail from '../components/IssueDetail.vue';
 import Avatar from '../components/ui/Avatar.vue';
@@ -10,7 +11,7 @@ import PriorityIcon from '../components/ui/PriorityIcon.vue';
 import StatusBadge from '../components/ui/StatusBadge.vue';
 import { loadMeta, store } from '../lib/store';
 import { locale, t } from '../i18n';
-import { defaultState, nextSort, stateFromQuery, stateToQuery, toApiParams, type ListState } from '../lib/listQuery';
+import { GROUPS, defaultState, nextSort, stateFromQuery, stateToQuery, toApiParams, type ListState } from '../lib/listQuery';
 import { toast } from '../lib/toast';
 import { ui } from '../lib/ui';
 import type { IssueList, IssueOptions, IssueRow } from '../types';
@@ -22,7 +23,7 @@ const meta = computed(() => store.meta);
 const list = ref<IssueList | null>(null);
 const loading = ref(true);
 const error = ref('');
-const searchBox = ref<HTMLInputElement | null>(null);
+const filterBar = ref<InstanceType<typeof FilterBar> | null>(null);
 const searchText = ref('');
 const perPage = ref(Number(safeGet('modern_ui_per_page')) || 50);
 
@@ -40,7 +41,7 @@ function openIssue(id: number | null) {
 }
 function onRowClick(e: MouseEvent, id: number) {
   if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return; // let the browser handle new-tab clicks
-  if ((e.target as HTMLElement).closest('.cell, .cell-input, select, input')) return;
+  if ((e.target as HTMLElement).closest('.cell, .cell-input, select, input, .sel')) return;
   e.preventDefault();
   openIssue(id);
 }
@@ -49,6 +50,8 @@ function onDetailUpdated(row: IssueRow) {
   if (i >= 0) list.value!.issues[i] = row;
 }
 const columnMenu = ref(false);
+const viewsMenu = ref(false);
+const selected = ref<Set<number>>(new Set());
 function safeGet(k: string): string | null { try { return localStorage.getItem(k); } catch { return null; } }
 function safeSet(k: string, v: string) { try { localStorage.setItem(k, v); } catch { /* ignore */ } }
 function loadColumns(): string[] {
@@ -89,7 +92,7 @@ async function load() {
     if (mine === seq) loading.value = false;
   }
 }
-watch(() => route.query, () => { searchText.value = state.value.q; load(); }, { immediate: true });
+watch(() => route.query, () => { searchText.value = state.value.q; selected.value = new Set(); load(); }, { immediate: true });
 
 let searchTimer: number | undefined;
 function onSearchInput() {
@@ -126,9 +129,100 @@ async function save(row: IssueRow, field: string, value: string | number | null)
   }
 }
 
+// ---- selection and bulk edit ----
+const allSelected = computed(() => !!list.value?.issues.length && list.value.issues.every((i) => selected.value.has(i.id)));
+function toggleRow(id: number) {
+  const next = new Set(selected.value);
+  if (next.has(id)) next.delete(id); else next.add(id);
+  selected.value = next;
+}
+function toggleAll() {
+  selected.value = allSelected.value ? new Set() : new Set(list.value?.issues.map((i) => i.id) ?? []);
+}
+const bulkBusy = ref(false);
+async function bulk(field: 'status_id' | 'assigned_to_id' | 'priority_id', raw: string, el: HTMLSelectElement) {
+  el.value = '';
+  if (raw === '') return;
+  const ids = [...selected.value];
+  bulkBusy.value = true;
+  try {
+    const value = raw === 'none' ? null : Number(raw);
+    const res = await api.bulkUpdate(ids, { [field]: value });
+    if (res.failed.length) toast(t('bulk.partial', { ok: res.updated.length, failed: res.failed.length, reason: res.failed[0].error }), 'error');
+    else toast(t('bulk.done', { n: res.updated.length }));
+    selected.value = new Set(res.failed.map((f) => f.id));
+    optionsCache.clear();
+    await load();
+  } catch (e) {
+    toast(t('edit.failed', { message: (e as ApiError).message }), 'error');
+  } finally { bulkBusy.value = false; }
+}
+
+// ---- grouping ----
+const groupLabel = (r: IssueRow, g: string): string => {
+  switch (g) {
+    case 'status': return r.status.name;
+    case 'priority': return r.priority.name;
+    case 'assigned_to': return r.assigned_to?.name ?? t('filter.assignee.none');
+    case 'project': return r.project.name;
+    case 'tracker': return r.tracker.name;
+    default: return '';
+  }
+};
+const collapsed = ref<Set<string>>(new Set());
+function toggleGroup(g: string) {
+  const next = new Set(collapsed.value);
+  if (next.has(g)) next.delete(g); else next.add(g);
+  collapsed.value = next;
+}
+type Entry = { head: true; key: string; uid: string; count: number } | { head: false; r: IssueRow };
+const entries = computed<Entry[]>(() => {
+  const rows = list.value?.issues ?? [];
+  const g = state.value.group;
+  if (!g) return rows.map((r) => ({ head: false, r }));
+  const out: Entry[] = [];
+  const counts = new Map<string, number>();
+  rows.forEach((r) => counts.set(groupLabel(r, g), (counts.get(groupLabel(r, g)) ?? 0) + 1));
+  let last: string | null = null;
+  for (const r of rows) {
+    const key = groupLabel(r, g);
+    if (key !== last) { out.push({ head: true, key, uid: `g${out.length}:${key}`, count: counts.get(key) ?? 0 }); last = key; }
+    if (!collapsed.value.has(key)) out.push({ head: false, r });
+  }
+  return out;
+});
+
+// ---- saved views (kept in this browser) ----
+interface SavedView { name: string; query: Record<string, string> }
+const views = ref<SavedView[]>(loadViews());
+const newViewName = ref('');
+function loadViews(): SavedView[] {
+  try {
+    const v = JSON.parse(safeGet('modern_ui_views') ?? '[]');
+    return Array.isArray(v) ? v.filter((x) => x && typeof x.name === 'string' && x.query && typeof x.query === 'object') : [];
+  } catch { return []; }
+}
+function persistViews() { safeSet('modern_ui_views', JSON.stringify(views.value)); }
+function saveView() {
+  const name = newViewName.value.trim();
+  if (!name) return;
+  const q = stateToQuery({ ...state.value, page: 1 });
+  views.value = [...views.value.filter((v) => v.name !== name), { name, query: q }];
+  persistViews();
+  newViewName.value = '';
+  toast(t('views.saved', { name }));
+}
+function applyView(v: SavedView) { router.push({ query: v.query }); viewsMenu.value = false; }
+function deleteView(name: string) { views.value = views.value.filter((v) => v.name !== name); persistViews(); }
+const currentViewName = computed(() => {
+  const cur = JSON.stringify(Object.entries(stateToQuery({ ...state.value, page: 1 })).sort());
+  return views.value.find((v) => JSON.stringify(Object.entries(v.query).sort()) === cur)?.name ?? '';
+});
+
 // ---- helpers ----
 const fmtDate = (s: string | null) => (s ? new Date(s).toLocaleDateString(locale) : '');
 const fmtDateTime = (s: string) => new Date(s).toLocaleString(locale, { dateStyle: 'short', timeStyle: 'short' });
+const fmtShort = (s: string) => new Date(s).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: '2-digit' });
 const isOverdue = (r: IssueRow) => !!r.due_date && !r.status.is_closed && new Date(r.due_date) < new Date(new Date().toDateString());
 const appUrl = (id: number) => router.resolve({ name: 'issues', params: { id }, query: route.query }).href;
 const sortCol = computed(() => state.value.sort.split(':')[0]);
@@ -143,7 +237,7 @@ const projectOptions = computed(() => {
 function onKey(e: KeyboardEvent) {
   const tag = (e.target as HTMLElement).tagName;
   const typing = ['INPUT', 'SELECT', 'TEXTAREA'].includes(tag);
-  if (e.key === '/' && !typing) { e.preventDefault(); searchBox.value?.focus(); }
+  if (e.key === '/' && !typing) { e.preventDefault(); filterBar.value?.focusSearch(); }
   if (e.key === 'Escape' && selectedId.value && !typing) openIssue(null);
   if ((e.key === 'j' || e.key === 'k') && !typing && !e.ctrlKey && !e.metaKey && list.value?.issues.length) {
     const ids = list.value.issues.map((i) => i.id);
@@ -152,7 +246,7 @@ function onKey(e: KeyboardEvent) {
     openIssue(ids[nxt]);
   }
 }
-function onDocClick(e: MouseEvent) { if (!(e.target as HTMLElement).closest('.col-menu-wrap')) columnMenu.value = false; }
+function onDocClick(e: MouseEvent) { if (!(e.target as HTMLElement).closest('.col-menu-wrap')) { columnMenu.value = false; viewsMenu.value = false; } }
 onMounted(async () => {
   window.addEventListener('keydown', onKey);
   document.addEventListener('click', onDocClick);
@@ -164,48 +258,58 @@ onUnmounted(() => { window.removeEventListener('keydown', onKey); document.remov
 <template>
   <section class="list-view">
     <div class="page-head"><h1>{{ t('nav.issues') }}</h1><span v-if="list" class="muted">{{ t('results', { total: list.total }) }}</span></div>
-    <div class="filters" role="search">
-      <input ref="searchBox" v-model="searchText" class="search" type="search" :placeholder="t('filter.search') + '  ( / )'"
-             :aria-label="t('filter.search')" @input="onSearchInput">
-      <select :value="state.project" :aria-label="t('filter.project')" @change="go({ project: ($event.target as HTMLSelectElement).value })">
-        <option value="">{{ t('filter.project') }}</option>
-        <option v-for="p in projectOptions" :key="p.id" :value="p.id">{{ p.label }}</option>
-      </select>
-      <select :value="state.status" :aria-label="t('col.status')" @change="go({ status: ($event.target as HTMLSelectElement).value })">
-        <option value="open">{{ t('filter.status.open') }}</option>
-        <option value="closed">{{ t('filter.status.closed') }}</option>
-        <option value="all">{{ t('filter.status.all') }}</option>
-        <option v-for="s in meta?.statuses" :key="s.id" :value="String(s.id)">{{ s.name }}</option>
-      </select>
-      <select :value="state.tracker" :aria-label="t('col.tracker')" @change="go({ tracker: ($event.target as HTMLSelectElement).value })">
-        <option value="">{{ t('filter.tracker') }}</option>
-        <option v-for="x in meta?.trackers" :key="x.id" :value="String(x.id)">{{ x.name }}</option>
-      </select>
-      <select :value="state.priority" :aria-label="t('col.priority')" @change="go({ priority: ($event.target as HTMLSelectElement).value })">
-        <option value="">{{ t('filter.priority') }}</option>
-        <option v-for="x in meta?.priorities" :key="x.id" :value="String(x.id)">{{ x.name }}</option>
-      </select>
-      <select :value="state.assignee" :aria-label="t('col.assigned_to')" @change="go({ assignee: ($event.target as HTMLSelectElement).value })">
-        <option value="">{{ t('filter.assignee') }}</option>
-        <option value="me">{{ t('filter.assignee.me') }}</option>
-        <option value="none">{{ t('filter.assignee.none') }}</option>
-      </select>
-      <select :value="state.due" :aria-label="t('col.due_date')" @change="go({ due: ($event.target as HTMLSelectElement).value })">
-        <option value="">{{ t('filter.due') }}</option>
-        <option value="overdue">{{ t('filter.due.overdue') }}</option>
-        <option value="week">{{ t('filter.due.week') }}</option>
-        <option value="none">{{ t('filter.due.none') }}</option>
-      </select>
-      <button v-if="filtersActive" class="link-btn" @click="router.push({ query: {} })">{{ t('filter.reset') }}</button>
+    <div class="list-toolbar">
+      <FilterBar ref="filterBar" :state="state" :meta="meta" :search-text="searchText"
+                 @change="go($event)" @search="(v) => { searchText = v; onSearchInput(); }" @reset="router.push({ query: {} })" />
       <span class="spacer" />
+      <label class="tb-select" :class="{ on: state.group }"><Layers :size="14" aria-hidden="true" />
+        <select :value="state.group" :aria-label="t('group.by')" @change="go({ group: ($event.target as HTMLSelectElement).value }, false)">
+          <option value="">{{ t('group.none') }}</option>
+          <option v-for="g in GROUPS" :key="g" :value="g">{{ t('group.by') }}: {{ t('col.' + g) }}</option>
+        </select>
+      </label>
       <div class="col-menu-wrap">
-        <button class="btn" aria-haspopup="true" :aria-expanded="columnMenu" @click.stop="columnMenu = !columnMenu">{{ t('columns') }} ▾</button>
+        <button class="btn tb-btn" aria-haspopup="true" :aria-expanded="viewsMenu" @click.stop="viewsMenu = !viewsMenu"><Bookmark :size="14" /> {{ currentViewName || t('views.title') }} <ChevronDown :size="13" /></button>
+        <div v-if="viewsMenu" class="col-menu views-menu" role="menu" @click.stop>
+          <p v-if="!views.length" class="muted small px-2 py-1">{{ t('views.empty') }}</p>
+          <div v-for="v in views" :key="v.name" class="view-row">
+            <button class="view-name" :class="{ on: v.name === currentViewName }" @click="applyView(v)">{{ v.name }}</button>
+            <button class="icon-btn view-del" :aria-label="t('views.delete', { name: v.name })" @click="deleteView(v.name)"><Trash2 :size="13" /></button>
+          </div>
+          <form class="view-save" @submit.prevent="saveView">
+            <input v-model="newViewName" :placeholder="t('views.name_ph')" :aria-label="t('views.name_ph')" maxlength="60">
+            <button class="btn primary" :disabled="!newViewName.trim()">{{ t('views.save') }}</button>
+          </form>
+          <p class="muted small px-2">{{ t('views.local_hint') }}</p>
+        </div>
+      </div>
+      <div class="col-menu-wrap">
+        <button class="btn tb-btn" aria-haspopup="true" :aria-expanded="columnMenu" @click.stop="columnMenu = !columnMenu">{{ t('columns') }} <ChevronDown :size="13" /></button>
         <div v-if="columnMenu" class="col-menu" role="menu">
           <label v-for="c in ALL_COLUMNS" :key="c" :class="{ disabled: c === 'subject' }">
             <input type="checkbox" :checked="columns.includes(c)" :disabled="c === 'subject'" @change="toggleColumn(c)"> {{ t('col.' + c) }}
           </label>
         </div>
       </div>
+    </div>
+
+    <div v-if="selected.size" class="bulkbar" role="region" :aria-label="t('bulk.title')">
+      <strong>{{ t('bulk.selected', { n: selected.size }) }}</strong>
+      <select :disabled="bulkBusy" :aria-label="t('col.status')" @change="bulk('status_id', ($event.target as HTMLSelectElement).value, $event.target as HTMLSelectElement)">
+        <option value="">{{ t('bulk.set_status') }}</option>
+        <option v-for="s in meta?.statuses" :key="s.id" :value="s.id">{{ s.name }}</option>
+      </select>
+      <select :disabled="bulkBusy" :aria-label="t('col.assigned_to')" @change="bulk('assigned_to_id', ($event.target as HTMLSelectElement).value, $event.target as HTMLSelectElement)">
+        <option value="">{{ t('bulk.set_assignee') }}</option>
+        <option value="none">{{ t('filter.assignee.none') }}</option>
+        <option v-for="u in meta?.users" :key="u.id" :value="u.id">{{ u.name }}</option>
+      </select>
+      <select :disabled="bulkBusy" :aria-label="t('col.priority')" @change="bulk('priority_id', ($event.target as HTMLSelectElement).value, $event.target as HTMLSelectElement)">
+        <option value="">{{ t('bulk.set_priority') }}</option>
+        <option v-for="p in meta?.priorities" :key="p.id" :value="p.id">{{ p.name }}</option>
+      </select>
+      <span class="spacer" />
+      <button class="link-btn" @click="selected = new Set()">{{ t('bulk.clear') }}</button>
     </div>
 
     <div class="split" :class="{ open: !!selectedId }">
@@ -216,6 +320,7 @@ onUnmounted(() => { window.removeEventListener('keydown', onKey); document.remov
       <table v-if="list">
         <thead>
           <tr>
+            <th class="sel"><input type="checkbox" :checked="allSelected" :aria-label="t('bulk.select_all')" @change="toggleAll"></th>
             <th v-for="c in shownColumns" :key="c" :class="'c-' + c"
                 :aria-sort="sortCol === c ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'">
               <button v-if="SORTABLE.has(c)" class="th-btn" @click="go({ sort: nextSort(state.sort, c) }, false)">
@@ -226,30 +331,40 @@ onUnmounted(() => { window.removeEventListener('keydown', onKey); document.remov
           </tr>
         </thead>
         <tbody>
-          <tr v-for="r in list.issues" :key="r.id" :class="{ closed: r.status.is_closed, selected: r.id === selectedId }"
-              :aria-selected="r.id === selectedId" @click="onRowClick($event, r.id)">
-            <td v-for="c in shownColumns" :key="c" :class="'c-' + c">
-              <template v-if="c === 'id'"><a :href="appUrl(r.id)">{{ r.id }}</a></template>
-              <template v-else-if="c === 'subject'"><a class="subject" :href="appUrl(r.id)">{{ r.subject }}</a><Lock v-if="r.is_private" :size="12" class="ml-1 inline text-muted" aria-label="private" /></template>
-              <template v-else-if="c === 'project'">{{ r.project.name }}</template>
-              <template v-else-if="c === 'tracker'">{{ r.tracker.name }}</template>
-              <template v-else-if="c === 'author'"><span v-if="r.author" class="inline-flex items-center gap-2"><Avatar :name="r.author.name" :size="20" />{{ r.author.name }}</span></template>
-              <InlineCell v-else-if="c === 'status'" kind="select" editable :label="r.status.name" :value="r.status.id"
-                          :load-options="() => loadOpts(r.id, 'statuses')" @save="(v) => save(r, 'status_id', v)"><StatusBadge :status="r.status" plain /></InlineCell>
-              <InlineCell v-else-if="c === 'priority'" kind="select" editable :label="r.priority.name" :value="r.priority.id"
-                          :load-options="() => loadOpts(r.id, 'priorities')" @save="(v) => save(r, 'priority_id', v)"><PriorityIcon :priority="r.priority" /></InlineCell>
-              <InlineCell v-else-if="c === 'assigned_to'" kind="select" editable allow-empty :label="r.assigned_to?.name ?? ''" :value="r.assigned_to?.id ?? null"
-                          :load-options="() => loadOpts(r.id, 'assignees')" @save="(v) => save(r, 'assigned_to_id', v)">
-                <span v-if="r.assigned_to" class="inline-flex items-center gap-2"><Avatar :name="r.assigned_to.name" :size="20" />{{ r.assigned_to.name }}</span><span v-else class="muted">—</span>
-              </InlineCell>
-              <InlineCell v-else-if="c === 'due_date'" kind="date" editable :label="fmtDate(r.due_date)" :value="r.due_date"
-                          :badge="isOverdue(r) ? 'overdue' : ''" @save="(v) => save(r, 'due_date', v)" />
-              <template v-else-if="c === 'start_date'">{{ fmtDate(r.start_date) }}</template>
-              <template v-else-if="c === 'done_ratio'"><progress :value="r.done_ratio" max="100" /> {{ r.done_ratio }}%</template>
-              <template v-else-if="c === 'updated_on'">{{ fmtDateTime(r.updated_on) }}</template>
-              <template v-else-if="c === 'created_on'">{{ fmtDateTime(r.created_on) }}</template>
+          <template v-for="en in entries" :key="en.head ? en.uid : en.r.id">
+          <tr v-if="en.head" class="group-row">
+            <td :colspan="shownColumns.length + 1">
+              <button class="group-btn" :aria-expanded="!collapsed.has(en.key)" @click="toggleGroup(en.key)">
+                <component :is="collapsed.has(en.key) ? ChevronRight : ChevronDown" :size="15" /> {{ en.key }} <span class="muted">{{ en.count }}</span>
+              </button>
             </td>
           </tr>
+          <tr v-else :class="{ closed: en.r.status.is_closed, selected: en.r.id === selectedId }"
+              :aria-selected="en.r.id === selectedId" @click="onRowClick($event, en.r.id)">
+            <td class="sel"><input type="checkbox" :checked="selected.has(en.r.id)" :aria-label="t('bulk.select_row', { id: en.r.id })" @change="toggleRow(en.r.id)"></td>
+            <td v-for="c in shownColumns" :key="c" :class="'c-' + c">
+              <template v-if="c === 'id'"><a :href="appUrl(en.r.id)">{{ en.r.id }}</a></template>
+              <template v-else-if="c === 'subject'"><a class="subject" :href="appUrl(en.r.id)">{{ en.r.subject }}</a><Lock v-if="en.r.is_private" :size="12" class="ml-1 inline text-muted" aria-label="private" /></template>
+              <template v-else-if="c === 'project'">{{ en.r.project.name }}</template>
+              <template v-else-if="c === 'tracker'">{{ en.r.tracker.name }}</template>
+              <template v-else-if="c === 'author'"><span v-if="en.r.author" class="inline-flex items-center gap-2"><Avatar :name="en.r.author.name" :size="20" />{{ en.r.author.name }}</span></template>
+              <InlineCell v-else-if="c === 'status'" kind="select" editable :label="en.r.status.name" :value="en.r.status.id"
+                          :load-options="() => loadOpts(en.r.id, 'statuses')" @save="(v) => save(en.r, 'status_id', v)"><StatusBadge :status="en.r.status" plain /></InlineCell>
+              <InlineCell v-else-if="c === 'priority'" kind="select" editable :label="en.r.priority.name" :value="en.r.priority.id"
+                          :load-options="() => loadOpts(en.r.id, 'priorities')" @save="(v) => save(en.r, 'priority_id', v)"><PriorityIcon :priority="en.r.priority" /></InlineCell>
+              <InlineCell v-else-if="c === 'assigned_to'" kind="select" editable allow-empty :label="en.r.assigned_to?.name ?? ''" :value="en.r.assigned_to?.id ?? null"
+                          :load-options="() => loadOpts(en.r.id, 'assignees')" @save="(v) => save(en.r, 'assigned_to_id', v)">
+                <span v-if="en.r.assigned_to" class="inline-flex items-center gap-2"><Avatar :name="en.r.assigned_to.name" :size="20" />{{ en.r.assigned_to.name }}</span><span v-else class="muted">—</span>
+              </InlineCell>
+              <InlineCell v-else-if="c === 'due_date'" kind="date" editable :label="fmtDate(en.r.due_date)" :value="en.r.due_date"
+                          :badge="isOverdue(en.r) ? 'overdue' : ''" @save="(v) => save(en.r, 'due_date', v)" />
+              <template v-else-if="c === 'start_date'">{{ fmtDate(en.r.start_date) }}</template>
+              <template v-else-if="c === 'done_ratio'"><progress :value="en.r.done_ratio" max="100" /> {{ en.r.done_ratio }}%</template>
+              <template v-else-if="c === 'updated_on'"><span :title="fmtDateTime(en.r.updated_on)">{{ fmtShort(en.r.updated_on) }}</span></template>
+              <template v-else-if="c === 'created_on'"><span :title="fmtDateTime(en.r.created_on)">{{ fmtShort(en.r.created_on) }}</span></template>
+            </td>
+          </tr>
+          </template>
         </tbody>
       </table>
       <p v-if="loading && !list" class="muted">{{ t('loading') }}</p>

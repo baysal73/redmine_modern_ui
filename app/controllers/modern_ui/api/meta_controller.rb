@@ -12,6 +12,7 @@ module ModernUi
           statuses: IssueStatus.sorted.map { |s| serializers.status(s) },
           trackers: Tracker.sorted.map { |t| serializers.ref(t) },
           priorities: IssuePriority.active.map { |p| serializers.ref(p).merge(is_default: p.is_default?) },
+          users: filter_users,
           addable_project_ids: Project.allowed_to(User.current, :add_issues).where(id: projects.map(&:id)).pluck(:id),
           projects: projects.map { |p| serializers.project(p) },
           classic_menu: classic_menu,
@@ -20,6 +21,11 @@ module ModernUi
       end
 
       private
+
+      # People that can be picked in the assignee filter (only those the current user may see).
+      def filter_users
+        User.visible.active.sorted.limit(500).map { |u| serializers.user_ref(u) }
+      end
 
       # Links of Redmine's own global menus (including those added by other plugins, e.g. CRM), so the new UI can
       # point to everything it does not replace yet. Items we cover ourselves are left out.

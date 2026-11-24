@@ -144,7 +144,50 @@ module ModernUi
         end
       end
 
+      BULK_FIELDS = %i[status_id assigned_to_id priority_id due_date].freeze
+      MAX_BULK = 100
+
+      # POST /app/api/issues/bulk  { ids: [1, 2], issue: { status_id, assigned_to_id, priority_id, due_date } }
+      # Every issue goes through the same checks as a single update (visibility, edit permission, workflow,
+      # safe_attributes). Issues that fail are reported, the others are still saved.
+      def bulk
+        ids = Array(params[:ids]).map(&:to_i).uniq.first(MAX_BULK + 1)
+        return render_json_error(422, l(:modern_ui_error_bulk_empty)) if ids.empty?
+        return render_json_error(422, l(:modern_ui_error_bulk_too_many, max: MAX_BULK)) if ids.size > MAX_BULK
+
+        attrs = params.require(:issue).permit(*BULK_FIELDS).to_h
+        return render_json_error(422, l(:modern_ui_error_bulk_empty)) if attrs.empty?
+
+        updated = []
+        failed = []
+        Issue.visible.where(id: ids).includes(:project, :status).each do |issue|
+          error = bulk_update_error(issue, attrs)
+          if error
+            failed << { id: issue.id, error: error }
+          else
+            updated << serializers.issue_row(issue.reload)
+          end
+        end
+        (ids - updated.map { |i| i[:id] } - failed.map { |f| f[:id] }).each do |id|
+          failed << { id: id, error: l(:modern_ui_error_not_found) }
+        end
+        render json: { updated: updated, failed: failed }
+      end
+
       private
+
+      def bulk_update_error(issue, attrs)
+        return l(:modern_ui_error_forbidden) unless issue.attributes_editable?(User.current)
+
+        if attrs.key?('status_id') && attrs['status_id'].to_s != issue.status_id.to_s &&
+           issue.new_statuses_allowed_to(User.current).map(&:id).exclude?(attrs['status_id'].to_i)
+          return l(:modern_ui_error_status_not_allowed)
+        end
+
+        issue.init_journal(User.current)
+        issue.safe_attributes = attrs
+        issue.save ? nil : issue.errors.full_messages.to_sentence
+      end
 
       def build_query(status: nil, sort: nil)
         project = params[:project_id].present? ? find_visible_project(params[:project_id]) : nil

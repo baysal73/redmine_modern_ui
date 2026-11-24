@@ -11,6 +11,7 @@ scope "#{base}/api", module: 'modern_ui/api', as: 'modern_ui_api' do
   get 'projects/:id/assignees', to: 'projects#assignees'
   get 'projects/:id/new_issue_options', to: 'projects#new_issue_options'
   post 'issues', to: 'issues#create'
+  post 'issues/bulk', to: 'issues#bulk'
   get 'issues', to: 'issues#index'
   get 'issues/:id', to: 'issues#show', constraints: { id: /\d+/ }
   get 'issues/:id/form', to: 'issues#form', constraints: { id: /\d+/ }
