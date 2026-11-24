@@ -5,6 +5,7 @@ All notable changes are documented here. The project follows [Semantic Versionin
 ## [Unreleased]
 
 ### Added
+- Rich text: when Redmine's text formatting is CKEditor (redmine_ckeditor), descriptions and comments use that same editor (`GET /app/api/editor`), so content is stored and shown identically in the classic UI. Other formats get a plain textarea.
 - Attachments: pick, drop or paste files in the comment box and the quick-create dialog (`POST /app/api/uploads`, then `uploads` on create/update; only the user's own uploads can be attached).
 - Setting "Statuses counted as done": lets the new UI treat statuses as finished that Redmine does not flag as closed.
 - Filter chips with "Add filter" (multi-select status, tracker, priority, assignee; single project, due), person search.

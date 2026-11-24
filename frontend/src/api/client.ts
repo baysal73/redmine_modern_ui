@@ -46,6 +46,7 @@ async function uploadFile(file: File): Promise<Upload> {
 }
 
 export const api = {
+  editor: (projectId?: string | number) => request<import('../lib/ckeditor').EditorConfig>(`editor${toQuery({ project_id: projectId })}`),
   upload: uploadFile,
   home: () => request<Home>('home'),
   meta: () => request<Meta>('meta'),

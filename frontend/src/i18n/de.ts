@@ -82,4 +82,5 @@ export default {
   'attach.failed': '{name}: {message}',
   'attach.remove': '{name} entfernen',
   'attach.uploading': 'Wird hochgeladen…',
+  'editor.failed': 'Der Editor konnte nicht geladen werden, es wird ein einfaches Textfeld verwendet.',
 } as Record<string, string>;

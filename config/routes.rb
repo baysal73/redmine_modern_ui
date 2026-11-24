@@ -7,6 +7,7 @@ get "#{base}/api/me", to: 'modern_ui#me'
 scope "#{base}/api", module: 'modern_ui/api', as: 'modern_ui_api' do
   get 'meta', to: 'meta#show'
   get 'home', to: 'home#show'
+  get 'editor', to: 'editor#show'
   get 'projects', to: 'projects#index'
   get 'projects/:id/assignees', to: 'projects#assignees'
   get 'projects/:id/new_issue_options', to: 'projects#new_issue_options'

@@ -82,4 +82,5 @@ export default {
   'attach.failed': '{name}: {message}',
   'attach.remove': '{name} kaldır',
   'attach.uploading': 'Yükleniyor…',
+  'editor.failed': 'Zengin düzenleyici yüklenemedi; düz metin kullanılıyor.',
 } as Record<string, string>;

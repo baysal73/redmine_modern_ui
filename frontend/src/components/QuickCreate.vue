@@ -2,9 +2,11 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ApiError, api, readConfig } from '../api/client';
+import RichText from './RichText.vue';
 import AttachmentPicker from './AttachmentPicker.vue';
 import { loadMeta, store } from '../lib/store';
 import { t } from '../i18n';
+import { hasContent } from '../lib/ckeditor';
 import { trapFocus } from '../lib/dialog';
 import { toast } from '../lib/toast';
 import { ui } from '../lib/ui';
@@ -58,7 +60,7 @@ async function submit() {
   try {
     const res = await api.createIssue({
       project_id: projectId.value, tracker_id: trackerId.value, subject: subject.value.trim(),
-      assigned_to_id: assignee.value || null, description: description.value || null,
+      assigned_to_id: assignee.value || null, description: hasContent(description.value) ? description.value : null,
       priority_id: priorityId.value || null, due_date: dueDate.value || null,
       uploads: uploads.value.map((u) => ({ token: u.token, filename: u.filename, content_type: u.content_type })),
     });
@@ -104,7 +106,7 @@ void config;
         </label>
         <button type="button" class="link-btn" :aria-expanded="more" @click="more = !more">{{ more ? '▾' : '▸' }} {{ t('create.more') }}</button>
         <template v-if="more">
-          <label>{{ t('detail.description') }}<textarea v-model="description" rows="4" /></label>
+          <div><label>{{ t('detail.description') }}</label><RichText :key="projectId" v-model="description" :project="projectId || null" :rows="4" :height="160" :label="t('detail.description')" /></div>
           <AttachmentPicker ref="picker" v-model="uploads" />
           <div class="row2">
             <label>{{ t('col.priority') }}

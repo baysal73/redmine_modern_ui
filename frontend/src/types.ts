@@ -41,6 +41,7 @@ export interface CustomFieldForm {
   value: string | string[]; options: { label: string; value: string }[];
 }
 export interface IssueForm {
+  project_id: string;
   values: Record<string, string | number | boolean | null>;
   editable: string[]; required: string[]; description_as_text: boolean;
   options: { statuses: Status[]; priorities: Ref[]; assignees: Ref[]; categories: Ref[]; versions: Ref[] };

@@ -94,3 +94,20 @@ class ModernUi::Api::HomeControllerTest < Redmine::ControllerTest
     assert_empty json['recent'].map { |i| i['id'] } - visible
   end
 end
+
+class ModernUi::Api::EditorControllerTest < Redmine::ControllerTest
+  include ModernUiTestHelpers
+  fixtures(*FIXTURES)
+
+  def test_requires_login
+    get :show
+    assert_response :unauthorized
+  end
+
+  def test_plain_text_formatting_has_no_rich_editor
+    log_in 2
+    get :show
+    assert_response :success
+    assert_equal 'plain', JSON.parse(response.body)['kind']
+  end
+end

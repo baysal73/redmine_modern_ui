@@ -4,11 +4,13 @@ import { computed, ref, watch } from 'vue';
 import { ApiError, api, readConfig } from '../api/client';
 import AttachmentPicker from './AttachmentPicker.vue';
 import InlineCell from './InlineCell.vue';
+import RichText from './RichText.vue';
 import IssueEditDialog from './IssueEditDialog.vue';
 import Avatar from './ui/Avatar.vue';
 import PriorityIcon from './ui/PriorityIcon.vue';
 import StatusBadge from './ui/StatusBadge.vue';
 import { locale, t } from '../i18n';
+import { hasContent } from '../lib/ckeditor';
 import { toast } from '../lib/toast';
 import type { IssueDetail, IssueRow, Upload } from '../types';
 
@@ -50,7 +52,7 @@ async function patch(fields: Record<string, unknown>, okMessage = true) {
   } catch (e) { toast(t('edit.failed', { message: (e as Error).message }), 'error'); return false; }
 }
 async function sendComment() {
-  if ((!comment.value.trim() && !uploads.value.length) || sending.value || picker.value?.busy) return;
+  if ((!hasContent(comment.value) && !uploads.value.length) || sending.value || picker.value?.busy) return;
   sending.value = true;
   const body: Record<string, unknown> = { notes: comment.value, private_notes: privateNote.value };
   if (uploads.value.length) body.uploads = uploads.value.map((u) => ({ token: u.token, filename: u.filename, content_type: u.content_type }));
@@ -138,13 +140,13 @@ const canEdit = computed(() => !!issue.value?.permissions.edit);
 
       <form v-if="issue.permissions.comment" class="comment-form" @submit.prevent="sendComment">
         <label for="mui-comment"><strong>{{ t('detail.comment') }}</strong></label>
-        <textarea id="mui-comment" v-model="comment" rows="4" :placeholder="t('detail.comment.placeholder')"
-                  @keydown.ctrl.enter.prevent="sendComment" @keydown.meta.enter.prevent="sendComment" />
+        <RichText v-model="comment" :project="issue.project.id" :rows="4" :height="140" :placeholder="t('detail.comment.placeholder')"
+                  :label="t('detail.comment')" @submit="sendComment" />
         <AttachmentPicker ref="picker" v-model="uploads" />
         <div class="comment-actions">
           <label v-if="issue.permissions.private_notes" class="inline"><input v-model="privateNote" type="checkbox"> {{ t('detail.comment.private') }}</label>
           <span class="spacer" />
-          <button class="btn primary" type="submit" :disabled="(!comment.trim() && !uploads.length) || sending">{{ t('detail.comment.send') }}</button>
+          <button class="btn primary" type="submit" :disabled="(!hasContent(comment) && !uploads.length) || sending">{{ t('detail.comment.send') }}</button>
         </div>
       </form>
     </div>

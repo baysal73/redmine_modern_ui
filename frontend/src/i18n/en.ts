@@ -83,4 +83,5 @@ export default {
   'attach.failed': '{name}: {message}',
   'attach.remove': 'Remove {name}',
   'attach.uploading': 'Uploading…',
+  'editor.failed': 'The rich editor could not be loaded; plain text mode is used.',
 } as Record<string, string>;

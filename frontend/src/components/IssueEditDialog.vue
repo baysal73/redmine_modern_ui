@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { ApiError, api, readConfig } from '../api/client';
+import RichText from './RichText.vue';
 import { t } from '../i18n';
 import { trapFocus } from '../lib/dialog';
 import { toast } from '../lib/toast';
@@ -23,7 +24,7 @@ let release: (() => void) | null = null;
 const can = (f: string) => !!form.value?.editable.includes(f);
 const req = (f: string) => !!form.value?.required.includes(f);
 const classicEdit = `${config.root}/issues/${props.id}/edit`;
-const showDescription = computed(() => can('description') && form.value?.description_as_text);
+const showDescription = computed(() => can('description'));
 const hasAnyField = computed(() => (form.value?.editable.length ?? 0) > 0 || (form.value?.custom_fields.length ?? 0) > 0);
 
 onMounted(async () => {
@@ -75,8 +76,8 @@ async function save() {
       <p v-else-if="form && !hasAnyField" class="muted">{{ t('edit.no_permission') }}</p>
       <form v-else-if="form" @submit.prevent="save">
         <label v-if="can('subject')">{{ t('col.subject') }}<input v-model="values.subject" type="text" maxlength="255" required></label>
-        <label v-if="showDescription">{{ t('detail.description') }}<textarea v-model="(values.description as string)" rows="6" /></label>
-        <p v-else-if="can('description')" class="muted small">{{ t('edit.description_classic') }} <a :href="classicEdit">{{ t('detail.classic') }}</a></p>
+        <div v-if="showDescription" class="full"><label>{{ t('detail.description') }}</label>
+          <RichText v-model="(values.description as string)" :project="form.project_id" :rows="6" :height="220" :label="t('detail.description')" /></div>
 
         <div class="grid2">
           <label v-if="can('status_id')">{{ t('col.status') }}

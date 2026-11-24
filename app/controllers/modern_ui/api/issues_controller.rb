@@ -62,6 +62,7 @@ module ModernUi
         editable = EDITABLE_FIELDS.map(&:to_s) & names
         read_only = issue.read_only_attribute_names(user)
         render json: {
+          project_id: issue.project.identifier,
           values: {
             subject: issue.subject, description: issue.description.to_s, status_id: issue.status_id, priority_id: issue.priority_id,
             assigned_to_id: issue.assigned_to_id, category_id: issue.category_id, fixed_version_id: issue.fixed_version_id,
