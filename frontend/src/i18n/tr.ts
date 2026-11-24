@@ -83,4 +83,12 @@ export default {
   'attach.remove': '{name} kaldır',
   'attach.uploading': 'Yükleniyor…',
   'editor.failed': 'Zengin düzenleyici yüklenemedi; düz metin kullanılıyor.',
+  'picker.add': 'Ekle',
+  'picker.remove': '{name} kaldır',
+  'picker.search': 'Ara…',
+  'picker.none': 'Eşleşme yok',
+  'picker.count': '{n} seçili',
+  'picker.clear': 'Tümünü kaldır',
+  'edit.field': '{name} düzenle',
+  'detail.add_description': 'Açıklama eklemek için tıklayın',
 } as Record<string, string>;

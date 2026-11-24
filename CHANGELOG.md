@@ -5,6 +5,8 @@ All notable changes are documented here. The project follows [Semantic Versionin
 ## [Unreleased]
 
 ### Added
+- Every editable field in the issue panel is edited in place: click to edit, click away to save (Enter saves, Esc cancels); subject, description, dates, % done, category, version, estimated time, private flag and custom fields.
+- Multi-value fields (e.g. participants) use a searchable chip picker instead of a `<select multiple>`; adding one value no longer means re-selecting all others.
 - Rich text: when Redmine's text formatting is CKEditor (redmine_ckeditor), descriptions and comments use that same editor (`GET /app/api/editor`), so content is stored and shown identically in the classic UI. Other formats get a plain textarea.
 - Attachments: pick, drop or paste files in the comment box and the quick-create dialog (`POST /app/api/uploads`, then `uploads` on create/update; only the user's own uploads can be attached).
 - Setting "Statuses counted as done": lets the new UI treat statuses as finished that Redmine does not flag as closed.
@@ -12,7 +14,7 @@ All notable changes are documented here. The project follows [Semantic Versionin
 - Grouping (status, priority, assignee, project, tracker) and saved views (stored in the browser).
 - Bulk edit (`POST /app/api/issues/bulk`): status, assignee, priority, due date for up to 100 selected issues, workflow aware.
 - Start page "My week" (`GET /app/api/home`), sidebar navigation with links to Redmine's other menus.
-- Edit dialog for all editable fields including custom fields (`GET /app/api/issues/:id/form`).
+- `GET /app/api/issues/:id/form` (editable fields, workflow-aware choices, custom fields) feeds the in-place editing.
 - Status, priority and avatar icons; due-date filter (overdue, this week, none).
 
 ### Changed

@@ -84,4 +84,12 @@ export default {
   'attach.remove': 'Remove {name}',
   'attach.uploading': 'Uploading…',
   'editor.failed': 'The rich editor could not be loaded; plain text mode is used.',
+  'picker.add': 'Add',
+  'picker.remove': 'Remove {name}',
+  'picker.search': 'Search…',
+  'picker.none': 'No matches',
+  'picker.count': '{n} selected',
+  'picker.clear': 'Clear all',
+  'edit.field': 'Edit {name}',
+  'detail.add_description': 'Click to add a description',
 } as Record<string, string>;

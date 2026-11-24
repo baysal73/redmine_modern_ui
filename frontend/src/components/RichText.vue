@@ -7,7 +7,7 @@ import { loadCkeditor } from '../lib/ckeditor';
 const props = withDefaults(defineProps<{ modelValue: string; project?: string | number | null; rows?: number; placeholder?: string; label?: string; height?: number }>(), {
   project: null, rows: 4, placeholder: '', label: '', height: 180,
 });
-const emit = defineEmits<{ (e: 'update:modelValue', v: string): void; (e: 'submit'): void }>();
+const emit = defineEmits<{ (e: 'update:modelValue', v: string): void; (e: 'submit'): void; (e: 'blur'): void }>();
 
 const area = ref<HTMLTextAreaElement | null>(null);
 const failed = ref(false);
@@ -34,7 +34,7 @@ onMounted(async () => {
     });
     editor.on('instanceReady', () => { editor.setData(props.modelValue ?? '', { noSnapshot: true, callback: () => { last = editor.getSnapshot(); editor.resetDirty(); } }); loading.value = false; });
     editor.on('change', push);
-    editor.on('blur', push);
+    editor.on('blur', () => { push(); emit('blur'); });
     editor.addCommand('muiSubmit', { exec: () => { push(); emit('submit'); } });
     editor.setKeystroke(ck.CTRL + 13, 'muiSubmit');
   } catch {
@@ -51,7 +51,7 @@ defineExpose({ focus: () => (editor ? editor.focus() : area.value?.focus()) });
 <template>
   <div class="richtext" :aria-busy="loading">
     <textarea ref="area" :value="modelValue" :rows="rows" :placeholder="placeholder" :aria-label="label || undefined"
-              @input="emit('update:modelValue', ($event.target as HTMLTextAreaElement).value)"
+              @input="emit('update:modelValue', ($event.target as HTMLTextAreaElement).value)" @blur="!editor && emit('blur')"
               @keydown.ctrl.enter.prevent="emit('submit')" @keydown.meta.enter.prevent="emit('submit')" />
     <p v-if="loading" class="muted small">{{ t('loading') }}</p>
     <p v-if="failed" class="muted small">{{ t('editor.failed') }}</p>

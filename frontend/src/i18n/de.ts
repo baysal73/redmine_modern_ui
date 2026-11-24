@@ -83,4 +83,12 @@ export default {
   'attach.remove': '{name} entfernen',
   'attach.uploading': 'Wird hochgeladen…',
   'editor.failed': 'Der Editor konnte nicht geladen werden, es wird ein einfaches Textfeld verwendet.',
+  'picker.add': 'Hinzufügen',
+  'picker.remove': '{name} entfernen',
+  'picker.search': 'Suchen…',
+  'picker.none': 'Keine Treffer',
+  'picker.count': '{n} gewählt',
+  'picker.clear': 'Alle entfernen',
+  'edit.field': '{name} bearbeiten',
+  'detail.add_description': 'Klicken, um eine Beschreibung einzutragen',
 } as Record<string, string>;

@@ -29,7 +29,7 @@ from Redmine; the plugin only adds a new front end under `/app`.
   paging, shareable URLs, **inline editing** of status (workflow aware), priority, assignee and due date.
 - **Split view** – list on the left, details on the right: description, fields, history, attachments, comments
   (including private ones).
-- **Edit dialog** – all fields the user may change (role and workflow aware), including custom fields.
+- **In-place editing** – click any field the user may change (role and workflow aware, incl. custom fields), click away to save.
 - **Quick create** – a small dialog (`c`) with the essentials, more fields on demand.
 - **Filter chips**, grouping, saved views (per browser) and **bulk edit** for selected issues;
 - Dark mode, responsive layout, keyboard shortcuts (press `?`), accessible dialogs.
