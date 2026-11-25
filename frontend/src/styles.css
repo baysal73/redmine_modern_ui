@@ -77,6 +77,10 @@ progress { width: 60px; height: 8px; vertical-align: middle; }
 .pager { flex-wrap: wrap; }
 .pager span { white-space: nowrap; }
 .primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+/* hover/focus keeps the text readable: gold with navy text (light), lighter gold with dark text (dark) */
+.btn.primary:hover:not(:disabled), .btn.primary:focus-visible { background: var(--brand-gold, color-mix(in srgb, var(--accent) 82%, #000)); border-color: var(--brand-gold, color-mix(in srgb, var(--accent) 82%, #000)); color: var(--brand-primary, #fff); text-decoration: none; }
+:root[data-theme='dark'] .btn.primary:hover:not(:disabled), :root[data-theme='dark'] .btn.primary:focus-visible { background: color-mix(in srgb, var(--accent) 78%, #fff); border-color: color-mix(in srgb, var(--accent) 78%, #fff); color: #0e1014; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) .btn.primary:hover:not(:disabled), :root:not([data-theme='light']) .btn.primary:focus-visible { background: color-mix(in srgb, var(--accent) 78%, #fff); border-color: color-mix(in srgb, var(--accent) 78%, #fff); color: #0e1014; } }
 .small { font-size: 0.85rem; }
 .pad { padding: 16px; }
 .split { display: block; }
