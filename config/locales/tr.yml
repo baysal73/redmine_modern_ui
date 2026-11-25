@@ -38,3 +38,5 @@ tr:
   modern_ui_setting_logo_error: "Logo çok büyük (en çok 400 KB) veya resim değil."
   modern_ui_setting_logo_current: "Geçerli logo"
   modern_ui_error_calendar_sync: "Google eşitlemesi kurulu değil."
+  modern_ui_error_mail_recipient: "Lütfen bir alıcı girin (kişinin e-posta adresi yok)."
+  modern_ui_error_mail_failed: "E-posta gönderilemedi: %{message}"

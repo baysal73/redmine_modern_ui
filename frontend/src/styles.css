@@ -230,3 +230,5 @@ a.btn { text-decoration: none; }
 /* a dark logo needs a light backdrop in dark mode */
 :root[data-theme='dark'] .brand-logo { background: #fff; padding: 4px 8px; border-radius: 6px; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme='light']) .brand-logo { background: #fff; padding: 4px 8px; border-radius: 6px; } }
+
+.no-underline, .no-underline:hover { text-decoration: none; }

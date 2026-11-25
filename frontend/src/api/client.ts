@@ -86,6 +86,8 @@ export const api = {
   bulkUpdate: (ids: number[], issue: Record<string, unknown>) =>
     request<{ updated: IssueRow[]; failed: { id: number; error: string }[] }>('issues/bulk', { method: 'POST', body: JSON.stringify({ ids, issue }) }),
   deleteIssue: (id: number, withSubtasks = false) => request<null>(`issues/${id}${toQuery({ with_subtasks: withSubtasks ? 1 : undefined })}`, { method: 'DELETE' }),
+  invoiceMail: (id: number) => request<{ from: string; to: string; subject: string; message: string; draft: boolean; filename: string }>(`invoices/${id}/mail`),
+  sendInvoiceMail: (id: number, body: Record<string, unknown>) => request<{ ok: boolean; invoice: InvoiceDetail }>(`invoices/${id}/send_mail`, { method: 'POST', body: JSON.stringify(body) }),
   deleteInvoice: (id: number) => request<null>(`invoices/${id}`, { method: 'DELETE' }),
   updateIssue: (id: number, issue: Record<string, unknown>) =>
     request<{ issue: IssueRow }>(`issues/${id}`, { method: 'PATCH', body: JSON.stringify({ issue }) }),

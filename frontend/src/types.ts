@@ -40,7 +40,7 @@ export interface InvoiceRow {
 export interface InvoiceList { invoices: InvoiceRow[]; total: number; page: number; per_page: number; pages: number; sums: { currency: string; amount: number; open: number }[] }
 export interface InvoiceDetail extends InvoiceRow {
   lock: string; assigned_to_id: number | null; project_identifier: string; description: string; order_number: string; paid_date: string | null; discount: number;
-  assigned_to: Ref | null; author: Ref | null; contact_visible: boolean; can_edit: boolean; can_delete: boolean; can_pay: boolean;
+  assigned_to: Ref | null; author: Ref | null; contact_visible: boolean; can_edit: boolean; can_delete: boolean; can_send?: boolean; can_pay: boolean;
   subtotal: number; tax_amount: number; discount_amount: number;
   lines: { id: number; description: string; quantity: number; units: string; price: number; tax: number | null; discount: number | null; total: number }[];
   payments: { id: number; date: string | null; amount: number; description: string; can_remove: boolean }[];

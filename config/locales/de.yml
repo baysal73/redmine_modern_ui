@@ -38,3 +38,5 @@ de:
   modern_ui_setting_logo_error: "Logo ist zu groß (max. 400 KB) oder kein Bild."
   modern_ui_setting_logo_current: "Aktuelles Logo"
   modern_ui_error_calendar_sync: "Der Google-Abgleich ist nicht eingerichtet."
+  modern_ui_error_mail_recipient: "Bitte einen Empfänger angeben (der Kontakt hat keine E-Mail-Adresse)."
+  modern_ui_error_mail_failed: "Die E-Mail konnte nicht gesendet werden: %{message}"

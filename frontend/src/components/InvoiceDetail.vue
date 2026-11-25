@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ExternalLink, FileText, Plus, Trash2 } from 'lucide-vue-next';
+import { ExternalLink, FileText, Mail, Plus, Trash2 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import { ApiError, api, readConfig } from '../api/client';
 import { locale, t } from '../i18n';
@@ -9,6 +9,7 @@ import { offerUndo } from '../lib/undo';
 import type { InvoiceDetail, InvoiceForm, ProductRow } from '../types';
 import { store } from '../lib/store';
 import EditableField from './EditableField.vue';
+import InvoiceMailDialog from './InvoiceMailDialog.vue';
 import ProductPick from './ProductPick.vue';
 
 const props = defineProps<{ id: number }>();
@@ -21,6 +22,7 @@ const error = ref('');
 const busy = ref(false);
 const adding = ref(false);
 const paying = ref(false);
+const mailing = ref(false);
 
 let seq = 0;
 async function load(spinner = true) {
@@ -140,7 +142,8 @@ async function removePayment(pid: number) {
       <button class="icon-btn" :aria-label="t('detail.close')" :title="t('detail.close') + ' (Esc)'" @click="emit('close')">✕</button>
       <span class="muted">{{ inv?.number }}</span>
       <span class="spacer" />
-      <a :href="pdf" target="_blank" rel="noopener" class="muted small pdf-link"><FileText :size="13" /> PDF</a>
+      <button v-if="inv?.can_send" class="btn flex items-center gap-1" @click="mailing = true"><Mail :size="14" /> {{ t('inv.mail.button') }}</button>
+      <a :href="pdf" target="_blank" rel="noopener" class="btn flex items-center gap-1 no-underline"><FileText :size="14" /> PDF</a>
       <button v-if="inv?.can_delete" class="icon-btn danger" :aria-label="t('delete')" :title="t('delete')" @click="removeInvoice"><Trash2 :size="15" /></button>
       <a :href="classic" class="muted small">{{ t('detail.classic') }}</a>
     </header>
@@ -233,6 +236,7 @@ async function removePayment(pid: number) {
       <p v-if="ed" class="muted small"><ExternalLink :size="12" class="inline" /> {{ t('inv.readonly_hint') }}</p>
     </div>
   </aside>
+  <InvoiceMailDialog v-if="mailing && inv" :id="id" :number="inv.number" @close="mailing = false" @sent="(i) => { inv = i; emit('changed'); }" />
 </template>
 
 <style>

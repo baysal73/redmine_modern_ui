@@ -94,6 +94,37 @@ module ModernUi
         render json: { invoice: detail(Invoice.visible.find(params[:id])) }
       end
 
+      # GET /app/api/invoices/:id/mail - defaults for the e-mail dialog (recipient, subject and text with the plugin's macros applied)
+      def mail
+        invoice = sendable_invoice
+        return unless invoice
+
+        render json: {
+          from: InvoicesSettings.email_from_address.to_s, to: invoice.contact&.primary_email.to_s,
+          subject: helpers.invoice_mail_macro(invoice, mail_subject(invoice)),
+          message: helpers.invoice_mail_macro(invoice, InvoicesSettings[:invoices_email_template, invoice.project].to_s),
+          draft: !!invoice.is_draft, filename: invoice.filename
+        }
+      end
+
+      # POST /app/api/invoices/:id/send_mail { to, cc, bcc, subject, message, mark_as_sent } - the PDF is attached by the plugin's mailer
+      def send_mail
+        invoice = sendable_invoice
+        return unless invoice
+
+        to = params[:to].to_s.strip
+        return render_json_error(422, l(:modern_ui_error_mail_recipient)) if to.blank? && invoice.contact&.primary_email.blank?
+
+        opts = { to: to, cc: params[:cc].to_s.strip, bcc: params[:bcc].to_s.strip,
+                 subject: helpers.invoice_mail_macro(invoice, params[:subject].to_s), message: helpers.invoice_mail_macro(invoice, params[:message].to_s) }
+        delivered = InvoicesMailer.invoice(User.current, invoice, opts).deliver
+        invoice.update(status_id: Invoice::SENT_INVOICE) if delivered && params[:mark_as_sent].to_s == '1' && invoice.is_draft
+        render json: { ok: true, invoice: detail(invoice.reload) }
+      rescue StandardError => e
+        Rails.logger.error("[modern_ui] invoice mail: #{e.class}: #{e.message}")
+        render_json_error(422, l(:modern_ui_error_mail_failed, message: e.message.to_s[0, 200]))
+      end
+
       # GET /app/api/invoices/:id/form - choices for editing (only for users who may edit or record payments)
       def form
         invoice = Invoice.visible.find(params[:id])
@@ -243,6 +274,20 @@ module ModernUi
           categories: OperationCategory.order(:name).map { |c| { id: c.id, name: c.name } } }
       end
 
+      # The invoice if the user may send it (plugin permission :send_invoices); otherwise renders the error and returns nil.
+      def sendable_invoice
+        invoice = Invoice.visible.find(params[:id])
+        return invoice if User.current.allowed_to?(:send_invoices, invoice.project)
+
+        render_json_error(403, l(:modern_ui_error_forbidden))
+        nil
+      end
+
+      def mail_subject(invoice)
+        configured = InvoicesSettings[:invoices_email_subject, invoice.project].to_s
+        configured.presence || "#{l(:label_invoice)} #{invoice.number} (#{InvoicesSettings[:invoices_company_name, invoice.project]})"
+      end
+
       def require_invoices
         render_json_error(404, l(:modern_ui_error_not_found)) unless defined?(::Invoice) && defined?(::InvoiceLine)
       end
@@ -294,7 +339,7 @@ module ModernUi
           project_identifier: i.project.identifier, description: i.description.to_s, order_number: i.order_number.to_s,
           paid_date: i.paid_date&.to_date, discount: i.discount, assigned_to: serializers.user_ref(i.assigned_to), assigned_to_id: i.assigned_to_id, author: serializers.user_ref(i.author),
           contact_visible: i.contact ? Contact.visible.exists?(i.contact_id) : false,
-          can_edit: !!i.editable_by?(user), can_delete: !!i.destroyable_by?(user), lock: version(i), can_pay: user.allowed_to?(:edit_invoice_payments, i.project),
+          can_edit: !!i.editable_by?(user), can_delete: !!i.destroyable_by?(user), can_send: user.allowed_to?(:send_invoices, i.project), lock: version(i), can_pay: user.allowed_to?(:edit_invoice_payments, i.project),
           subtotal: i.subtotal, tax_amount: i.tax_amount, discount_amount: i.discount_amount,
           lines: i.lines.map { |l| { id: l.id, description: l.description.to_s, quantity: l.quantity.to_f, units: l.units.to_s, price: l.price.to_f, tax: l.tax&.to_f, discount: l.discount&.to_f, total: l.total.to_f } },
           payments: i.payments.map { |p| { id: p.id, date: p.payment_date&.to_date, amount: p.amount.to_f, description: p.description.to_s, can_remove: !!p.can_be_destroyed?(user) } }
