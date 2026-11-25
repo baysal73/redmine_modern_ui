@@ -21,6 +21,9 @@ const route = useRoute();
 const navOpen = ref(false);
 const logo = logoUrl(readConfig());
 const dark = ref(document.documentElement.dataset.theme === 'dark');
+const classicOpen = ref(readFlag('mui-classic-open'));
+function readFlag(k: string) { try { return localStorage.getItem(k) === '1'; } catch { return false; } }
+function onClassicToggle(e: Event) { try { localStorage.setItem('mui-classic-open', (e.target as HTMLDetailsElement).open ? '1' : '0'); } catch { /* storage unavailable */ } }
 const classicUrl = `${config.root}/my/page`;
 // Redmine signs out with a POST (and the CSRF token), so a plain link would not work
 function logout() {
@@ -100,24 +103,26 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
           <component :is="n.icon" :size="17" aria-hidden="true" /> {{ t(n.label) }}
         </router-link>
       </nav>
-      <div v-if="store.meta?.classic_menu?.length" class="mt-5 px-2">
-        <p class="nav-heading">{{ t('nav.more') }}</p>
+      <details v-if="store.meta?.classic_menu?.length" class="classic-menu mt-4 px-2" :open="classicOpen" @toggle="onClassicToggle">
+        <summary class="nav-heading">{{ t('nav.more') }}</summary>
         <nav class="flex flex-col gap-0.5" :aria-label="t('nav.more')">
           <a v-for="m in store.meta.classic_menu" :key="m.name" :href="m.url" class="nav-item muted-item">
             <ExternalLink :size="15" aria-hidden="true" /> {{ m.caption }}
           </a>
         </nav>
-      </div>
-      <div class="mt-auto flex flex-col gap-1 border-t border-line px-2 pt-3">
-        <button class="nav-item" @click="ui.palette = true"><Search :size="17" /> {{ t('palette.open') }} <kbd class="ml-auto">Ctrl K</kbd></button>
-        <button class="nav-item" @click="ui.help = true"><Keyboard :size="17" /> {{ t('nav.help') }} <kbd class="ml-auto">?</kbd></button>
-        <button class="nav-item" @click="flipTheme"><component :is="dark ? Sun : Moon" :size="17" /> {{ t('nav.theme') }}</button>
-        <a v-if="user?.admin" class="nav-item" :href="classicUrl"><ExternalLink :size="17" /> {{ t('nav.classic') }}</a>
-        <div v-if="user" class="mt-1 flex items-center gap-2 px-2 py-1.5 text-[0.85rem]">
-          <Avatar :name="user.name" :size="26" /> <span class="truncate">{{ user.name }}</span>
+      </details>
+      <div class="sidebar-foot">
+        <div class="foot-icons">
+          <button class="icon-btn" :title="`${t('palette.open')} (Ctrl K)`" :aria-label="t('palette.open')" @click="ui.palette = true"><Search :size="16" /></button>
+          <button class="icon-btn" :title="`${t('nav.help')} (?)`" :aria-label="t('nav.help')" @click="ui.help = true"><Keyboard :size="16" /></button>
+          <button class="icon-btn" :title="t('nav.theme')" :aria-label="t('nav.theme')" @click="flipTheme"><component :is="dark ? Sun : Moon" :size="16" /></button>
         </div>
-        <a class="nav-item" :href="`${config.root}/my/account`"><UserCog :size="17" /> {{ t('nav.account') }}</a>
-        <button class="nav-item" @click="logout"><LogOut :size="17" /> {{ t('nav.logout') }}</button>
+        <a v-if="user?.admin" class="nav-item classic-switch" :href="classicUrl"><ExternalLink :size="17" /> {{ t('nav.classic') }}</a>
+        <div v-if="user" class="foot-user"><Avatar :name="user.name" :size="26" /> <span class="truncate">{{ user.name }}</span></div>
+        <div class="foot-row">
+          <a class="nav-item" :href="`${config.root}/my/account`"><UserCog :size="16" /> {{ t('nav.account') }}</a>
+          <button class="nav-item" @click="logout"><LogOut :size="16" /> {{ t('nav.logout') }}</button>
+        </div>
       </div>
     </aside>
     <main id="main" tabindex="-1"><router-view /></main>
