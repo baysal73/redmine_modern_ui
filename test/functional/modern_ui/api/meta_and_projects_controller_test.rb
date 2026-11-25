@@ -288,3 +288,30 @@ class ModernUi::Api::ProductsControllerTest < Redmine::ControllerTest
     assert_response :not_found
   end
 end
+
+class ModernUi::Api::CalendarControllerTest < Redmine::ControllerTest
+  include ModernUiTestHelpers
+  fixtures(*FIXTURES)
+
+  def test_requires_login
+    get :index
+    assert_response :unauthorized
+    post :create, params: { title: 'x' }
+    assert_response :unauthorized
+    delete :destroy, params: { id: 1 }
+    assert_response :unauthorized
+    post :sync
+    assert_response :unauthorized
+  end
+
+  def test_not_found_without_the_events_plugin
+    skip 'events plugin plugin installed' if defined?(::CalendarEvent)
+    log_in 2
+    get :index
+    assert_response :not_found
+    post :create, params: { title: 'x' }
+    assert_response :not_found
+    post :sync
+    assert_response :not_found
+  end
+end

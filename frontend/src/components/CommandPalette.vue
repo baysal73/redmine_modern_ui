@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // Ctrl/⌘ + K: one search over issues, contacts, invoices and projects, plus quick navigation.
-import { Building2, CalendarCheck, FolderKanban, ListChecks, Package, Receipt, Users } from 'lucide-vue-next';
+import { Building2, CalendarCheck, FolderKanban, ListChecks, Package, Receipt, Users, CalendarDays } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { api, readConfig } from '../api/client';
@@ -28,6 +28,7 @@ const nav = computed<Item[]>(() => [
   { key: 'n-issues', group: 'palette.go', label: t('nav.issues'), hint: 'g i', icon: ListChecks, run: go('/issues') },
   ...(features.value?.contacts ? [{ key: 'n-contacts', group: 'palette.go', label: t('nav.contacts'), hint: 'g k', icon: Users, run: go('/contacts') }] : []),
   ...(features.value?.invoices ? [{ key: 'n-invoices', group: 'palette.go', label: t('nav.invoices'), hint: 'g r', icon: Receipt, run: go('/invoices') }] : []),
+  ...(features.value?.calendar ? [{ key: 'n-calendar', group: 'palette.go', label: t('nav.calendar'), hint: 'g c', icon: CalendarDays, run: go('/calendar') }] : []),
   ...(features.value?.products ? [{ key: 'n-products', group: 'palette.go', label: t('nav.products'), hint: 'g p', icon: Package, run: go('/products') }] : []),
   { key: 'n-new', group: 'palette.go', label: t('create.button'), hint: 'c', icon: ListChecks, run: () => { close(); ui.quickCreate = true; } },
 ]);

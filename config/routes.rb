@@ -22,6 +22,11 @@ scope "#{base}/api", module: 'modern_ui/api', as: 'modern_ui_api' do
   get 'contacts/:id', to: 'contacts#show', constraints: { id: /\d+/ }
   patch 'contacts/:id', to: 'contacts#update', constraints: { id: /\d+/ }
   post 'contacts/:id/notes', to: 'contacts#add_note', constraints: { id: /\d+/ }
+  get 'calendar', to: 'calendar#index'
+  post 'calendar/events', to: 'calendar#create'
+  patch 'calendar/events/:id', to: 'calendar#update', constraints: { id: /\d+/ }
+  delete 'calendar/events/:id', to: 'calendar#destroy', constraints: { id: /\d+/ }
+  post 'calendar/sync', to: 'calendar#sync'
   get 'products', to: 'products#index'
   get 'products/options', to: 'products#options'
   post 'products', to: 'products#create'

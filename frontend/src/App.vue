@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CalendarCheck, ExternalLink, Keyboard, ListChecks, Package, Receipt, Search, Users, Menu, Moon, Plus, Sun, X } from 'lucide-vue-next';
+import { CalendarCheck, CalendarDays, ExternalLink, Keyboard, ListChecks, Package, Receipt, Search, Users, Menu, Moon, Plus, Sun, X } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { readConfig } from './api/client';
@@ -29,6 +29,7 @@ const nav = computed(() => [
   { to: '/issues', label: 'nav.issues', icon: ListChecks },
   ...(store.meta?.features?.contacts ? [{ to: '/contacts', label: 'nav.contacts', icon: Users }] : []),
   ...(store.meta?.features?.invoices ? [{ to: '/invoices', label: 'nav.invoices', icon: Receipt }] : []),
+  ...(store.meta?.features?.calendar ? [{ to: '/calendar', label: 'nav.calendar', icon: CalendarDays }] : []),
   ...(store.meta?.features?.products ? [{ to: '/products', label: 'nav.products', icon: Package }] : []),
 ]);
 const isActive = (to: string) => route.path === to || route.path.startsWith(to + '/');
@@ -47,7 +48,7 @@ function onKey(e: KeyboardEvent) {
   if (ui.quickCreate || ui.help || ui.palette) return;
   if (chord) {
     chord = false; window.clearTimeout(chordTimer);
-    if (e.key === 'i') router.push('/issues'); else if (e.key === 'h') router.push('/home'); else if (e.key === 'k' && store.meta?.features?.contacts) router.push('/contacts'); else if (e.key === 'r' && store.meta?.features?.invoices) router.push('/invoices'); else if (e.key === 'p' && store.meta?.features?.products) router.push('/products');
+    if (e.key === 'i') router.push('/issues'); else if (e.key === 'h') router.push('/home'); else if (e.key === 'k' && store.meta?.features?.contacts) router.push('/contacts'); else if (e.key === 'r' && store.meta?.features?.invoices) router.push('/invoices'); else if (e.key === 'p' && store.meta?.features?.products) router.push('/products'); else if (e.key === 'c' && store.meta?.features?.calendar) router.push('/calendar');
     return;
   }
   if (e.key === 'c') { e.preventDefault(); ui.quickCreate = true; }
@@ -76,6 +77,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
       </router-link>
       <router-link v-if="store.meta?.features?.invoices_add" :to="{ path: '/invoices', query: { new: '1' } }" class="btn primary mx-2 mb-2 flex items-center justify-start gap-2">
         <Plus :size="16" /> {{ t('inv.new') }}
+      </router-link>
+      <router-link v-if="store.meta?.features?.calendar_add" :to="{ path: '/calendar', query: { new: '1' } }" class="btn primary mx-2 mb-2 flex items-center justify-start gap-2">
+        <Plus :size="16" /> {{ t('cal.new') }}
       </router-link>
       <router-link v-if="store.meta?.features?.products_add" :to="{ path: '/products', query: { new: '1' } }" class="btn primary mx-2 mb-2 flex items-center justify-start gap-2">
         <Plus :size="16" /> {{ t('pr.new') }}

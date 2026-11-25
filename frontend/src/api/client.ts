@@ -1,4 +1,4 @@
-import type { ProductDetail, ProductList, ProductOptions, InvoiceDefaults, InvoiceForm, InvoiceDetail, InvoiceList, InvoiceOptions, ContactDetail, ContactList, ContactNote, ContactOptions, AppConfig, ReportTemplates, Home, IssueForm, NewIssueOptions, IssueDetail, IssueList, IssueOptions, IssueRow, Meta, Upload } from '../types';
+import type { CalEvent, CalendarData, ProductDetail, ProductList, ProductOptions, InvoiceDefaults, InvoiceForm, InvoiceDetail, InvoiceList, InvoiceOptions, ContactDetail, ContactList, ContactNote, ContactOptions, AppConfig, ReportTemplates, Home, IssueForm, NewIssueOptions, IssueDetail, IssueList, IssueOptions, IssueRow, Meta, Upload } from '../types';
 
 export function readConfig(): AppConfig {
   const el = document.getElementById('app');
@@ -49,6 +49,11 @@ export const api = {
   editor: (projectId?: string | number) => request<import('../lib/ckeditor').EditorConfig>(`editor${toQuery({ project_id: projectId })}`),
   upload: uploadFile,
   reportTemplates: (params: Record<string, string | number | undefined>) => request<ReportTemplates>(`report_templates${toQuery(params)}`),
+  calendar: (params: Record<string, string | number | undefined>) => request<CalendarData>(`calendar${toQuery(params)}`),
+  createEvent: (ev: Record<string, unknown>) => request<{ event: CalEvent }>('calendar/events', { method: 'POST', body: JSON.stringify(ev) }),
+  updateEvent: (id: number, ev: Record<string, unknown>) => request<{ event: CalEvent }>(`calendar/events/${id}`, { method: 'PATCH', body: JSON.stringify(ev) }),
+  deleteEvent: (id: number) => request<void>(`calendar/events/${id}`, { method: 'DELETE' }),
+  syncCalendar: () => request<{ ok: boolean }>('calendar/sync', { method: 'POST', body: '{}' }),
   contacts: (params: Record<string, string | number | undefined>) => request<ContactList>(`contacts${toQuery(params)}`),
   contactOptions: () => request<ContactOptions>('contacts/options'),
   contact: (id: number) => request<{ contact: ContactDetail }>(`contacts/${id}`),

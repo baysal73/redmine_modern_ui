@@ -10,7 +10,7 @@ export interface IssueRow {
 export interface IssueList { issues: IssueRow[]; total: number; page: number; per_page: number; pages: number }
 export interface Meta {
   user: { id: number; name: string; admin: boolean; language: string };
-  features?: { contacts: boolean; invoices: boolean; invoices_add?: boolean; products?: boolean; products_add?: boolean; contacts_add?: boolean };
+  features?: { contacts: boolean; invoices: boolean; invoices_add?: boolean; products?: boolean; products_add?: boolean; calendar?: boolean; calendar_add?: boolean; contacts_add?: boolean };
   statuses: Status[]; trackers: Ref[]; priorities: Ref[]; users: Ref[];
   addable_project_ids: number[];
   classic_menu: { name: string; caption: string; url: string }[];
@@ -93,3 +93,14 @@ export interface ProductDetail extends ProductRow {
   can_edit: boolean; can_delete: boolean; used: boolean; bundle_items: { id: number; name: string; quantity: number }[];
 }
 export interface ProductOptions { can_add: boolean; projects: { id: number; identifier: string; name: string }[]; categories: Ref[]; statuses: Ref[]; currencies: string[]; default_currency: string; default_status_id: number }
+
+export interface CalEvent {
+  id: number; title: string; description: string | null; location: string | null; all_day: boolean; category: string | null;
+  start_date?: string; end_date?: string; starts_at?: string; ends_at?: string; color: string; google: boolean;
+  project: { id: number; name: string } | null; contact: { id: number; name: string } | null; project_id: number | null;
+}
+export interface CalIssue { id: number; subject: string; tracker: string; status: string; project: string; start_date: string | null; due_date: string | null; assigned_to: string | null; color: string }
+export interface CalendarData {
+  from: string; to: string; can_manage: boolean; time_zone: string; google: { enabled: boolean; admin: boolean };
+  categories: { name: string; color: string }[]; events: CalEvent[]; issues: CalIssue[];
+}

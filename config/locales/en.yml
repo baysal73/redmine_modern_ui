@@ -37,3 +37,4 @@ en:
   modern_ui_setting_logo_remove: "Remove logo"
   modern_ui_setting_logo_error: "Logo is too large (max. 400 KB) or not an image."
   modern_ui_setting_logo_current: "Current logo"
+  modern_ui_error_calendar_sync: "Google sync is not set up."
