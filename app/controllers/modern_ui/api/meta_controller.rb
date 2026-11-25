@@ -9,7 +9,7 @@ module ModernUi
         render json: {
           user: { id: User.current.id, name: User.current.name, admin: User.current.admin?,
                   language: current_language.to_s },
-          features: { contacts: crm_contacts?, invoices: invoices?, invoices_add: invoices_add? },
+          features: { contacts: crm_contacts?, invoices: invoices?, invoices_add: invoices_add?, contacts_add: contacts_add? },
           statuses: IssueStatus.sorted.map { |s| serializers.status(s) },
           trackers: Tracker.sorted.map { |t| serializers.ref(t) },
           priorities: IssuePriority.active.map { |p| serializers.ref(p).merge(is_default: p.is_default?) },
@@ -31,6 +31,10 @@ module ModernUi
 
       def invoices?
         !!(defined?(::Invoice) && User.current.allowed_to_globally?(:view_invoices, {}))
+      end
+
+      def contacts_add?
+        crm_contacts? && User.current.allowed_to_globally?(:add_contacts, {})
       end
 
       def crm_contacts?
