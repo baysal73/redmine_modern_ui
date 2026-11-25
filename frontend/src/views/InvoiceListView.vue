@@ -130,7 +130,7 @@ const anyFilter = computed(() => !!(s('q') || s('status') || s('project') || s('
       <div class="split-list">
         <p v-if="error" class="error" role="alert">{{ t('error.load', { message: error }) }} <button class="link-btn" @click="load">{{ t('retry') }}</button></p>
         <div class="table-wrap" :class="{ busy: loading }">
-          <table v-if="list">
+          <table v-if="list" class="m-invoices">
             <thead><tr>
               <th class="sel"><input type="checkbox" :checked="sel.allSelected.value" :aria-label="t('bulk.select_all')" @change="sel.toggleAll"></th>
               <th><button class="th-btn" @click="sortBy('number')">{{ t('inv.number') }}<span class="arrow">{{ arrow('number') }}</span></button></th>

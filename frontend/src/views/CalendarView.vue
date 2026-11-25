@@ -17,6 +17,12 @@ const error = ref('');
 const searchText = ref('');
 const searchBox = ref<HTMLInputElement | null>(null);
 const expanded = ref<Set<string>>(new Set());
+// On phones the month grid only shows coloured bars; tapping a day lists its entries underneath
+const mq = window.matchMedia('(max-width: 720px)');
+const mobile = ref(mq.matches);
+const onMq = () => { mobile.value = mq.matches; };
+const dayPick = ref<string | null>(null);
+const onDay = (d: string) => { if (mobile.value) dayPick.value = d; else if (canManage.value) openNew(d, true); };
 
 // ---- dates as plain YYYY-MM-DD strings (the server already delivers them in the user's time zone) ----
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -145,8 +151,8 @@ function onKey(e: KeyboardEvent) {
   if (e.key === '/') { e.preventDefault(); searchBox.value?.focus(); }
   else if (e.key === 't') go({ month: today.slice(0, 7) });
 }
-onMounted(() => window.addEventListener('keydown', onKey));
-onUnmounted(() => window.removeEventListener('keydown', onKey));
+onMounted(() => { window.addEventListener('keydown', onKey); mq.addEventListener('change', onMq); });
+onUnmounted(() => { window.removeEventListener('keydown', onKey); mq.removeEventListener('change', onMq); });
 const anyFilter = computed(() => !!(s('q') || category.value || mine.value));
 const timeRange = (e: CalEvent) => (e.all_day ? t('cal.all_day') : `${e.starts_at!.slice(11, 16)} – ${e.ends_at!.slice(11, 16)}`);
 </script>
@@ -185,9 +191,9 @@ const timeRange = (e: CalEvent) => (e.all_day ? t('cal.all_day') : `${e.starts_a
     <div v-if="view === 'month'" class="cal-grid" :class="{ busy: loading }" role="grid" :aria-label="monthTitle">
       <div class="cal-head" role="row"><span v-for="w in weekdays" :key="w" role="columnheader">{{ w }}</span></div>
       <div v-for="(w, wi) in weeks" :key="wi" class="cal-week" role="row">
-        <div v-for="d in w" :key="d" class="cal-day" :class="{ other: d.slice(0, 7) !== month, today: d === today }" role="gridcell" @click.self="canManage && openNew(d, true)">
-          <button class="cal-num" :class="{ today: d === today }" :disabled="!canManage" :aria-label="dayLabel(d)" @click="openNew(d)">{{ Number(d.slice(8)) }}</button>
-          <button v-for="it in shown(d)" :key="it.key + d" class="cal-chip" :class="{ issue: it.kind === 'issue', timed: !!it.time }" :style="{ '--c': it.color }" :title="it.label" @click="openItem(it)">
+        <div v-for="d in w" :key="d" class="cal-day" :class="{ other: d.slice(0, 7) !== month, today: d === today, picked: mobile && d === dayPick }" role="gridcell" @click.self="onDay(d)">
+          <button class="cal-num" :class="{ today: d === today }" :disabled="!mobile && !canManage" :aria-label="dayLabel(d)" @click.stop="mobile ? onDay(d) : openNew(d)">{{ Number(d.slice(8)) }}</button>
+          <button v-for="it in shown(d)" :key="it.key + d" class="cal-chip" :class="{ issue: it.kind === 'issue', timed: !!it.time }" :style="{ '--c': it.color }" :title="it.label" @click.stop="mobile ? onDay(d) : openItem(it)">
             <span v-if="it.time" class="cal-time">{{ it.time }}</span>{{ it.label }}
           </button>
           <button v-if="(byDay.get(d)?.length ?? 0) > 3 && !expanded.has(d)" class="cal-more" @click="expanded = new Set(expanded).add(d)">{{ t('cal.more', { count: (byDay.get(d)?.length ?? 0) - 3 }) }}</button>
@@ -195,7 +201,17 @@ const timeRange = (e: CalEvent) => (e.all_day ? t('cal.all_day') : `${e.starts_a
       </div>
     </div>
 
-    <div v-else class="cal-list" :class="{ busy: loading }">
+    <section v-if="view === 'month' && mobile && dayPick" class="cal-list-day cal-daypanel">
+      <h2 :class="{ today: dayPick === today }">{{ dayLabel(dayPick) }}</h2>
+      <p v-if="!(byDay.get(dayPick)?.length)" class="muted small">{{ t('cal.empty') }}</p>
+      <button v-for="it in byDay.get(dayPick)" :key="it.key" class="cal-row" :style="{ '--c': it.color }" @click="openItem(it)">
+        <span class="cal-dot" /><span class="cal-row-time">{{ it.ev ? timeRange(it.ev) : t('cal.issue') }}</span>
+        <span class="cal-row-title">{{ it.label }}</span>
+      </button>
+      <button v-if="canManage" class="btn primary" @click="openNew(dayPick)">{{ t('cal.new') }}</button>
+    </section>
+
+    <div v-if="view === 'list'" class="cal-list" :class="{ busy: loading }">
       <p v-if="data && !listDays.length" class="muted empty">{{ t('cal.empty') }}</p>
       <section v-for="d in listDays" :key="d" class="cal-list-day">
         <h2 :class="{ today: d === today }">{{ dayLabel(d) }}</h2>
@@ -272,9 +288,14 @@ const timeRange = (e: CalEvent) => (e.all_day ? t('cal.all_day') : `${e.starts_a
 .mr-auto { margin-right: auto; }
 .cal .busy { opacity: 0.6; }
 @media (max-width: 720px) {
-  .cal-day { min-height: 70px; }
-  .cal-chip { font-size: 0.68rem; padding: 0 3px; }
-  .cal-row { grid-template-columns: 10px minmax(0, 1fr); }
-  .cal-row-time, .cal-row .muted { grid-column: 2; }
+  .cal-day { min-height: 58px; padding: 2px; }
+  .cal-day.picked { background: var(--accent-soft); }
+  .cal-chip { font-size: 0; height: 5px; padding: 0; margin: 1px 2px; border-radius: 3px; border: 0; box-shadow: none; background: var(--c); }
+  .cal-chip.timed, .cal-chip.issue { background: var(--c); border: 0; }
+  .cal-more { display: none; }
+  .cal-daypanel { margin-top: 14px; }
+  .cal-row { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; }
+  .cal-row-title { flex-basis: 100%; white-space: normal; }
+  .cal-row .muted { flex-basis: 100%; overflow-wrap: anywhere; }
 }
 </style>

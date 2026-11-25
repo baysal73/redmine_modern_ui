@@ -244,3 +244,24 @@ a.btn { text-decoration: none; }
 .tl-event .tl-icon { color: var(--brand-gold, var(--ok)); border-color: var(--brand-gold, var(--ok)); }
 .tl-body { min-width: 0; }
 .tl-title { font-weight: 600; overflow-wrap: anywhere; }
+
+/* ---- phones: slimmer lists, wrapping headers, scrollable line tables ---- */
+@media (max-width: 720px) {
+  table.m-products td:nth-child(2) { white-space: normal; min-width: 0; }
+  table.m-products td:nth-child(2) .subject { overflow-wrap: anywhere; }
+  table.m-invoices td:nth-child(3) { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  table.m-invoices th:nth-child(n+4):nth-child(-n+7), table.m-invoices td:nth-child(n+4):nth-child(-n+7), table.m-invoices th:nth-child(9), table.m-invoices td:nth-child(9),
+  table.m-contacts th:nth-child(n+4), table.m-contacts td:nth-child(n+4),
+  table.m-products th:nth-child(n+3):nth-child(-n+5), table.m-products td:nth-child(n+3):nth-child(-n+5) { display: none; }
+  .table-wrap:has(.c-id) .c-project, .table-wrap:has(.c-id) .c-tracker, .table-wrap:has(.c-id) .c-priority, .table-wrap:has(.c-id) .c-assigned_to,
+  .table-wrap:has(.c-id) .c-author, .table-wrap:has(.c-id) .c-start_date, .table-wrap:has(.c-id) .c-done_ratio, .table-wrap:has(.c-id) .c-updated_on,
+  .table-wrap:has(.c-id) .c-created_on { display: none; }
+  .split.open { grid-template-columns: minmax(0, 1fr); }
+  .split-detail, .detail, .detail-body { min-width: 0; max-width: 100%; }
+  .detail-head { flex-wrap: wrap; row-gap: 6px; }
+  .detail-body table.inv-lines, .inv-create table.inv-lines { display: block; overflow-x: auto; }
+  .dialog { padding: 14px; }
+  .overlay { padding-top: 4vh; }
+  .btn, .icon-btn, .seg-btn, select, input:not([type=checkbox]):not([type=radio]) { min-height: 38px; }
+  .nav-item { padding: 10px; }
+}
