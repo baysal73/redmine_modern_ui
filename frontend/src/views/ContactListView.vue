@@ -6,6 +6,9 @@ import { ApiError, api } from '../api/client';
 import ContactDetail from '../components/ContactDetail.vue';
 import Avatar from '../components/ui/Avatar.vue';
 import { locale, t } from '../i18n';
+import BulkBar from '../components/BulkBar.vue';
+import { downloadCsv } from '../lib/csv';
+import { useSelection } from '../lib/selection';
 import { toast } from '../lib/toast';
 import type { ContactList, ContactOptions } from '../types';
 
@@ -13,6 +16,25 @@ const route = useRoute();
 const router = useRouter();
 const list = ref<ContactList | null>(null);
 const opts = ref<ContactOptions | null>(null);
+const sel = useSelection(() => list.value?.contacts.map((r) => r.id) ?? []);
+const bulkBusy = ref(false);
+async function bulkDelete() {
+  const ids = [...sel.selected.value];
+  if (!ids.length || bulkBusy.value || !window.confirm(t('bulk2.confirm_delete', { n: ids.length }))) return;
+  bulkBusy.value = true;
+  try {
+    const r = await api.bulkContacts(ids);
+    toast(r.failed.length ? t('bulk2.partial', { ok: r.done, failed: r.failed.length, reason: `${r.failed[0].name}: ${r.failed[0].error}` }) : t('bulk2.deleted', { n: r.done }), r.failed.length ? 'error' : 'ok');
+    await load(); sel.set(r.failed.map((f) => f.id));
+    if (selectedId.value && ids.includes(selectedId.value)) openContact(null);
+  } catch (e) { toast(t('edit.failed', { message: (e as Error).message }), 'error'); }
+  finally { bulkBusy.value = false; }
+}
+function exportCsv() {
+  const rows = (list.value?.contacts ?? []).filter((r) => sel.selected.value.has(r.id));
+  downloadCsv('contacts.csv', [t('ct.name'), t('ct.company'), t('ct.email'), t('ct.phone'), t('ct.city'), t('col.assigned_to')],
+    rows.map((r) => [r.name, r.company, r.email, r.phone, r.city, r.assigned_to?.name]));
+}
 const loading = ref(false);
 const error = ref('');
 const searchText = ref('');
@@ -111,12 +133,18 @@ async function create() {
       </div>
     </div>
 
+    <BulkBar :count="sel.count.value" @clear="sel.clear">
+      <button class="btn" @click="exportCsv">{{ t('bulk2.csv') }}</button>
+      <button class="btn danger-text" :disabled="bulkBusy" @click="bulkDelete">{{ t('bulk2.delete') }}</button>
+    </BulkBar>
+
     <div class="split" :class="{ open: !!selectedId }">
       <div class="split-list">
         <p v-if="error" class="error" role="alert">{{ t('error.load', { message: error }) }} <button class="link-btn" @click="load">{{ t('retry') }}</button></p>
         <div class="table-wrap" :class="{ busy: loading }">
           <table v-if="list">
             <thead><tr>
+              <th class="sel"><input type="checkbox" :checked="sel.allSelected.value" :aria-label="t('bulk.select_all')" @change="sel.toggleAll"></th>
               <th :aria-sort="sortCol === 'name' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'"><button class="th-btn" @click="sortBy('name')">{{ t('ct.name') }}<span class="arrow">{{ sortCol === 'name' ? (sortDir === 'asc' ? ' ▲' : ' ▼') : '' }}</span></button></th>
               <th v-if="!selectedId"><button class="th-btn" @click="sortBy('company')">{{ t('ct.company') }}<span class="arrow">{{ sortCol === 'company' ? (sortDir === 'asc' ? ' ▲' : ' ▼') : '' }}</span></button></th>
               <th v-if="!selectedId">{{ t('ct.email') }}</th><th v-if="!selectedId">{{ t('ct.phone') }}</th><th v-if="!selectedId">{{ t('ct.city') }}</th>
@@ -125,6 +153,7 @@ async function create() {
             </tr></thead>
             <tbody>
               <tr v-for="r in list.contacts" :key="r.id" :class="{ selected: r.id === selectedId }" :aria-selected="r.id === selectedId" @click="openContact(r.id)">
+                <td class="sel" @click.stop><input type="checkbox" :checked="sel.selected.value.has(r.id)" :aria-label="t('bulk2.select_row', { name: r.name })" @change="sel.toggle(r.id)"></td>
                 <td><span class="inline-flex items-center gap-2"><Building2 v-if="r.is_company" :size="18" class="text-muted" aria-label="company" /><Avatar v-else :name="r.name" :size="22" /><a class="subject" :href="'#'" @click.prevent>{{ r.name }}</a></span>
                   <span v-if="selectedId" class="muted small block">{{ r.company || r.job_title }}</span></td>
                 <td v-if="!selectedId">{{ r.is_company ? '' : r.company }}<span v-if="r.job_title" class="muted small block">{{ r.job_title }}</span></td>

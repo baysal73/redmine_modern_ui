@@ -104,3 +104,5 @@ export interface CalendarData {
   from: string; to: string; can_manage: boolean; time_zone: string; google: { enabled: boolean; admin: boolean };
   categories: { name: string; color: string }[]; events: CalEvent[]; issues: CalIssue[];
 }
+
+export interface BulkResult { done: number; failed: { id: number; name: string; error: string }[] }

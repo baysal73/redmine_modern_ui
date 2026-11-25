@@ -40,3 +40,6 @@ de:
   modern_ui_error_calendar_sync: "Der Google-Abgleich ist nicht eingerichtet."
   modern_ui_error_mail_recipient: "Bitte einen Empfänger angeben (der Kontakt hat keine E-Mail-Adresse)."
   modern_ui_error_mail_failed: "Die E-Mail konnte nicht gesendet werden: %{message}"
+  modern_ui_error_bulk_op: "Unbekannte Sammelaktion."
+  modern_ui_error_bulk_status: "Bitte einen gültigen Status wählen."
+  modern_ui_error_invoice_paid: "Bezahlte Rechnungen können den Status nicht ändern."

@@ -6,13 +6,36 @@ import { ApiError, api } from '../api/client';
 import InvoiceCreate from '../components/InvoiceCreate.vue';
 import InvoiceDetail from '../components/InvoiceDetail.vue';
 import { locale, t } from '../i18n';
+import BulkBar from '../components/BulkBar.vue';
+import { downloadCsv } from '../lib/csv';
 import { money } from '../lib/money';
+import { useSelection } from '../lib/selection';
+import { toast } from '../lib/toast';
 import type { InvoiceList, InvoiceOptions } from '../types';
 
 const route = useRoute();
 const router = useRouter();
 const list = ref<InvoiceList | null>(null);
 const opts = ref<InvoiceOptions | null>(null);
+const sel = useSelection(() => list.value?.invoices.map((r) => r.id) ?? []);
+const bulkBusy = ref(false);
+async function bulk(op: 'status' | 'delete', statusId?: number) {
+  const ids = [...sel.selected.value];
+  if (!ids.length || bulkBusy.value || (op === 'delete' && !window.confirm(t('bulk2.confirm_delete', { n: ids.length })))) return;
+  bulkBusy.value = true;
+  try {
+    const r = await api.bulkInvoices(ids, op, statusId);
+    toast(r.failed.length ? t('bulk2.partial', { ok: r.done, failed: r.failed.length, reason: `${r.failed[0].name}: ${r.failed[0].error}` }) : t(op === 'delete' ? 'bulk2.deleted' : 'bulk2.done', { n: r.done }), r.failed.length ? 'error' : 'ok');
+    await load(); sel.set(r.failed.map((f) => f.id));
+    if (selectedId.value && op === 'delete' && ids.includes(selectedId.value)) openInvoice(null);
+  } catch (e) { toast(t('edit.failed', { message: (e as Error).message }), 'error'); }
+  finally { bulkBusy.value = false; }
+}
+function exportCsv() {
+  const rows = (list.value?.invoices ?? []).filter((r) => sel.selected.value.has(r.id));
+  downloadCsv('invoices.csv', [t('inv.number'), t('inv.contact'), t('col.project'), t('inv.date'), t('inv.due'), t('col.status'), t('inv.total'), t('inv.remaining'), 'Currency'],
+    rows.map((r) => [r.number, r.contact?.name, r.project, r.invoice_date, r.due_date, r.status.name, r.amount, r.remaining, r.currency]));
+}
 const loading = ref(false);
 const creating = ref(false);
 const error = ref('');
@@ -43,6 +66,7 @@ async function load() {
 let timer: number | undefined;
 function onSearch() { window.clearTimeout(timer); timer = window.setTimeout(() => go({ q: searchText.value.trim() }), 250); }
 watch(() => route.query, () => {
+  sel.clear();
   if (s('new')) { creating.value = true; const { new: _n, ...rest } = route.query; router.replace({ path: route.path, query: rest }); return; }
   searchText.value = s('q'); load();
 }, { immediate: true });
@@ -94,12 +118,21 @@ const anyFilter = computed(() => !!(s('q') || s('status') || s('project') || s('
       </div>
     </div>
 
+    <BulkBar :count="sel.count.value" @clear="sel.clear">
+      <select :disabled="bulkBusy" :aria-label="t('col.status')" @change="bulk('status', Number(($event.target as HTMLSelectElement).value)); ($event.target as HTMLSelectElement).value = ''">
+        <option value="">{{ t('bulk.set_status') }}</option><option v-for="st in opts?.statuses.filter((x) => x.id !== 3)" :key="st.id" :value="st.id">{{ st.name }}</option>
+      </select>
+      <button class="btn" @click="exportCsv">{{ t('bulk2.csv') }}</button>
+      <button class="btn danger-text" :disabled="bulkBusy" @click="bulk('delete')">{{ t('bulk2.delete') }}</button>
+    </BulkBar>
+
     <div class="split" :class="{ open: !!selectedId }">
       <div class="split-list">
         <p v-if="error" class="error" role="alert">{{ t('error.load', { message: error }) }} <button class="link-btn" @click="load">{{ t('retry') }}</button></p>
         <div class="table-wrap" :class="{ busy: loading }">
           <table v-if="list">
             <thead><tr>
+              <th class="sel"><input type="checkbox" :checked="sel.allSelected.value" :aria-label="t('bulk.select_all')" @change="sel.toggleAll"></th>
               <th><button class="th-btn" @click="sortBy('number')">{{ t('inv.number') }}<span class="arrow">{{ arrow('number') }}</span></button></th>
               <th>{{ t('inv.contact') }}</th>
               <th v-if="!selectedId">{{ t('col.project') }}</th>
@@ -111,6 +144,7 @@ const anyFilter = computed(() => !!(s('q') || s('status') || s('project') || s('
             </tr></thead>
             <tbody>
               <tr v-for="r in list.invoices" :key="r.id" :class="{ selected: r.id === selectedId }" :aria-selected="r.id === selectedId" @click="openInvoice(r.id)">
+                <td class="sel" @click.stop><input type="checkbox" :checked="sel.selected.value.has(r.id)" :aria-label="t('bulk2.select_row', { name: r.number })" @change="sel.toggle(r.id)"></td>
                 <td><a class="subject" href="#" @click.prevent>{{ r.number }}</a><span v-if="r.subject && !selectedId" class="muted small block">{{ r.subject }}</span></td>
                 <td>{{ r.contact?.name }}</td>
                 <td v-if="!selectedId">{{ r.project }}</td>

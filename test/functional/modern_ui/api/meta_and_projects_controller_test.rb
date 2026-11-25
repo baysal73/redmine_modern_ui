@@ -275,6 +275,8 @@ class ModernUi::Api::ProductsControllerTest < Redmine::ControllerTest
     assert_response :unauthorized
     delete :destroy, params: { id: 1 }
     assert_response :unauthorized
+    post :bulk, params: { ids: [1], op: 'delete' }
+    assert_response :unauthorized
   end
 
   def test_not_found_without_the_products_plugin
@@ -285,6 +287,8 @@ class ModernUi::Api::ProductsControllerTest < Redmine::ControllerTest
     post :create, params: { product: { name: 'x' } }
     assert_response :not_found
     delete :destroy, params: { id: 1 }
+    assert_response :not_found
+    post :bulk, params: { ids: [1], op: 'delete' }
     assert_response :not_found
   end
 end

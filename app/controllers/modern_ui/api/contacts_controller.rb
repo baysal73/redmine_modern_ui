@@ -102,6 +102,23 @@ module ModernUi
         end
       end
 
+      # POST /app/api/contacts/bulk { ids: [], op: 'delete' } - only contacts the user may delete (plugin rule: deletable?)
+      def bulk
+        ids = Array(params[:ids]).map(&:to_i).uniq.first(100)
+        return render_json_error(422, l(:modern_ui_error_bulk_op)) unless params[:op].to_s == 'delete'
+
+        done = 0
+        failed = []
+        Contact.visible.where(id: ids).each do |contact|
+          err = if !contact.deletable?(User.current) then l(:modern_ui_error_forbidden)
+                elsif contact.destroy then nil
+                else contact.errors.full_messages.to_sentence.presence || l(:modern_ui_error_forbidden)
+                end
+          err ? failed << { id: contact.id, name: contact.name, error: err } : done += 1
+        end
+        render json: { done: done, failed: failed }
+      end
+
       private
 
       def require_crm

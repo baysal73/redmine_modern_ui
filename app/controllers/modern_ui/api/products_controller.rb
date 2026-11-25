@@ -88,7 +88,37 @@ module ModernUi
         end
       end
 
+      # POST /app/api/products/bulk { ids: [], op: 'status'|'delete', status_id: 1|2 }
+      def bulk
+        ids = Array(params[:ids]).map(&:to_i).uniq.first(100)
+        op = params[:op].to_s
+        return render_json_error(422, l(:modern_ui_error_bulk_op)) unless %w[status delete].include?(op)
+        return render_json_error(422, l(:modern_ui_error_bulk_status)) if op == 'status' && ![1, 2].include?(params[:status_id].to_i)
+
+        done = 0
+        failed = []
+        Product.visible.where(id: ids).each do |product|
+          err = op == 'delete' ? bulk_delete_error(product) : bulk_status_error(product, params[:status_id].to_i)
+          err ? failed << { id: product.id, name: product.name, error: err } : done += 1
+        end
+        render json: { done: done, failed: failed }
+      end
+
       private
+
+      def bulk_delete_error(product)
+        return l(:modern_ui_error_forbidden) unless product.destroyable_by?(User.current)
+        return l(:modern_ui_error_product_used) if ProductLine.where(product_id: product.id).exists?
+
+        product.destroy ? nil : (product.errors.full_messages.to_sentence.presence || l(:modern_ui_error_forbidden))
+      end
+
+      def bulk_status_error(product, status_id)
+        return l(:modern_ui_error_forbidden) unless product.editable_by?(User.current)
+
+        product.safe_attributes = { 'status_id' => status_id }
+        product.save ? nil : product.errors.full_messages.to_sentence
+      end
 
       def require_products
         render_json_error(404, l(:modern_ui_error_not_found)) unless defined?(::Product) && defined?(::ProductCategory)

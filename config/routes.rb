@@ -18,6 +18,7 @@ scope "#{base}/api", module: 'modern_ui/api', as: 'modern_ui_api' do
   get 'issues', to: 'issues#index'
   get 'contacts', to: 'contacts#index'
   post 'contacts', to: 'contacts#create'
+  post 'contacts/bulk', to: 'contacts#bulk'
   get 'contacts/options', to: 'contacts#options'
   get 'contacts/:id', to: 'contacts#show', constraints: { id: /\d+/ }
   patch 'contacts/:id', to: 'contacts#update', constraints: { id: /\d+/ }
@@ -30,6 +31,7 @@ scope "#{base}/api", module: 'modern_ui/api', as: 'modern_ui_api' do
   get 'products', to: 'products#index'
   get 'products/options', to: 'products#options'
   post 'products', to: 'products#create'
+  post 'products/bulk', to: 'products#bulk'
   get 'products/:id', to: 'products#show', constraints: { id: /\d+/ }
   patch 'products/:id', to: 'products#update', constraints: { id: /\d+/ }
   delete 'products/:id', to: 'products#destroy', constraints: { id: /\d+/ }
@@ -37,6 +39,7 @@ scope "#{base}/api", module: 'modern_ui/api', as: 'modern_ui_api' do
   get 'invoices/options', to: 'invoices#options'
   get 'invoices/new', to: 'invoices#new_defaults'
   post 'invoices', to: 'invoices#create'
+  post 'invoices/bulk', to: 'invoices#bulk'
   get 'invoices/:id', to: 'invoices#show', constraints: { id: /\d+/ }
   get 'invoices/:id/form', to: 'invoices#form', constraints: { id: /\d+/ }
   patch 'invoices/:id', to: 'invoices#update', constraints: { id: /\d+/ }

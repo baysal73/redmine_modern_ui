@@ -5,7 +5,10 @@ import { useRoute, useRouter } from 'vue-router';
 import { ApiError, api } from '../api/client';
 import ProductDetail from '../components/ProductDetail.vue';
 import { t } from '../i18n';
+import BulkBar from '../components/BulkBar.vue';
+import { downloadCsv } from '../lib/csv';
 import { money } from '../lib/money';
+import { useSelection } from '../lib/selection';
 import { toast } from '../lib/toast';
 import type { ProductList, ProductOptions } from '../types';
 
@@ -13,6 +16,25 @@ const route = useRoute();
 const router = useRouter();
 const list = ref<ProductList | null>(null);
 const opts = ref<ProductOptions | null>(null);
+const sel = useSelection(() => list.value?.products.map((r) => r.id) ?? []);
+const bulkBusy = ref(false);
+async function bulk(op: 'status' | 'delete', statusId?: number) {
+  const ids = [...sel.selected.value];
+  if (!ids.length || bulkBusy.value || (op === 'delete' && !window.confirm(t('bulk2.confirm_delete', { n: ids.length })))) return;
+  bulkBusy.value = true;
+  try {
+    const r = await api.bulkProducts(ids, op, statusId);
+    toast(r.failed.length ? t('bulk2.partial', { ok: r.done, failed: r.failed.length, reason: `${r.failed[0].name}: ${r.failed[0].error}` }) : t(op === 'delete' ? 'bulk2.deleted' : 'bulk2.done', { n: r.done }), r.failed.length ? 'error' : 'ok');
+    await load(); sel.set(r.failed.map((f) => f.id));
+    if (selectedId.value && op === 'delete' && ids.includes(selectedId.value)) openProduct(null);
+  } catch (e) { toast(t('edit.failed', { message: (e as Error).message }), 'error'); }
+  finally { bulkBusy.value = false; }
+}
+function exportCsv() {
+  const rows = (list.value?.products ?? []).filter((r) => sel.selected.value.has(r.id));
+  downloadCsv('products.csv', [t('pr.name'), t('pr.code'), t('pr.category'), t('col.project'), t('pr.status'), t('pr.price'), t('pr.currency')],
+    rows.map((r) => [r.name, r.code, r.category, r.project, r.status.name, r.price, r.currency]));
+}
 const loading = ref(false);
 const error = ref('');
 const searchText = ref('');
@@ -45,6 +67,7 @@ async function load() {
 let timer: number | undefined;
 function onSearch() { window.clearTimeout(timer); timer = window.setTimeout(() => go({ q: searchText.value.trim() }), 250); }
 watch(() => route.query, () => {
+  sel.clear();
   if (s('new')) { creating.value = true; const { new: _n, ...rest } = route.query; router.replace({ path: route.path, query: rest }); return; }
   searchText.value = s('q'); load();
 }, { immediate: true });
@@ -112,12 +135,21 @@ async function create() {
       </div>
     </div>
 
+    <BulkBar :count="sel.count.value" @clear="sel.clear">
+      <select :disabled="bulkBusy" :aria-label="t('pr.status')" @change="bulk('status', Number(($event.target as HTMLSelectElement).value)); ($event.target as HTMLSelectElement).value = ''">
+        <option value="">{{ t('bulk.set_status') }}</option><option v-for="st in opts?.statuses" :key="st.id" :value="st.id">{{ st.name }}</option>
+      </select>
+      <button class="btn" @click="exportCsv">{{ t('bulk2.csv') }}</button>
+      <button class="btn danger-text" :disabled="bulkBusy" @click="bulk('delete')">{{ t('bulk2.delete') }}</button>
+    </BulkBar>
+
     <div class="split" :class="{ open: !!selectedId }">
       <div class="split-list">
         <p v-if="error" class="error" role="alert">{{ t('error.load', { message: error }) }} <button class="link-btn" @click="load">{{ t('retry') }}</button></p>
         <div class="table-wrap" :class="{ busy: loading }">
           <table v-if="list">
             <thead><tr>
+              <th class="sel"><input type="checkbox" :checked="sel.allSelected.value" :aria-label="t('bulk.select_all')" @change="sel.toggleAll"></th>
               <th><button class="th-btn" @click="sortBy('name')">{{ t('pr.name') }}<span class="arrow">{{ arrow('name') }}</span></button></th>
               <th v-if="!selectedId"><button class="th-btn" @click="sortBy('code')">{{ t('pr.code') }}<span class="arrow">{{ arrow('code') }}</span></button></th>
               <th v-if="!selectedId">{{ t('pr.category') }}</th>
@@ -127,6 +159,7 @@ async function create() {
             </tr></thead>
             <tbody>
               <tr v-for="r in list.products" :key="r.id" :class="{ selected: r.id === selectedId }" :aria-selected="r.id === selectedId" @click="openProduct(r.id)">
+                <td class="sel" @click.stop><input type="checkbox" :checked="sel.selected.value.has(r.id)" :aria-label="t('bulk2.select_row', { name: r.name })" @change="sel.toggle(r.id)"></td>
                 <td><span class="inline-flex items-center gap-2"><img v-if="r.image_url" :src="r.image_url" alt="" class="pr-thumb" @error="($event.target as HTMLElement).style.display = 'none'"><Package v-else :size="18" class="text-muted" aria-hidden="true" /><a class="subject" href="#" @click.prevent>{{ r.name }}</a></span>
                   <span v-if="selectedId && r.code" class="muted small block">{{ r.code }}</span></td>
                 <td v-if="!selectedId">{{ r.code }}</td>

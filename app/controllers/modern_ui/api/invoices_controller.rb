@@ -174,6 +174,22 @@ module ModernUi
         end
       end
 
+      # POST /app/api/invoices/bulk { ids: [], op: 'status'|'delete', status_id } - every invoice is checked on its own (editable_by? / destroyable_by?)
+      def bulk
+        ids = Array(params[:ids]).map(&:to_i).uniq.first(BULK_MAX)
+        op = params[:op].to_s
+        return render_json_error(422, l(:modern_ui_error_bulk_op)) unless %w[status delete].include?(op)
+        return render_json_error(422, l(:modern_ui_error_bulk_status)) if op == 'status' && !bulk_status_ids.include?(params[:status_id].to_i)
+
+        done = 0
+        failed = []
+        Invoice.visible.where(id: ids).each do |invoice|
+          err = op == 'delete' ? bulk_delete_error(invoice) : bulk_status_error(invoice, params[:status_id].to_i)
+          err ? failed << { id: invoice.id, name: invoice.number, error: err } : done += 1
+        end
+        render json: { done: done, failed: failed }
+      end
+
       # POST /app/api/invoices/:id/payments { payment: { amount, payment_date, description, account_id, category_id, lock } }
       def add_payment
         invoice = Invoice.visible.find(params[:id])
@@ -286,6 +302,27 @@ module ModernUi
       def mail_subject(invoice)
         configured = InvoicesSettings[:invoices_email_subject, invoice.project].to_s
         configured.presence || "#{l(:label_invoice)} #{invoice.number} (#{InvoicesSettings[:invoices_company_name, invoice.project]})"
+      end
+
+      BULK_MAX = 100
+
+      # Statuses a bulk change may set: everything except "paid" (that one follows from the payments)
+      def bulk_status_ids
+        Invoice.available_statuses.map(&:first) - [Invoice::PAID_INVOICE]
+      end
+
+      def bulk_delete_error(invoice)
+        return l(:modern_ui_error_forbidden) unless invoice.destroyable_by?(User.current)
+
+        invoice.destroy ? nil : (invoice.errors.full_messages.to_sentence.presence || l(:modern_ui_error_forbidden))
+      end
+
+      def bulk_status_error(invoice, status_id)
+        return l(:modern_ui_error_forbidden) unless invoice.editable_by?(User.current)
+        return l(:modern_ui_error_invoice_paid) if invoice.is_paid?
+
+        invoice.status_id = status_id
+        invoice.save ? nil : invoice.errors.full_messages.to_sentence
       end
 
       def require_invoices

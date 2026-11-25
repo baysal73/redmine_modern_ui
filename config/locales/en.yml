@@ -40,3 +40,6 @@ en:
   modern_ui_error_calendar_sync: "Google sync is not set up."
   modern_ui_error_mail_recipient: "Please enter a recipient (the contact has no e-mail address)."
   modern_ui_error_mail_failed: "The e-mail could not be sent: %{message}"
+  modern_ui_error_bulk_op: "Unknown bulk action."
+  modern_ui_error_bulk_status: "Please choose a valid status."
+  modern_ui_error_invoice_paid: "Paid invoices cannot change status."

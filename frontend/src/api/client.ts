@@ -1,4 +1,4 @@
-import type { CalEvent, CalendarData, ProductDetail, ProductList, ProductOptions, InvoiceDefaults, InvoiceForm, InvoiceDetail, InvoiceList, InvoiceOptions, ContactDetail, ContactList, ContactNote, ContactOptions, AppConfig, ReportTemplates, Home, IssueForm, NewIssueOptions, IssueDetail, IssueList, IssueOptions, IssueRow, Meta, Upload } from '../types';
+import type { BulkResult, CalEvent, CalendarData, ProductDetail, ProductList, ProductOptions, InvoiceDefaults, InvoiceForm, InvoiceDetail, InvoiceList, InvoiceOptions, ContactDetail, ContactList, ContactNote, ContactOptions, AppConfig, ReportTemplates, Home, IssueForm, NewIssueOptions, IssueDetail, IssueList, IssueOptions, IssueRow, Meta, Upload } from '../types';
 
 export function readConfig(): AppConfig {
   const el = document.getElementById('app');
@@ -88,6 +88,9 @@ export const api = {
   deleteIssue: (id: number, withSubtasks = false) => request<null>(`issues/${id}${toQuery({ with_subtasks: withSubtasks ? 1 : undefined })}`, { method: 'DELETE' }),
   invoiceMail: (id: number) => request<{ from: string; to: string; subject: string; message: string; draft: boolean; filename: string }>(`invoices/${id}/mail`),
   sendInvoiceMail: (id: number, body: Record<string, unknown>) => request<{ ok: boolean; invoice: InvoiceDetail }>(`invoices/${id}/send_mail`, { method: 'POST', body: JSON.stringify(body) }),
+  bulkInvoices: (ids: number[], op: 'status' | 'delete', status_id?: number) => request<BulkResult>('invoices/bulk', { method: 'POST', body: JSON.stringify({ ids, op, status_id }) }),
+  bulkContacts: (ids: number[]) => request<BulkResult>('contacts/bulk', { method: 'POST', body: JSON.stringify({ ids, op: 'delete' }) }),
+  bulkProducts: (ids: number[], op: 'status' | 'delete', status_id?: number) => request<BulkResult>('products/bulk', { method: 'POST', body: JSON.stringify({ ids, op, status_id }) }),
   deleteInvoice: (id: number) => request<null>(`invoices/${id}`, { method: 'DELETE' }),
   updateIssue: (id: number, issue: Record<string, unknown>) =>
     request<{ issue: IssueRow }>(`issues/${id}`, { method: 'PATCH', body: JSON.stringify({ issue }) }),
