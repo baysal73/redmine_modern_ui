@@ -42,7 +42,10 @@ async function load() {
 }
 let timer: number | undefined;
 function onSearch() { window.clearTimeout(timer); timer = window.setTimeout(() => go({ q: searchText.value.trim() }), 250); }
-watch(() => route.query, () => { searchText.value = s('q'); load(); }, { immediate: true });
+watch(() => route.query, () => {
+  if (s('new')) { creating.value = true; const { new: _n, ...rest } = route.query; router.replace({ path: route.path, query: rest }); return; }
+  searchText.value = s('q'); load();
+}, { immediate: true });
 onMounted(() => { api.invoiceOptions().then((o) => { opts.value = o; }).catch(() => {}); window.addEventListener('keydown', onKey); });
 onUnmounted(() => window.removeEventListener('keydown', onKey));
 function onKey(e: KeyboardEvent) {

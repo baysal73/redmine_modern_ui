@@ -216,3 +216,5 @@ a.tb-btn { text-decoration: none; display: inline-flex; align-items: center; gap
 .report-item:hover { background: var(--hover); }
 
 .icon-btn.danger:hover, .icon-btn.danger:focus-visible { color: #d33; }
+
+a.btn { text-decoration: none; }

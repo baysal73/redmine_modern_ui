@@ -68,6 +68,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
       <button class="btn primary mx-2 mb-3 flex items-center justify-center gap-2" @click="ui.quickCreate = true">
         <Plus :size="16" /> {{ t('create.button') }} <kbd class="ml-auto">c</kbd>
       </button>
+      <router-link v-if="store.meta?.features?.invoices_add" :to="{ path: '/invoices', query: { new: '1' } }" class="btn mx-2 mb-3 flex items-center justify-center gap-2">
+        <Receipt :size="16" /> {{ t('inv.new') }}
+      </router-link>
       <nav class="flex flex-col gap-0.5 px-2" aria-label="Main">
         <router-link v-for="n in nav" :key="n.to" :to="n.to" class="nav-item" :class="{ active: isActive(n.to) }">
           <component :is="n.icon" :size="17" aria-hidden="true" /> {{ t(n.label) }}
