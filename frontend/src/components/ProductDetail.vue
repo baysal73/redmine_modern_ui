@@ -3,6 +3,7 @@ import { Package, Trash2 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import { ApiError, api, readConfig } from '../api/client';
 import { t } from '../i18n';
+import { store } from '../lib/store';
 import { money } from '../lib/money';
 import { toast } from '../lib/toast';
 import { offerUndo } from '../lib/undo';
@@ -58,7 +59,7 @@ async function remove() {
       <span class="muted">{{ p?.code || '#' + id }}</span>
       <span class="spacer" />
       <button v-if="p?.can_delete && !p.used" class="icon-btn danger" :aria-label="t('delete')" :title="t('delete')" @click="remove"><Trash2 :size="15" /></button>
-      <a :href="classic" class="muted small">{{ t('detail.classic') }}</a>
+      <a v-if="store.meta?.user.admin" :href="classic" class="muted small">{{ t('detail.classic') }}</a>
     </header>
     <p v-if="loading" class="muted pad">{{ t('detail.loading') }}</p>
     <p v-else-if="error" class="error" role="alert">{{ error }}</p>

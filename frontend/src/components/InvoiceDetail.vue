@@ -145,7 +145,7 @@ async function removePayment(pid: number) {
       <button v-if="inv?.can_send" class="btn flex items-center gap-1" @click="mailing = true"><Mail :size="14" /> {{ t('inv.mail.button') }}</button>
       <a :href="pdf" target="_blank" rel="noopener" class="btn flex items-center gap-1 no-underline"><FileText :size="14" /> PDF</a>
       <button v-if="inv?.can_delete" class="icon-btn danger" :aria-label="t('delete')" :title="t('delete')" @click="removeInvoice"><Trash2 :size="15" /></button>
-      <a :href="classic" class="muted small">{{ t('detail.classic') }}</a>
+      <a v-if="store.meta?.user.admin" :href="classic" class="muted small">{{ t('detail.classic') }}</a>
     </header>
     <p v-if="loading" class="muted pad">{{ t('detail.loading') }}</p>
     <p v-else-if="error" class="error" role="alert">{{ error }}</p>

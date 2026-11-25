@@ -102,7 +102,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
         <button class="nav-item" @click="ui.palette = true"><Search :size="17" /> {{ t('palette.open') }} <kbd class="ml-auto">Ctrl K</kbd></button>
         <button class="nav-item" @click="ui.help = true"><Keyboard :size="17" /> {{ t('nav.help') }} <kbd class="ml-auto">?</kbd></button>
         <button class="nav-item" @click="flipTheme"><component :is="dark ? Sun : Moon" :size="17" /> {{ t('nav.theme') }}</button>
-        <a class="nav-item" :href="classicUrl"><ExternalLink :size="17" /> {{ t('nav.classic') }}</a>
+        <a v-if="user?.admin" class="nav-item" :href="classicUrl"><ExternalLink :size="17" /> {{ t('nav.classic') }}</a>
         <div v-if="user" class="mt-1 flex items-center gap-2 px-2 py-1.5 text-[0.85rem]">
           <Avatar :name="user.name" :size="26" /> <span class="truncate">{{ user.name }}</span>
         </div>

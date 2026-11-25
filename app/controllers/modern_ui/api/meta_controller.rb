@@ -73,6 +73,8 @@ module ModernUi
       COVERED_CALENDAR = %w[calendar_events].freeze
 
       def classic_menu
+        return [] unless User.current.admin? # everyone else only gets the new interface
+
         helper = view_context
         %i[application_menu top_menu].flat_map do |menu|
           Redmine::MenuManager.items(menu).root.children.filter_map do |node|

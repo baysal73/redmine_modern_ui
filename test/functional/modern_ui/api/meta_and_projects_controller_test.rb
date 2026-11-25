@@ -20,6 +20,17 @@ class ModernUi::Api::MetaControllerTest < Redmine::ControllerTest
     assert_response :unauthorized
   end
 
+  def test_links_to_the_classic_menus_are_only_for_admins
+    log_in 2
+    get :show
+    assert_empty json['classic_menu']
+    assert_equal false, json['user']['admin']
+    log_in 1
+    get :show
+    assert_equal true, json['user']['admin']
+    assert_kind_of Array, json['classic_menu']
+  end
+
   def test_meta_contains_reference_data_and_only_visible_projects
     log_in 3
     get :show

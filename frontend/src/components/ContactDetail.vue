@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { store } from '../lib/store';
 import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { Building2, CalendarDays, ListChecks, Mail, MessageSquare, Phone, Receipt } from 'lucide-vue-next';
@@ -94,7 +95,7 @@ const ed = computed(() => !!c.value?.editable);
       <button class="icon-btn" :aria-label="t('detail.close')" :title="t('detail.close') + ' (Esc)'" @click="emit('close')">✕</button>
       <span class="muted">#{{ id }}</span>
       <span class="spacer" />
-      <a :href="classic" class="muted small">{{ t('detail.classic') }}</a>
+      <a v-if="store.meta?.user.admin" :href="classic" class="muted small">{{ t('detail.classic') }}</a>
     </header>
     <p v-if="loading" class="muted pad">{{ t('detail.loading') }}</p>
     <p v-else-if="error" class="error" role="alert">{{ error }}</p>

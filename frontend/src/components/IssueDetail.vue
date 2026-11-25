@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { store } from '../lib/store';
 import ReportMenu from './ReportMenu.vue';
 import { Lock, Paperclip, Trash2 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
@@ -136,7 +137,7 @@ const canEdit = computed(() => !!issue.value?.permissions.edit);
       <span class="spacer" />
       <ReportMenu :issue-ids="[id]" single compact />
       <button v-if="issue?.permissions.delete" class="icon-btn danger" :aria-label="t('delete')" :title="t('delete')" @click="remove"><Trash2 :size="15" /></button>
-      <a :href="classic" class="muted small">{{ t('detail.classic') }}</a>
+      <a v-if="store.meta?.user.admin" :href="classic" class="muted small">{{ t('detail.classic') }}</a>
     </header>
 
     <p v-if="loading" class="muted pad">{{ t('detail.loading') }}</p>
