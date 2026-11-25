@@ -1,5 +1,7 @@
 export default {
   'nav.issues': 'Tickets',
+  'nav.account': 'Mein Konto',
+  'nav.logout': 'Abmelden',
   'nav.classic': 'Klassische Ansicht',
   'nav.theme': 'Dunkelmodus umschalten',
   'filter.search': 'Tickets durchsuchen…',

@@ -1,6 +1,8 @@
 export default {
   'app.title': 'Redmine',
   'nav.issues': 'Issues',
+  'nav.account': 'My account',
+  'nav.logout': 'Sign out',
   'nav.classic': 'Classic view',
   'nav.theme': 'Toggle dark mode',
   'filter.search': 'Search issues…',

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { FolderOpen, CalendarCheck, CalendarDays, ExternalLink, Keyboard, ListChecks, Package, Receipt, Search, Users, Menu, Moon, Plus, Sun, X } from 'lucide-vue-next';
+import { LogOut, UserCog, FolderOpen, CalendarCheck, CalendarDays, ExternalLink, Keyboard, ListChecks, Package, Receipt, Search, Users, Menu, Moon, Plus, Sun, X } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { readConfig } from './api/client';
@@ -22,6 +22,15 @@ const navOpen = ref(false);
 const logo = logoUrl(readConfig());
 const dark = ref(document.documentElement.dataset.theme === 'dark');
 const classicUrl = `${config.root}/my/page`;
+// Redmine signs out with a POST (and the CSRF token), so a plain link would not work
+function logout() {
+  const form = document.createElement('form');
+  form.method = 'post'; form.action = `${config.root}/logout`;
+  const tok = document.createElement('input');
+  tok.type = 'hidden'; tok.name = 'authenticity_token';
+  tok.value = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? config.csrf;
+  form.appendChild(tok); document.body.appendChild(form); form.submit();
+}
 const user = computed(() => store.meta?.user);
 
 const nav = computed(() => [
@@ -107,6 +116,8 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
         <div v-if="user" class="mt-1 flex items-center gap-2 px-2 py-1.5 text-[0.85rem]">
           <Avatar :name="user.name" :size="26" /> <span class="truncate">{{ user.name }}</span>
         </div>
+        <a class="nav-item" :href="`${config.root}/my/account`"><UserCog :size="17" /> {{ t('nav.account') }}</a>
+        <button class="nav-item" @click="logout"><LogOut :size="17" /> {{ t('nav.logout') }}</button>
       </div>
     </aside>
     <main id="main" tabindex="-1"><router-view /></main>

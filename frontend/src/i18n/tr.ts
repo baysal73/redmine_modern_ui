@@ -1,5 +1,7 @@
 export default {
   'nav.issues': 'İşler',
+  'nav.account': 'Hesabım',
+  'nav.logout': 'Çıkış yap',
   'nav.classic': 'Klasik görünüm',
   'nav.theme': 'Koyu modu aç/kapat',
   'filter.search': 'İşlerde ara…',
