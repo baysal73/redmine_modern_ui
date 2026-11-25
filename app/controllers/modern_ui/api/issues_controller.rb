@@ -109,6 +109,27 @@ module ModernUi
         end
       end
 
+      # DELETE /app/api/issues/:id[?with_subtasks=1] - needs :delete_issues. Issues with logged time stay classic-only (the classic view
+      # asks what to do with the hours); subtasks are deleted by Redmine too, so the client must confirm them first (409 with the count).
+      def destroy
+        issue = Issue.visible.find(params[:id])
+        return render_json_error(403, l(:modern_ui_error_forbidden)) unless User.current.allowed_to?(:delete_issues, issue.project)
+
+        hours = TimeEntry.where(issue_id: issue.self_and_descendants.select(:id)).count
+        return render_json_error(422, l(:modern_ui_error_issue_has_time)) if hours.positive?
+
+        subtasks = issue.descendants.count
+        if subtasks.positive? && params[:with_subtasks].to_s != '1'
+          return render json: { error: l(:modern_ui_error_issue_has_subtasks, count: subtasks), subtasks: subtasks }, status: 409
+        end
+
+        if issue.reload.destroy
+          head :no_content
+        else
+          render_json_error(422, issue.errors.full_messages.to_sentence.presence || l(:modern_ui_error_forbidden))
+        end
+      end
+
       # PATCH /app/api/issues/:id  { issue: { status_id, assigned_to_id, priority_id, due_date, notes } }
       # Uses Redmine's safe_attributes, so field permissions and workflow rules apply exactly as in the classic UI.
       def update

@@ -130,7 +130,7 @@ const anyFilter = computed(() => !!(s('q') || s('status') || s('project') || s('
           <button class="btn" :disabled="list.page >= list.pages" @click="go({ page: String(list.page + 1) }, false)">{{ t('page.next') }}</button>
         </footer>
       </div>
-      <InvoiceDetail v-if="selectedId" :id="selectedId" class="split-detail" @close="openInvoice(null)" @changed="load" />
+      <InvoiceDetail v-if="selectedId" :id="selectedId" class="split-detail" @close="openInvoice(null)" @changed="load" @deleted="() => { openInvoice(null); load(); }" />
     </div>
   </section>
 </template>

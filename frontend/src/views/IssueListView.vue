@@ -409,7 +409,7 @@ onUnmounted(() => { window.removeEventListener('keydown', onKey); document.remov
       <button class="btn" :disabled="list.page >= list.pages" @click="go({ page: list.page + 1 })">{{ t('page.next') }}</button>
     </footer>
     </div>
-    <IssueDetail v-if="selectedId" :id="selectedId" class="split-detail" @close="openIssue(null)" @updated="onDetailUpdated" />
+    <IssueDetail v-if="selectedId" :id="selectedId" class="split-detail" @close="openIssue(null)" @updated="onDetailUpdated" @deleted="() => { openIssue(null); load(); }" />
     </div>
   </section>
 </template>

@@ -74,6 +74,8 @@ export const api = {
   issueOptions: (id: number) => request<IssueOptions>(`issues/${id}/options`),
   bulkUpdate: (ids: number[], issue: Record<string, unknown>) =>
     request<{ updated: IssueRow[]; failed: { id: number; error: string }[] }>('issues/bulk', { method: 'POST', body: JSON.stringify({ ids, issue }) }),
+  deleteIssue: (id: number, withSubtasks = false) => request<null>(`issues/${id}${toQuery({ with_subtasks: withSubtasks ? 1 : undefined })}`, { method: 'DELETE' }),
+  deleteInvoice: (id: number) => request<null>(`invoices/${id}`, { method: 'DELETE' }),
   updateIssue: (id: number, issue: Record<string, unknown>) =>
     request<{ issue: IssueRow }>(`issues/${id}`, { method: 'PATCH', body: JSON.stringify({ issue }) }),
 };

@@ -75,6 +75,7 @@ module ModernUi
         invoice.safe_attributes = attrs
         invoice.project = project
         invoice.author = User.current
+        invoice.status_id ||= Invoice::DRAFT_INVOICE
         invoice.number = Invoice.apply_invoice_macros(invoice.number.presence || Invoice.generate_invoice_number(invoice), invoice)
         invoice.subject = Invoice.apply_invoice_macros(invoice.subject, invoice)
         invoice.assigned_to_id = nil unless invoice.assigned_to_id.nil? || project.assignable_users.map(&:id).include?(invoice.assigned_to_id)
@@ -128,6 +129,18 @@ module ModernUi
         render json: { invoice: detail(Invoice.find(invoice.id)) }
       rescue ActiveRecord::RecordNotFound
         render_json_error(422, l(:modern_ui_error_invoice_line))
+      end
+
+      # DELETE /app/api/invoices/:id - the plugin's own rule (destroyable_by?: :delete_invoices, or author with :edit_own_invoices)
+      def destroy
+        invoice = Invoice.visible.find(params[:id])
+        return render_json_error(403, l(:modern_ui_error_forbidden)) unless invoice.destroyable_by?(User.current)
+
+        if invoice.destroy
+          head :no_content
+        else
+          render_json_error(422, invoice.errors.full_messages.to_sentence.presence || l(:modern_ui_error_forbidden))
+        end
       end
 
       # POST /app/api/invoices/:id/payments { payment: { amount, payment_date, description, account_id, category_id, lock } }
@@ -281,7 +294,7 @@ module ModernUi
           project_identifier: i.project.identifier, description: i.description.to_s, order_number: i.order_number.to_s,
           paid_date: i.paid_date&.to_date, discount: i.discount, assigned_to: serializers.user_ref(i.assigned_to), assigned_to_id: i.assigned_to_id, author: serializers.user_ref(i.author),
           contact_visible: i.contact ? Contact.visible.exists?(i.contact_id) : false,
-          can_edit: !!i.editable_by?(user), lock: version(i), can_pay: user.allowed_to?(:edit_invoice_payments, i.project),
+          can_edit: !!i.editable_by?(user), can_delete: !!i.destroyable_by?(user), lock: version(i), can_pay: user.allowed_to?(:edit_invoice_payments, i.project),
           subtotal: i.subtotal, tax_amount: i.tax_amount, discount_amount: i.discount_amount,
           lines: i.lines.map { |l| { id: l.id, description: l.description.to_s, quantity: l.quantity.to_f, units: l.units.to_s, price: l.price.to_f, tax: l.tax&.to_f, discount: l.discount&.to_f, total: l.total.to_f } },
           payments: i.payments.map { |p| { id: p.id, date: p.payment_date&.to_date, amount: p.amount.to_f, description: p.description.to_s, can_remove: !!p.can_be_destroyed?(user) } }

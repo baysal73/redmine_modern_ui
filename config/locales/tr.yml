@@ -24,3 +24,5 @@ tr:
   modern_ui_error_bulk_empty: "En az bir iş ve bir değişiklik seçin"
   modern_ui_error_bulk_too_many: "Çok fazla iş (en fazla %{max})"
   modern_ui_error_invoice_contact: "Kişi bulunamadı veya görünür değil."
+  modern_ui_error_issue_has_time: "Bu işte kayıtlı süre var. Saatlerin ne olacağını seçebileceğiniz klasik görünümde silin."
+  modern_ui_error_issue_has_subtasks: "Bu işin silinecek %{count} alt görevi var."

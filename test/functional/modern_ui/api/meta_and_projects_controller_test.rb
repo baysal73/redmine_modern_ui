@@ -192,6 +192,8 @@ class ModernUi::Api::InvoiceWritesTest < Redmine::ControllerTest
     assert_response :unauthorized
     get :new_defaults, params: { project_id: 1 }
     assert_response :unauthorized
+    delete :destroy, params: { id: 1 }
+    assert_response :unauthorized
   end
 
   def test_writes_not_found_without_the_invoices_plugin
@@ -201,5 +203,61 @@ class ModernUi::Api::InvoiceWritesTest < Redmine::ControllerTest
     assert_response :not_found
     post :create, params: { invoice: { project_id: 1 } }
     assert_response :not_found
+    delete :destroy, params: { id: 1 }
+    assert_response :not_found
+  end
+end
+
+class ModernUi::Api::IssueDestroyTest < Redmine::ControllerTest
+  tests ModernUi::Api::IssuesController
+  include ModernUiTestHelpers
+  fixtures(*FIXTURES)
+
+  def test_requires_login
+    delete :destroy, params: { id: 1 }
+    assert_response :unauthorized
+  end
+
+  def test_forbidden_without_delete_permission
+    Role.find(1).remove_permission!(:delete_issues)
+    log_in 2
+    assert_no_difference 'Issue.count' do
+      delete :destroy, params: { id: 1 }
+    end
+    assert_response :forbidden
+  end
+
+  def test_refuses_issues_with_logged_time
+    Role.find(1).add_permission!(:delete_issues)
+    log_in 2
+    assert TimeEntry.where(issue_id: 1).exists?
+    assert_no_difference 'Issue.count' do
+      delete :destroy, params: { id: 1 }
+    end
+    assert_response :unprocessable_entity
+  end
+
+  def test_deletes_with_permission
+    Role.find(1).add_permission!(:delete_issues)
+    log_in 2
+    issue = Issue.generate!(project_id: 1, subject: 'to delete')
+    assert_difference 'Issue.count', -1 do
+      delete :destroy, params: { id: issue.id }
+    end
+    assert_response :no_content
+  end
+
+  def test_subtasks_need_confirmation
+    Role.find(1).add_permission!(:delete_issues)
+    log_in 2
+    parent = Issue.generate!(project_id: 1, subject: 'parent')
+    Issue.generate!(project_id: 1, subject: 'child', parent_issue_id: parent.id)
+    assert_no_difference 'Issue.count' do
+      delete :destroy, params: { id: parent.id }
+    end
+    assert_response :conflict
+    assert_difference 'Issue.count', -2 do
+      delete :destroy, params: { id: parent.id, with_subtasks: '1' }
+    end
   end
 end

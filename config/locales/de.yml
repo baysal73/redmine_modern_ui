@@ -24,3 +24,5 @@ de:
   modern_ui_error_bulk_empty: "Bitte mindestens ein Ticket und eine Änderung wählen"
   modern_ui_error_bulk_too_many: "Zu viele Tickets (höchstens %{max})"
   modern_ui_error_invoice_contact: "Kontakt nicht gefunden oder nicht sichtbar."
+  modern_ui_error_issue_has_time: "Dieses Ticket hat gebuchte Zeiten. Bitte in der klassischen Ansicht löschen, dort wählen Sie, was mit den Stunden geschieht."
+  modern_ui_error_issue_has_subtasks: "Dieses Ticket hat %{count} Unteraufgaben, die ebenfalls gelöscht würden."

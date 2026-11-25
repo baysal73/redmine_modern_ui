@@ -214,3 +214,5 @@ a.tb-btn { text-decoration: none; display: inline-flex; align-items: center; gap
 .report-menu { min-width: 220px; right: 0; left: auto; }
 .report-item { display: block; padding: 6px 10px; border-radius: 6px; color: var(--fg); text-decoration: none; }
 .report-item:hover { background: var(--hover); }
+
+.icon-btn.danger:hover, .icon-btn.danger:focus-visible { color: #d33; }

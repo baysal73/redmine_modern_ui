@@ -24,3 +24,5 @@ en:
   modern_ui_error_bulk_empty: "Select at least one issue and a change"
   modern_ui_error_bulk_too_many: "Too many issues (maximum %{max})"
   modern_ui_error_invoice_contact: "Contact not found or not visible."
+  modern_ui_error_issue_has_time: "This issue has logged time. Delete it in the classic view, where you can choose what happens to the hours."
+  modern_ui_error_issue_has_subtasks: "This issue has %{count} subtasks that would be deleted as well."

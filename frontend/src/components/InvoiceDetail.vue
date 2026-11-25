@@ -10,7 +10,7 @@ import type { InvoiceDetail, InvoiceForm } from '../types';
 import EditableField from './EditableField.vue';
 
 const props = defineProps<{ id: number }>();
-const emit = defineEmits<{ (e: 'close'): void; (e: 'changed'): void }>();
+const emit = defineEmits<{ (e: 'close'): void; (e: 'changed'): void; (e: 'deleted'): void }>();
 const config = readConfig();
 const inv = ref<InvoiceDetail | null>(null);
 const form = ref<InvoiceForm | null>(null);
@@ -39,6 +39,13 @@ const fmtDate = (s: string | null) => (s ? new Date(s).toLocaleDateString(locale
 const m = (v: number) => money(v, inv.value?.currency ?? '');
 const classic = computed(() => `${config.root}/invoices/${props.id}`);
 const pdf = computed(() => `${config.root}/invoices/${props.id}.pdf`);
+async function removeInvoice() {
+  const cur = inv.value; if (!cur || busy.value || !window.confirm(t('inv.confirm_delete', { number: cur.number }))) return;
+  busy.value = true;
+  try { await api.deleteInvoice(props.id); toast(t('inv.deleted', { number: cur.number })); emit('deleted'); }
+  catch (e) { toast((e as Error).message, 'error'); }
+  finally { busy.value = false; }
+}
 const ed = computed(() => !!inv.value?.can_edit);
 const opts = (l: { id: number; name: string }[] = []) => l.map((o) => ({ value: String(o.id), label: o.name }));
 const num = (v: unknown) => String(v ?? '');
@@ -127,6 +134,7 @@ async function removePayment(pid: number) {
       <span class="muted">{{ inv?.number }}</span>
       <span class="spacer" />
       <a :href="pdf" target="_blank" rel="noopener" class="muted small pdf-link"><FileText :size="13" /> PDF</a>
+      <button v-if="inv?.can_delete" class="icon-btn danger" :aria-label="t('delete')" :title="t('delete')" @click="removeInvoice"><Trash2 :size="15" /></button>
       <a :href="classic" class="muted small">{{ t('detail.classic') }}</a>
     </header>
     <p v-if="loading" class="muted pad">{{ t('detail.loading') }}</p>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ReportMenu from './ReportMenu.vue';
-import { Lock, Paperclip } from 'lucide-vue-next';
+import { Lock, Paperclip, Trash2 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import { ApiError, api, readConfig } from '../api/client';
 import AttachmentPicker from './AttachmentPicker.vue';
@@ -16,7 +16,7 @@ import { offerUndo } from '../lib/undo';
 import type { CustomFieldForm, IssueDetail, IssueForm, IssueRow, Upload } from '../types';
 
 const props = defineProps<{ id: number }>();
-const emit = defineEmits<{ (e: 'close'): void; (e: 'updated', row: IssueRow): void }>();
+const emit = defineEmits<{ (e: 'close'): void; (e: 'updated', row: IssueRow): void; (e: 'deleted', id: number): void }>();
 const config = readConfig();
 
 const issue = ref<IssueDetail | null>(null);
@@ -113,6 +113,18 @@ const readOnlyCfs = computed(() => (issue.value?.custom_fields ?? []).filter((c)
 const field = (name: string, v: unknown) => patch({ [name]: v });
 const saveCf = (c: CustomFieldForm, v: unknown) => patch({ custom_field_values: { [c.id]: Array.isArray(v) && !v.length ? [''] : (v ?? '') } });
 const classic = computed(() => `${config.root}/issues/${props.id}`);
+async function remove() {
+  const cur = issue.value; if (!cur || !window.confirm(t('issue.confirm_delete', { id: props.id, subject: cur.subject }))) return;
+  try { await api.deleteIssue(props.id); }
+  catch (e) {
+    const err = e as ApiError;
+    if (err.status === 409 && err.data?.subtasks) {
+      if (!window.confirm(t('issue.confirm_subtasks', { message: err.message }))) return;
+      try { await api.deleteIssue(props.id, true); } catch (e2) { toast((e2 as Error).message, 'error'); return; }
+    } else { toast(err.message, 'error'); return; }
+  }
+  toast(t('issue.deleted', { id: props.id })); emit('deleted', props.id);
+}
 const canEdit = computed(() => !!issue.value?.permissions.edit);
 </script>
 
@@ -123,6 +135,7 @@ const canEdit = computed(() => !!issue.value?.permissions.edit);
       <span class="muted">#{{ id }}</span>
       <span class="spacer" />
       <ReportMenu :issue-ids="[id]" single compact />
+      <button v-if="issue?.permissions.delete" class="icon-btn danger" :aria-label="t('delete')" :title="t('delete')" @click="remove"><Trash2 :size="15" /></button>
       <a :href="classic" class="muted small">{{ t('detail.classic') }}</a>
     </header>
 

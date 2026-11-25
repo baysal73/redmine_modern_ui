@@ -28,6 +28,7 @@ scope "#{base}/api", module: 'modern_ui/api', as: 'modern_ui_api' do
   get 'invoices/:id', to: 'invoices#show', constraints: { id: /\d+/ }
   get 'invoices/:id/form', to: 'invoices#form', constraints: { id: /\d+/ }
   patch 'invoices/:id', to: 'invoices#update', constraints: { id: /\d+/ }
+  delete 'invoices/:id', to: 'invoices#destroy', constraints: { id: /\d+/ }
   post 'invoices/:id/payments', to: 'invoices#add_payment', constraints: { id: /\d+/ }
   delete 'invoices/:id/payments/:payment_id', to: 'invoices#remove_payment', constraints: { id: /\d+/, payment_id: /\d+/ }
   get 'report_templates', to: 'reports#templates'
@@ -35,6 +36,7 @@ scope "#{base}/api", module: 'modern_ui/api', as: 'modern_ui_api' do
   get 'issues/:id/form', to: 'issues#form', constraints: { id: /\d+/ }
   get 'issues/:id/options', to: 'issues#options', constraints: { id: /\d+/ }
   patch 'issues/:id', to: 'issues#update', constraints: { id: /\d+/ }
+  delete 'issues/:id', to: 'issues#destroy', constraints: { id: /\d+/ }
 end
 # SPA client-side routes: everything below the base path renders the same shell
 get "#{base}/*path", to: 'modern_ui#index', constraints: ->(req) { !req.path.start_with?("/#{base}/api/") && req.path !~ /\.\w+\z/ }
