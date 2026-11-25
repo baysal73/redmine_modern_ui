@@ -48,6 +48,16 @@ scope "#{base}/api", module: 'modern_ui/api', as: 'modern_ui_api' do
   delete 'invoices/:id', to: 'invoices#destroy', constraints: { id: /\d+/ }
   post 'invoices/:id/payments', to: 'invoices#add_payment', constraints: { id: /\d+/ }
   delete 'invoices/:id/payments/:payment_id', to: 'invoices#remove_payment', constraints: { id: /\d+/, payment_id: /\d+/ }
+  get 'documents', to: 'documents#index'
+  get 'documents/projects', to: 'documents#projects'
+  post 'documents/folders', to: 'documents#create_folder'
+  patch 'documents/folders/:id', to: 'documents#update_folder', constraints: { id: /\d+/ }
+  delete 'documents/folders/:id', to: 'documents#destroy_folder', constraints: { id: /\d+/ }
+  post 'documents/folders/:id/restore', to: 'documents#restore_folder', constraints: { id: /\d+/ }
+  post 'documents/files', to: 'documents#create_files'
+  get 'documents/files/:id', to: 'documents#show_file', constraints: { id: /\d+/ }
+  delete 'documents/files/:id', to: 'documents#destroy_file', constraints: { id: /\d+/ }
+  post 'documents/files/:id/restore', to: 'documents#restore_file', constraints: { id: /\d+/ }
   get 'report_templates', to: 'reports#templates'
   get 'issues/:id', to: 'issues#show', constraints: { id: /\d+/ }
   get 'issues/:id/form', to: 'issues#form', constraints: { id: /\d+/ }

@@ -10,7 +10,7 @@ export interface IssueRow {
 export interface IssueList { issues: IssueRow[]; total: number; page: number; per_page: number; pages: number }
 export interface Meta {
   user: { id: number; name: string; admin: boolean; language: string };
-  features?: { contacts: boolean; invoices: boolean; invoices_add?: boolean; products?: boolean; products_add?: boolean; calendar?: boolean; calendar_add?: boolean; contacts_add?: boolean };
+  features?: { contacts: boolean; invoices: boolean; invoices_add?: boolean; products?: boolean; products_add?: boolean; calendar?: boolean; calendar_add?: boolean; contacts_add?: boolean; documents?: boolean; documents_add?: boolean };
   statuses: Status[]; trackers: Ref[]; priorities: Ref[]; users: Ref[];
   addable_project_ids: number[];
   classic_menu: { name: string; caption: string; url: string }[];
@@ -107,3 +107,16 @@ export interface CalendarData {
 }
 
 export interface BulkResult { done: number; failed: { id: number; name: string; error: string }[] }
+
+export interface DocFolder { id: number; title: string; description: string; locked: boolean; updated_at: string | null; author: string | null; files: number; folders: number }
+export interface DocFile { id: number; name: string; title: string; size: number; version: string; updated_at: string | null; author: string | null; locked: boolean; download_url: string; view_url: string; classic_url: string; description?: string; comment?: string }
+export interface DocRevision { id: number; name: string; version: string; size: number; author: string | null; created_at: string | null; comment: string; description: string; download_url: string }
+export interface DocFileDetail extends DocFile { path: { id: number; title: string }[]; project: { id: number; identifier: string; name: string }; revisions: DocRevision[]; can_delete: boolean }
+export interface DocList {
+  project: { id: number; identifier: string; name: string };
+  folder: { id: number; title: string; parent_id: number | null } | null;
+  path: { id: number; title: string }[];
+  folders: DocFolder[]; files: DocFile[]; truncated: boolean;
+  can: { upload: boolean; folder: boolean; delete_file: boolean; delete_folder: boolean };
+}
+export interface DocUploadResult { done: number; files: { id: number; name: string }[]; failed: { name: string; error: string }[] }

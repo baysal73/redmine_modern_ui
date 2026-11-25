@@ -6,6 +6,7 @@ import HomeView from './views/HomeView.vue';
 import ContactListView from './views/ContactListView.vue';
 import InvoiceListView from './views/InvoiceListView.vue';
 import ProductListView from './views/ProductListView.vue';
+import DocumentsView from './views/DocumentsView.vue';
 import CalendarView from './views/CalendarView.vue';
 import IssueListView from './views/IssueListView.vue';
 import { applyTheme } from './lib/theme';
@@ -25,6 +26,7 @@ const router = createRouter({
     { path: '/contacts/:id(\\d+)?', name: 'contacts', component: ContactListView },
     { path: '/invoices/:id(\\d+)?', name: 'invoices', component: InvoiceListView },
     { path: '/calendar', name: 'calendar', component: CalendarView },
+    { path: '/documents', name: 'documents', component: DocumentsView },
     { path: '/products/:id(\\d+)?', name: 'products', component: ProductListView },
     { path: '/:pathMatch(.*)*', redirect: '/home' },
   ],

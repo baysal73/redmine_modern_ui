@@ -15,6 +15,7 @@ const rows = computed<[string, string][]>(() => [
   ...(f()?.contacts ? [['g k', 'help.go_contacts'] as [string, string]] : []),
   ...(f()?.invoices ? [['g r', 'help.go_invoices'] as [string, string]] : []),
   ...(f()?.products ? [['g p', 'help.go_products'] as [string, string]] : []),
+  ...(f()?.documents ? [['g d', 'help.go_documents'] as [string, string]] : []),
   ...(f()?.calendar ? [['g c', 'help.go_calendar'] as [string, string]] : []),
   ['Ctrl + Enter', 'help.send'], ['Ctrl + K', 'help.palette'], ['Ctrl + Z', 'help.undo'], ['?', 'help.this'],
 ]);

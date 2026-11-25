@@ -9,7 +9,7 @@ module ModernUi
         render json: {
           user: { id: User.current.id, name: User.current.name, admin: User.current.admin?,
                   language: current_language.to_s },
-          features: { contacts: crm_contacts?, invoices: invoices?, invoices_add: invoices_add?, contacts_add: contacts_add?, products: products?, products_add: products_add?, calendar: calendar?, calendar_add: calendar_add? },
+          features: { contacts: crm_contacts?, invoices: invoices?, invoices_add: invoices_add?, contacts_add: contacts_add?, products: products?, products_add: products_add?, calendar: calendar?, calendar_add: calendar_add?, documents: documents?, documents_add: documents_add? },
           statuses: IssueStatus.sorted.map { |s| serializers.status(s) },
           trackers: Tracker.sorted.map { |t| serializers.ref(t) },
           priorities: IssuePriority.active.map { |p| serializers.ref(p).merge(is_default: p.is_default?) },
@@ -42,6 +42,15 @@ module ModernUi
         calendar? && CalendarPlugin::Access.can_manage?(User.current)
       end
 
+      # Documents need the DMSF plugin and the right to see its folders in at least one project
+      def documents?
+        !!(defined?(::DmsfFolder) && User.current.allowed_to?(:view_dmsf_folders, nil, global: true))
+      end
+
+      def documents_add?
+        documents? && User.current.allowed_to?(:file_manipulation, nil, global: true)
+      end
+
       def products?
         !!(defined?(::Product) && User.current.allowed_to_globally?(:view_products, {}))
       end
@@ -71,6 +80,7 @@ module ModernUi
       COVERED_PEOPLE = %w[people].freeze
       COVERED_PRODUCTS = %w[products].freeze
       COVERED_CALENDAR = %w[calendar_events].freeze
+      COVERED_DOCUMENTS = %w[dmsf].freeze
 
       def classic_menu
         return [] unless User.current.admin? # everyone else only gets the new interface
@@ -78,7 +88,7 @@ module ModernUi
         helper = view_context
         %i[application_menu top_menu].flat_map do |menu|
           Redmine::MenuManager.items(menu).root.children.filter_map do |node|
-            next if COVERED.include?(node.name.to_s) || (products? && COVERED_PRODUCTS.include?(node.name.to_s)) || (calendar? && COVERED_CALENDAR.include?(node.name.to_s)) || (crm_contacts? && COVERED_PEOPLE.include?(node.name.to_s)) || ((crm_contacts? || invoices?) && COVERED_CRM.include?(node.name.to_s) && !(node.name.to_s == 'contacts' && !crm_contacts?) && !(node.name.to_s == 'invoices' && !invoices?))
+            next if COVERED.include?(node.name.to_s) || (products? && COVERED_PRODUCTS.include?(node.name.to_s)) || (calendar? && COVERED_CALENDAR.include?(node.name.to_s)) || (documents? && COVERED_DOCUMENTS.include?(node.name.to_s)) || (crm_contacts? && COVERED_PEOPLE.include?(node.name.to_s)) || ((crm_contacts? || invoices?) && COVERED_CRM.include?(node.name.to_s) && !(node.name.to_s == 'contacts' && !crm_contacts?) && !(node.name.to_s == 'invoices' && !invoices?))
             next unless node.allowed?(User.current, nil)
 
             caption, url, = helper.send(:extract_node_details, node, nil)

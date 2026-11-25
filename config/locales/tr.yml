@@ -43,3 +43,4 @@ tr:
   modern_ui_error_bulk_op: "Bilinmeyen toplu işlem."
   modern_ui_error_bulk_status: "Lütfen geçerli bir durum seçin."
   modern_ui_error_invoice_paid: "Ödenmiş faturaların durumu değiştirilemez."
+  modern_ui_error_document_failed: "Dosya kaydedilemedi."

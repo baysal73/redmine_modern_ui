@@ -1,4 +1,4 @@
-import type { BulkResult, CalEvent, CalendarData, ProductDetail, ProductList, ProductOptions, InvoiceDefaults, InvoiceForm, InvoiceDetail, InvoiceList, InvoiceOptions, ContactDetail, ContactList, ContactNote, ContactOptions, AppConfig, ReportTemplates, Home, IssueForm, NewIssueOptions, IssueDetail, IssueList, IssueOptions, IssueRow, Meta, Upload } from '../types';
+import type { BulkResult, DocFileDetail, DocFolder, DocList, DocUploadResult, CalEvent, CalendarData, ProductDetail, ProductList, ProductOptions, InvoiceDefaults, InvoiceForm, InvoiceDetail, InvoiceList, InvoiceOptions, ContactDetail, ContactList, ContactNote, ContactOptions, AppConfig, ReportTemplates, Home, IssueForm, NewIssueOptions, IssueDetail, IssueList, IssueOptions, IssueRow, Meta, Upload } from '../types';
 
 export function readConfig(): AppConfig {
   const el = document.getElementById('app');
@@ -54,6 +54,16 @@ export const api = {
   updateEvent: (id: number, ev: Record<string, unknown>) => request<{ event: CalEvent }>(`calendar/events/${id}`, { method: 'PATCH', body: JSON.stringify(ev) }),
   deleteEvent: (id: number) => request<void>(`calendar/events/${id}`, { method: 'DELETE' }),
   syncCalendar: () => request<{ ok: boolean }>('calendar/sync', { method: 'POST', body: '{}' }),
+  documentProjects: () => request<{ projects: { id: number; identifier: string; name: string }[] }>('documents/projects'),
+  documents: (project: string | number, folder?: string | number) => request<DocList>(`documents${toQuery({ project, folder })}`),
+  documentFile: (id: number) => request<{ file: DocFileDetail }>(`documents/files/${id}`),
+  uploadDocuments: (project: string | number, folder: number | null, tokens: string[]) => request<DocUploadResult>('documents/files', { method: 'POST', body: JSON.stringify({ project, folder_id: folder, uploads: tokens.map((token) => ({ token })) }) }),
+  deleteDocument: (id: number) => request<void>(`documents/files/${id}`, { method: 'DELETE' }),
+  restoreDocument: (id: number) => request<void>(`documents/files/${id}/restore`, { method: 'POST', body: '{}' }),
+  createFolder: (project: string | number, parent: number | null, title: string) => request<{ folder: DocFolder }>('documents/folders', { method: 'POST', body: JSON.stringify({ project, folder_id: parent, title }) }),
+  renameFolder: (id: number, title: string) => request<{ folder: DocFolder }>(`documents/folders/${id}`, { method: 'PATCH', body: JSON.stringify({ title }) }),
+  deleteFolder: (id: number) => request<void>(`documents/folders/${id}`, { method: 'DELETE' }),
+  restoreFolder: (id: number) => request<void>(`documents/folders/${id}/restore`, { method: 'POST', body: '{}' }),
   contacts: (params: Record<string, string | number | undefined>) => request<ContactList>(`contacts${toQuery(params)}`),
   contactOptions: () => request<ContactOptions>('contacts/options'),
   contact: (id: number) => request<{ contact: ContactDetail }>(`contacts/${id}`),

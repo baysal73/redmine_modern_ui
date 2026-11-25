@@ -20,6 +20,13 @@ class ModernUi::Api::MetaControllerTest < Redmine::ControllerTest
     assert_response :unauthorized
   end
 
+  def test_documents_feature_is_off_without_dmsf
+    skip 'DMSF is installed' if defined?(::DmsfFolder)
+    log_in 2
+    get :show
+    assert_equal false, json['features']['documents']
+  end
+
   def test_links_to_the_classic_menus_are_only_for_admins
     log_in 2
     get :show
@@ -327,6 +334,25 @@ class ModernUi::Api::CalendarControllerTest < Redmine::ControllerTest
     post :create, params: { title: 'x' }
     assert_response :not_found
     post :sync
+    assert_response :not_found
+  end
+end
+
+class ModernUi::Api::DocumentsControllerTest < Redmine::ControllerTest
+  include ModernUiTestHelpers
+  fixtures(*FIXTURES)
+
+  def test_requires_login
+    get :index, params: { project: 'ecookbook' }
+    assert_response :unauthorized
+  end
+
+  def test_answers_404_without_the_dmsf_plugin
+    skip 'DMSF is installed' if defined?(::DmsfFile)
+    log_in 2
+    get :projects
+    assert_response :not_found
+    post :create_files, params: { project: 'ecookbook', uploads: [{ token: 'x' }] }
     assert_response :not_found
   end
 end

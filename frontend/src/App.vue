@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CalendarCheck, CalendarDays, ExternalLink, Keyboard, ListChecks, Package, Receipt, Search, Users, Menu, Moon, Plus, Sun, X } from 'lucide-vue-next';
+import { FolderOpen, CalendarCheck, CalendarDays, ExternalLink, Keyboard, ListChecks, Package, Receipt, Search, Users, Menu, Moon, Plus, Sun, X } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { readConfig } from './api/client';
@@ -30,6 +30,7 @@ const nav = computed(() => [
   ...(store.meta?.features?.contacts ? [{ to: '/contacts', label: 'nav.contacts', icon: Users }] : []),
   ...(store.meta?.features?.invoices ? [{ to: '/invoices', label: 'nav.invoices', icon: Receipt }] : []),
   ...(store.meta?.features?.calendar ? [{ to: '/calendar', label: 'nav.calendar', icon: CalendarDays }] : []),
+  ...(store.meta?.features?.documents ? [{ to: '/documents', label: 'nav.documents', icon: FolderOpen }] : []),
   ...(store.meta?.features?.products ? [{ to: '/products', label: 'nav.products', icon: Package }] : []),
 ]);
 const isActive = (to: string) => route.path === to || route.path.startsWith(to + '/');
@@ -48,7 +49,7 @@ function onKey(e: KeyboardEvent) {
   if (ui.quickCreate || ui.help || ui.palette) return;
   if (chord) {
     chord = false; window.clearTimeout(chordTimer);
-    if (e.key === 'i') router.push('/issues'); else if (e.key === 'h') router.push('/home'); else if (e.key === 'k' && store.meta?.features?.contacts) router.push('/contacts'); else if (e.key === 'r' && store.meta?.features?.invoices) router.push('/invoices'); else if (e.key === 'p' && store.meta?.features?.products) router.push('/products'); else if (e.key === 'c' && store.meta?.features?.calendar) router.push('/calendar');
+    if (e.key === 'i') router.push('/issues'); else if (e.key === 'h') router.push('/home'); else if (e.key === 'k' && store.meta?.features?.contacts) router.push('/contacts'); else if (e.key === 'r' && store.meta?.features?.invoices) router.push('/invoices'); else if (e.key === 'p' && store.meta?.features?.products) router.push('/products'); else if (e.key === 'c' && store.meta?.features?.calendar) router.push('/calendar'); else if (e.key === 'd' && store.meta?.features?.documents) router.push('/documents');
     return;
   }
   if (e.key === 'c') { e.preventDefault(); ui.quickCreate = true; }
