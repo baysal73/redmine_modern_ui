@@ -4,6 +4,7 @@ base = RedmineModernUi.base_path
 
 get base, to: 'modern_ui#index', as: :modern_ui
 get "#{base}/api/me", to: 'modern_ui#me'
+get "#{base}/api/logo", to: 'modern_ui#logo'
 scope "#{base}/api", module: 'modern_ui/api', as: 'modern_ui_api' do
   get 'meta', to: 'meta#show'
   get 'home', to: 'home#show'

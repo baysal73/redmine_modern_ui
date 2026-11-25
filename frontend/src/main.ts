@@ -8,11 +8,13 @@ import InvoiceListView from './views/InvoiceListView.vue';
 import ProductListView from './views/ProductListView.vue';
 import IssueListView from './views/IssueListView.vue';
 import { applyTheme } from './lib/theme';
+import { applyBrand } from './lib/brand';
 import './tailwind.css';
 import './styles.css';
 
 const config = readConfig();
 applyTheme();
+applyBrand(config);
 const router = createRouter({
   history: createWebHistory(`${config.base}/`),
   routes: [

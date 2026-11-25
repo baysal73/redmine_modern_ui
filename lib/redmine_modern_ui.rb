@@ -5,7 +5,11 @@ module RedmineModernUi
 
   DEFAULTS = {
     'redirect_after_login' => '1', # send users to the new UI after login
-    'base_path' => 'app'           # mount point; changing it needs a restart
+    'base_path' => 'app',          # mount point; changing it needs a restart
+    'brand_primary' => '',         # company colours (hex); empty = built-in colours
+    'brand_gold' => '',
+    'brand_grey' => '',
+    'logo_data' => ''              # data URI of the uploaded logo
   }.freeze
 
   module_function
@@ -38,6 +42,27 @@ module RedmineModernUi
     return ['c', ['']] if done_status_ids.empty?
 
     ['=', (IssueStatus.where(is_closed: true).pluck(:id) + done_status_ids).uniq.map(&:to_s)]
+  end
+
+  HEX = /\A#[0-9a-f]{6}\z/i
+  LOGO = %r{\Adata:image/(?:png|jpeg|gif|webp|svg\+xml);base64,[A-Za-z0-9+/=]+\z}
+  LOGO_MAX = 600_000
+
+  def brand_color(key)
+    v = settings[key].to_s.strip
+    v.match?(HEX) ? v.downcase : nil
+  end
+
+  # Logo as data URI, only if it looks like an image we accept (rendered via <img>, so SVG scripts never run).
+  def logo_data
+    v = settings['logo_data'].to_s.strip
+    v.size <= LOGO_MAX && v.match?(LOGO) ? v : nil
+  end
+
+  def brand
+    logo = logo_data
+    { primary: brand_color('brand_primary'), gold: brand_color('brand_gold'), grey: brand_color('brand_grey'),
+      logo: logo ? Digest::MD5.hexdigest(logo)[0, 10] : nil }
   end
 
   def done_status?(status)

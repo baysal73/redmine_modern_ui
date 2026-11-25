@@ -3,6 +3,7 @@ import { CalendarCheck, ExternalLink, Keyboard, ListChecks, Package, Receipt, Se
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { readConfig } from './api/client';
+import { logoUrl } from './lib/brand';
 import QuickCreate from './components/QuickCreate.vue';
 import CommandPalette from './components/CommandPalette.vue';
 import ShortcutHelp from './components/ShortcutHelp.vue';
@@ -18,6 +19,7 @@ const config = readConfig();
 const router = useRouter();
 const route = useRoute();
 const navOpen = ref(false);
+const logo = logoUrl(readConfig());
 const dark = ref(document.documentElement.dataset.theme === 'dark');
 const classicUrl = `${config.root}/my/page`;
 const user = computed(() => store.meta?.user);
@@ -63,7 +65,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
     <div v-if="navOpen" class="scrim" @click="navOpen = false" />
     <aside class="sidebar" :class="{ open: navOpen }" :aria-label="t('nav.menu')">
       <div class="flex items-center justify-between px-3 pb-3 pt-1">
-        <router-link to="/home" class="brand">{{ t('app.title') }}</router-link>
+        <router-link to="/home" class="brand"><img v-if="logo" :src="logo" :alt="t('app.title')" class="brand-logo"><template v-else>{{ t('app.title') }}</template></router-link>
         <button class="icon-btn md:hidden" :aria-label="t('detail.close')" @click="navOpen = false"><X :size="16" /></button>
       </div>
       <button class="btn primary mx-2 mb-2 flex items-center justify-start gap-2" @click="ui.quickCreate = true">

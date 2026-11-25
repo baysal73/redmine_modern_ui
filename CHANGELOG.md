@@ -5,6 +5,9 @@ All notable changes are documented here. The project follows [Semantic Versionin
 ## [Unreleased]
 
 ### Added
+- Branding in the plugin settings: upload a company logo (shown in the sidebar) and set three company colours (main, accent, grey). Empty = built-in colours.
+
+### Added
 - Ctrl/⌘ + K search over issues, contacts, invoices and projects (type `#123` to open an issue by number), with quick navigation when the box is empty. The classic "People" menu entry is hidden when Contacts is shown.
 - Products (when the RedmineUP Products plugin is installed): "Add product" list when creating an invoice and for existing invoices (name, price, quantity 1 like the classic form); list with search, status/category filters; detail panel with click-to-edit fields, create and delete (a product used on orders or invoices cannot be deleted). Permissions (`view/add/edit/delete_products`) come from the plugin; the classic "Products" menu entry is hidden; also in Ctrl+K and `g p` (`/app/api/products`). Picture and bundle contents stay classic-only.
 - "New contact" and "New invoice" buttons under "New issue" in the sidebar (only for users who may add them).

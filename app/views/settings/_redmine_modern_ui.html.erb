@@ -21,3 +21,49 @@
   <%= text_field_tag 'settings[base_path]', @settings['base_path'], size: 20 %>
   <em class="info"><%= l(:modern_ui_setting_base_path_info) %></em>
 </p>
+<fieldset class="box tabular">
+  <legend><%= l(:modern_ui_setting_brand_title) %></legend>
+  <% { 'brand_primary' => '#1d194e', 'brand_gold' => '#a39872', 'brand_grey' => '#999999' }.each do |key, example| %>
+    <p>
+      <label for="settings_<%= key %>"><%= l("modern_ui_setting_#{key}") %></label>
+      <%= text_field_tag "settings[#{key}]", @settings[key], size: 9, maxlength: 7, placeholder: example, pattern: '#[0-9a-fA-F]{6}',
+                         data: { color_input: true } %>
+      <input type="color" value="<%= RedmineModernUi.brand_color(key) || example %>" data-color-picker="settings_<%= key %>" aria-label="<%= l("modern_ui_setting_#{key}") %>">
+    </p>
+  <% end %>
+  <p><em class="info"><%= l(:modern_ui_setting_brand_info) %></em></p>
+  <p>
+    <label for="mui_logo_file"><%= l(:modern_ui_setting_logo) %></label>
+    <%= hidden_field_tag 'settings[logo_data]', RedmineModernUi.logo_data.to_s, id: 'settings_logo_data' %>
+    <input type="file" id="mui_logo_file" accept="image/png,image/jpeg,image/svg+xml,image/webp,image/gif">
+    <span id="mui_logo_error" class="icon-warning" style="display:none"><%= l(:modern_ui_setting_logo_error) %></span>
+    <em class="info"><%= l(:modern_ui_setting_logo_info) %></em>
+  </p>
+  <p id="mui_logo_preview" style="<%= 'display:none' unless RedmineModernUi.logo_data %>">
+    <label><%= l(:modern_ui_setting_logo_current) %></label>
+    <img id="mui_logo_img" src="<%= RedmineModernUi.logo_data %>" alt="" style="max-height: 48px; max-width: 240px; background: #eee; padding: 6px; border-radius: 4px">
+    <a href="#" id="mui_logo_remove"><%= l(:modern_ui_setting_logo_remove) %></a>
+  </p>
+</fieldset>
+<%= javascript_tag do %>
+  (function () {
+    document.querySelectorAll('[data-color-picker]').forEach(function (picker) {
+      var text = document.getElementById(picker.dataset.colorPicker);
+      picker.addEventListener('input', function () { text.value = picker.value; });
+      text.addEventListener('input', function () { if (/^#[0-9a-fA-F]{6}$/.test(text.value)) picker.value = text.value; });
+    });
+    var file = document.getElementById('mui_logo_file'), hidden = document.getElementById('settings_logo_data');
+    var box = document.getElementById('mui_logo_preview'), img = document.getElementById('mui_logo_img'), err = document.getElementById('mui_logo_error');
+    file.addEventListener('change', function () {
+      err.style.display = 'none';
+      var f = file.files[0]; if (!f) return;
+      if (f.size > 400 * 1024 || !/^image\/(png|jpeg|svg\+xml|webp|gif)$/.test(f.type)) { err.style.display = ''; file.value = ''; return; }
+      var r = new FileReader();
+      r.onload = function () { hidden.value = r.result; img.src = r.result; box.style.display = ''; };
+      r.readAsDataURL(f);
+    });
+    document.getElementById('mui_logo_remove').addEventListener('click', function (e) {
+      e.preventDefault(); hidden.value = ''; file.value = ''; box.style.display = 'none';
+    });
+  })();
+<% end %>
