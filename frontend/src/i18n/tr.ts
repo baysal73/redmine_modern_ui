@@ -64,6 +64,7 @@ export default {
   "pr.deleted": "\"{name}\" ürünü silindi",
   "pr.readonly_hint": "Resim ve paket içeriği klasik görünümde değiştirilir.",
   "pr.used": "Siparişlerde veya faturalarda kullanılıyor – yalnızca pasif yapılabilir.",
+  "inv.add_product": "Ürün ekle…",
   'columns': 'Sütunlar',
   'unassigned': 'Atanmamış',
   'loading': 'Yükleniyor…',

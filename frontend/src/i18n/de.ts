@@ -64,6 +64,7 @@ export default {
   "pr.deleted": "Produkt „{name}“ gelöscht",
   "pr.readonly_hint": "Bild und Bundle-Inhalt ändern Sie in der klassischen Ansicht.",
   "pr.used": "In Bestellungen oder Rechnungen verwendet – es kann nur auf inaktiv gesetzt werden.",
+  "inv.add_product": "Produkt hinzufügen…",
   'columns': 'Spalten',
   'unassigned': 'Nicht zugewiesen',
   'loading': 'Lädt…',

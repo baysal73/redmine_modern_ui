@@ -65,6 +65,7 @@ export default {
   "pr.deleted": "Product \"{name}\" deleted",
   "pr.readonly_hint": "Picture and bundle contents are changed in the classic view.",
   "pr.used": "Used on orders or invoices – it can only be set to inactive.",
+  "inv.add_product": "Add product…",
   'columns': 'Columns',
   'unassigned': 'Unassigned',
   'loading': 'Loading…',

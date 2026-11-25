@@ -5,7 +5,9 @@ import { ApiError, api } from '../api/client';
 import { t } from '../i18n';
 import { money } from '../lib/money';
 import { toast } from '../lib/toast';
-import type { ContactRow, InvoiceDefaults, InvoiceOptions } from '../types';
+import { store } from '../lib/store';
+import type { ContactRow, InvoiceDefaults, InvoiceOptions, ProductRow } from '../types';
+import ProductPick from './ProductPick.vue';
 
 const props = defineProps<{ opts: InvoiceOptions | null }>();
 const emit = defineEmits<{ (e: 'close'): void; (e: 'created', id: number): void }>();
@@ -40,6 +42,12 @@ function searchContacts() {
     if (cq.value.trim().length < 2) { hits.value = []; return; }
     try { hits.value = (await api.contacts({ q: cq.value.trim(), per_page: 8 })).contacts; } catch { hits.value = []; }
   }, 250);
+}
+// like the classic form: description, price and quantity 1 come from the product, tax from the default
+function addProduct(p: ProductRow) {
+  const line = { ...blank(defaults.value?.tax ? String(defaults.value.tax) : ''), description: p.name, price: p.price === null ? '' : String(p.price), units: 'products' };
+  const first = lines.value[0];
+  if (lines.value.length === 1 && !first.description.trim() && first.price === '') lines.value[0] = line; else lines.value.push(line);
 }
 function pick(c: ContactRow) { contact.value = { id: c.id, name: c.name }; hits.value = []; cq.value = ''; }
 
@@ -103,6 +111,7 @@ async function create() {
         </tr>
       </tbody>
     </table>
+    <ProductPick v-if="store.meta?.features?.products" @pick="addProduct" />
     <button type="button" class="link-btn" @click="lines.push(blank(defaults?.tax ? String(defaults.tax) : ''))"><Plus :size="13" class="inline" /> {{ t('inv.line.new') }}</button>
 
     <p v-if="error" class="error" role="alert">{{ error }}</p>

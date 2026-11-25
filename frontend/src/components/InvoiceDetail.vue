@@ -6,8 +6,10 @@ import { locale, t } from '../i18n';
 import { money } from '../lib/money';
 import { toast } from '../lib/toast';
 import { offerUndo } from '../lib/undo';
-import type { InvoiceDetail, InvoiceForm } from '../types';
+import type { InvoiceDetail, InvoiceForm, ProductRow } from '../types';
+import { store } from '../lib/store';
 import EditableField from './EditableField.vue';
+import ProductPick from './ProductPick.vue';
 
 const props = defineProps<{ id: number }>();
 const emit = defineEmits<{ (e: 'close'): void; (e: 'changed'): void; (e: 'deleted'): void }>();
@@ -95,6 +97,11 @@ function saveLine(l: Line, k: (typeof LINE_KEYS)[number], v: unknown) {
 function removeLine(l: Line) {
   const keep = LINE_KEYS.reduce((a, k) => ({ ...a, [k]: l[k] ?? '' }), {} as Record<string, unknown>);
   send({ lines: [{ id: l.id, _destroy: true }] }, () => ({ lines: [keep] }), t('inv.line.removed'));
+}
+async function addProduct(p: ProductRow) {
+  const known = new Set(inv.value!.lines.map((x) => x.id));
+  await send({ lines: [{ description: p.name, quantity: '1', units: 'products', price: p.price === null ? '0' : String(p.price), tax: null }] },
+    () => ({ lines: inv.value!.lines.filter((x) => !known.has(x.id)).map((x) => ({ id: x.id, _destroy: true })) }), t('inv.line.added'));
 }
 const draft = ref({ description: '', quantity: '1', units: '', price: '', tax: '' });
 async function addLine() {
@@ -189,7 +196,8 @@ async function removePayment(pid: number) {
           </tbody>
         </table>
       </div>
-      <p v-if="ed && !adding"><button class="link-btn" @click="adding = true"><Plus :size="13" class="inline" /> {{ t('inv.line.new') }}</button></p>
+      <p v-if="ed && !adding" class="flex flex-wrap items-center gap-3"><button class="link-btn" @click="adding = true"><Plus :size="13" class="inline" /> {{ t('inv.line.new') }}</button>
+        <ProductPick v-if="store.meta?.features?.products" @pick="addProduct" /></p>
 
       <dl class="inv-totals">
         <dt>{{ t('inv.subtotal') }}</dt><dd>{{ m(inv.subtotal) }}</dd>
