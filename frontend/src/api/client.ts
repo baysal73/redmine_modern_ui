@@ -1,4 +1,4 @@
-import type { InvoiceDetail, InvoiceList, InvoiceOptions, ContactDetail, ContactList, ContactNote, ContactOptions, AppConfig, ReportTemplates, Home, IssueForm, NewIssueOptions, IssueDetail, IssueList, IssueOptions, IssueRow, Meta, Upload } from '../types';
+import type { InvoiceForm, InvoiceDetail, InvoiceList, InvoiceOptions, ContactDetail, ContactList, ContactNote, ContactOptions, AppConfig, ReportTemplates, Home, IssueForm, NewIssueOptions, IssueDetail, IssueList, IssueOptions, IssueRow, Meta, Upload } from '../types';
 
 export function readConfig(): AppConfig {
   const el = document.getElementById('app');
@@ -57,6 +57,10 @@ export const api = {
   addContactNote: (id: number, note: Record<string, unknown>) => request<{ note: ContactNote }>(`contacts/${id}/notes`, { method: 'POST', body: JSON.stringify({ note }) }),
   invoices: (params: Record<string, string | number | undefined>) => request<InvoiceList>(`invoices${toQuery(params)}`),
   invoiceOptions: () => request<InvoiceOptions>('invoices/options'),
+  invoiceForm: (id: number) => request<InvoiceForm>(`invoices/${id}/form`),
+  updateInvoice: (id: number, invoice: Record<string, unknown>) => request<{ invoice: InvoiceDetail }>(`invoices/${id}`, { method: 'PATCH', body: JSON.stringify({ invoice }) }),
+  addInvoicePayment: (id: number, payment: Record<string, unknown>) => request<{ invoice: InvoiceDetail }>(`invoices/${id}/payments`, { method: 'POST', body: JSON.stringify({ payment }) }),
+  removeInvoicePayment: (id: number, paymentId: number, lock: string) => request<{ invoice: InvoiceDetail }>(`invoices/${id}/payments/${paymentId}${toQuery({ lock })}`, { method: 'DELETE' }),
   invoice: (id: number) => request<{ invoice: InvoiceDetail }>(`invoices/${id}`),
   home: () => request<Home>('home'),
   meta: () => request<Meta>('meta'),

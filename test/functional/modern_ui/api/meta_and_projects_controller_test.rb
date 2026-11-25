@@ -175,3 +175,25 @@ class ModernUi::Api::InvoicesControllerTest < Redmine::ControllerTest
     assert_response :not_found
   end
 end
+
+class ModernUi::Api::InvoiceWritesTest < Redmine::ControllerTest
+  tests ModernUi::Api::InvoicesController
+  include ModernUiTestHelpers
+  fixtures(*FIXTURES)
+
+  def test_writes_require_login
+    patch :update, params: { id: 1, invoice: { subject: 'x' } }
+    assert_response :unauthorized
+    post :add_payment, params: { id: 1, payment: { amount: '1' } }
+    assert_response :unauthorized
+    delete :remove_payment, params: { id: 1, payment_id: 1 }
+    assert_response :unauthorized
+  end
+
+  def test_writes_not_found_without_the_invoices_plugin
+    skip 'Invoices plugin installed' if defined?(::Invoice)
+    log_in 2
+    patch :update, params: { id: 1, invoice: { subject: 'x' } }
+    assert_response :not_found
+  end
+end

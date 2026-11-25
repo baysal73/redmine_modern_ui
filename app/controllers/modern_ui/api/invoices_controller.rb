@@ -2,13 +2,16 @@
 
 module ModernUi
   module Api
-    # Read-only view of the RedmineUP Invoices plugin (redmine_contacts_invoices).
-    # Money is deliberately not editable here: payments, lines and statuses touch totals, balances and (with the
-    # Finance plugin) bookkeeping entries, so creating or changing them stays in the plugin's own screens, which the
-    # detail panel links to. Visibility is Invoice.visible, i.e. the plugin's :view_invoices permission per project.
+    # RedmineUP Invoices plugin (redmine_contacts_invoices). Reads use Invoice.visible (:view_invoices per project).
+    # Writes go through the plugin's own models exactly like its controllers do (safe_attributes, nested lines,
+    # InvoicePayment with its Finance hooks), so totals, balance/status and bookkeeping entries are computed by the
+    # plugin, never by this code. Every change checks the plugin's permissions and a version token (409 if the
+    # invoice changed since the client loaded it). Number, contact, project and currency stay classic-only.
     class InvoicesController < BaseController
       before_action :require_invoices
 
+      EDITABLE = %i[subject invoice_date due_date description order_number status_id assigned_to_id].freeze
+      LINE_FIELDS = %i[id description quantity price tax discount units _destroy].freeze
       DEFAULT_PER_PAGE = 50
       MAX_PER_PAGE = 100
       ORDERS = {
@@ -43,7 +46,127 @@ module ModernUi
         render json: { invoice: detail(Invoice.visible.find(params[:id])) }
       end
 
+      # GET /app/api/invoices/:id/form - choices for editing (only for users who may edit or record payments)
+      def form
+        invoice = Invoice.visible.find(params[:id])
+        return render_json_error(403, l(:modern_ui_error_forbidden)) unless invoice.editable_by?(User.current) || can_pay?(invoice)
+
+        render json: {
+          statuses: Invoice.available_statuses.map { |id, name| { id: id, name: name } },
+          assignees: invoice.project.assignable_users.map { |u| serializers.user_ref(u) },
+          finance: finance_options(invoice)
+        }
+      end
+
+      # PATCH /app/api/invoices/:id
+      #   { invoice: { subject, invoice_date, due_date, description, order_number, status_id, discount, assigned_to_id,
+      #                lines: [{ id?, description, quantity, price, tax, discount, units, _destroy }], lock } }
+      def update
+        invoice = Invoice.visible.find(params[:id])
+        return render_json_error(403, l(:modern_ui_error_forbidden)) unless invoice.editable_by?(User.current)
+        return render_json_error(409, l(:modern_ui_error_invoice_changed)) if stale?(invoice, params.dig(:invoice, :lock))
+
+        raw = params.require(:invoice)
+        attrs = raw.permit(*EDITABLE).to_h
+        attrs['discount'] = raw[:discount].to_s.tr(',', '.').to_f if raw.key?(:discount)
+        attrs['lines_attributes'] = lines_attributes(invoice, raw[:lines]) if raw[:lines].is_a?(Array)
+        saved = false
+        Invoice.transaction do
+          invoice.safe_attributes = attrs
+          saved = invoice.save && invoice.lines.reload.each(&:save)
+          raise ActiveRecord::Rollback unless saved
+        end
+        return render_invoice_errors(invoice) unless saved
+
+        render json: { invoice: detail(Invoice.find(invoice.id)) }
+      rescue ActiveRecord::RecordNotFound
+        render_json_error(422, l(:modern_ui_error_invoice_line))
+      end
+
+      # POST /app/api/invoices/:id/payments { payment: { amount, payment_date, description, account_id, category_id, lock } }
+      def add_payment
+        invoice = Invoice.visible.find(params[:id])
+        return render_json_error(403, l(:modern_ui_error_forbidden)) unless can_pay?(invoice)
+        return render_json_error(409, l(:modern_ui_error_invoice_changed)) if stale?(invoice, params.dig(:payment, :lock))
+
+        pp = params.require(:payment).permit(:amount, :payment_date, :description, :account_id, :category_id)
+        amount = pp[:amount].to_s.tr(',', '.')
+        return render_json_error(422, l(:modern_ui_error_payment_amount)) unless amount.match?(/\A\d+(\.\d+)?\z/) && amount.to_d.positive?
+
+        payment = InvoicePayment.new
+        payment.safe_attributes = pp.to_h.except('account_id', 'category_id').merge('amount' => amount)
+        payment.safe_attributes = pp.to_h.slice('account_id', 'category_id') if finance_for?(invoice)
+        payment.invoice = invoice
+        payment.author = User.current
+        if payment.save
+          render json: { invoice: detail(Invoice.find(invoice.id)) }, status: :created
+        else
+          render json: { error: payment.errors.full_messages.to_sentence }, status: 422
+        end
+      end
+
+      # DELETE /app/api/invoices/:id/payments/:payment_id
+      def remove_payment
+        invoice = Invoice.visible.find(params[:id])
+        payment = invoice.payments.find(params[:payment_id])
+        return render_json_error(403, l(:modern_ui_error_forbidden)) unless payment.can_be_destroyed?
+        return render_json_error(409, l(:modern_ui_error_invoice_changed)) if stale?(invoice, params[:lock])
+
+        if payment.destroy
+          render json: { invoice: detail(Invoice.find(invoice.id)) }
+        else
+          render json: { error: payment.errors.full_messages.to_sentence }, status: 422
+        end
+      end
+
       private
+
+      def can_pay?(invoice)
+        User.current.allowed_to?(:edit_invoice_payments, invoice.project)
+      end
+
+      # Changes whatever the money fields depend on, so a client working on an old copy is turned away
+      def version(invoice)
+        Digest::MD5.hexdigest([invoice.updated_at.to_f, invoice.lines.maximum(:updated_at).to_f, invoice.lines.count,
+                               invoice.payments.count, invoice.payments.sum(:amount).to_f, invoice.amount.to_f].join('|'))
+      end
+
+      def stale?(invoice, lock)
+        lock.present? && lock.to_s != version(invoice)
+      end
+
+      def lines_attributes(invoice, raw)
+        known = invoice.lines.pluck(:id)
+        position = invoice.lines.maximum(:position).to_i
+        raw.first(200).filter_map do |l|
+          next unless l.respond_to?(:permit)
+
+          a = l.permit(*LINE_FIELDS).to_h
+          a['id'] = a['id'].to_i if a['id'].present?
+          raise ActiveRecord::RecordNotFound if a['id'].present? && known.exclude?(a['id'])
+
+          a['_destroy'] = a['_destroy'].to_s == 'true' ? '1' : nil
+          a.compact!
+          a['position'] = (position += 1) if a['id'].blank?
+          a
+        end
+      end
+
+      def render_invoice_errors(invoice)
+        render json: { error: invoice.errors.full_messages.to_sentence, errors: invoice.errors.full_messages }, status: 422
+      end
+
+      def finance_for?(invoice)
+        InvoicesSettings.finance_plugin_installed? && User.current.allowed_to?(:add_operations, invoice.project)
+      end
+
+      def finance_options(invoice)
+        return { enabled: false, accounts: [], categories: [] } unless finance_for?(invoice) && defined?(::OperationCategory)
+
+        { enabled: invoice.compatible_accounts.any? && OperationCategory.any?,
+          accounts: invoice.compatible_accounts.map { |a| { id: a.id, name: a.name } },
+          categories: OperationCategory.order(:name).map { |c| { id: c.id, name: c.name } } }
+      end
 
       def require_invoices
         render_json_error(404, l(:modern_ui_error_not_found)) unless defined?(::Invoice) && defined?(::InvoiceLine)
@@ -94,12 +217,12 @@ module ModernUi
         user = User.current
         row(i).merge(
           project_identifier: i.project.identifier, description: i.description.to_s, order_number: i.order_number.to_s,
-          paid_date: i.paid_date&.to_date, discount: i.discount, assigned_to: serializers.user_ref(i.assigned_to), author: serializers.user_ref(i.author),
+          paid_date: i.paid_date&.to_date, discount: i.discount, assigned_to: serializers.user_ref(i.assigned_to), assigned_to_id: i.assigned_to_id, author: serializers.user_ref(i.author),
           contact_visible: i.contact ? Contact.visible.exists?(i.contact_id) : false,
-          can_edit: !!i.editable_by?(user), can_pay: user.allowed_to?(:edit_invoice_payments, i.project),
+          can_edit: !!i.editable_by?(user), lock: version(i), can_pay: user.allowed_to?(:edit_invoice_payments, i.project),
           subtotal: i.subtotal, tax_amount: i.tax_amount, discount_amount: i.discount_amount,
           lines: i.lines.map { |l| { id: l.id, description: l.description.to_s, quantity: l.quantity.to_f, units: l.units.to_s, price: l.price.to_f, tax: l.tax&.to_f, discount: l.discount&.to_f, total: l.total.to_f } },
-          payments: i.payments.map { |p| { id: p.id, date: p.payment_date&.to_date, amount: p.amount.to_f, description: p.description.to_s } }
+          payments: i.payments.map { |p| { id: p.id, date: p.payment_date&.to_date, amount: p.amount.to_f, description: p.description.to_s, can_remove: !!p.can_be_destroyed?(user) } }
         )
       end
     end

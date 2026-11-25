@@ -24,6 +24,10 @@ scope "#{base}/api", module: 'modern_ui/api', as: 'modern_ui_api' do
   get 'invoices', to: 'invoices#index'
   get 'invoices/options', to: 'invoices#options'
   get 'invoices/:id', to: 'invoices#show', constraints: { id: /\d+/ }
+  get 'invoices/:id/form', to: 'invoices#form', constraints: { id: /\d+/ }
+  patch 'invoices/:id', to: 'invoices#update', constraints: { id: /\d+/ }
+  post 'invoices/:id/payments', to: 'invoices#add_payment', constraints: { id: /\d+/ }
+  delete 'invoices/:id/payments/:payment_id', to: 'invoices#remove_payment', constraints: { id: /\d+/, payment_id: /\d+/ }
   get 'report_templates', to: 'reports#templates'
   get 'issues/:id', to: 'issues#show', constraints: { id: /\d+/ }
   get 'issues/:id/form', to: 'issues#form', constraints: { id: /\d+/ }
