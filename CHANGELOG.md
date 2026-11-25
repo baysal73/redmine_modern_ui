@@ -5,6 +5,7 @@ All notable changes are documented here. The project follows [Semantic Versionin
 ## [Unreleased]
 
 ### Added
+- Contact detail: activity timeline (notes, tickets, invoices and, with events plugin, calendar events) with filter chips; replaces the plain ticket list.
 - Invoices: "Send by e-mail" dialog (recipient, subject and text with the plugin's macros, PDF attached by the plugin, optional "mark as sent"; needs `send_invoices`) and a visible PDF button.
 - Bulk actions with checkboxes in the invoice, contact and product lists: set status (invoices, products), delete, CSV export of the selection. Every record is checked with the plugin's own permission rules and failures are reported per record.
 - Calendar (when the events plugin plugin is installed): month and list view with events and dated tickets, search, category and "mine" filters, create / edit / delete events in a dialog (`g c`, sidebar button, Ctrl+K). Permissions and the Google Calendar sync stay in calendar_events; administrators get a "Sync with Google" button (`/app/api/calendar`). Dragging events is still classic-only.

@@ -31,6 +31,7 @@ export interface ContactDetail {
   custom_fields: CustomFieldForm[];
   deals: { id: number; name: string; status: string | null; price: number | null; currency: string | null; project: string | null }[];
   issues: { id: number; subject: string; status: Status; project: string }[]; notes: ContactNote[];
+  timeline: { kind: 'note' | 'issue' | 'invoice' | 'event'; id: number; date: string; title: string; meta: string; day?: string; day_only?: boolean }[];
 }
 export interface ContactOptions { can_add: boolean; projects: { id: number; identifier: string; name: string }[]; custom_fields: { id: number; name: string; values: string[] }[]; assignees: Ref[] }
 export interface InvoiceRow {

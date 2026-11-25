@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { Building2, Mail, Phone } from 'lucide-vue-next';
+import { useRouter } from 'vue-router';
+import { Building2, CalendarDays, ListChecks, Mail, MessageSquare, Phone, Receipt } from 'lucide-vue-next';
 import { ApiError, api, readConfig } from '../api/client';
 import { locale, t } from '../i18n';
 import { hasContent } from '../lib/ckeditor';
@@ -34,6 +35,17 @@ async function load(spinner = true) {
 watch(() => props.id, () => { note.value = ''; noteType.value = ''; load(); }, { immediate: true });
 
 const str = (k: string) => String(c.value?.values[k] ?? '');
+const router = useRouter();
+const icons = { note: MessageSquare, issue: ListChecks, invoice: Receipt, event: CalendarDays } as const;
+const tlKind = ref('all');
+const kinds = computed(() => new Set((c.value?.timeline ?? []).map((x) => x.kind)));
+const timeline = computed(() => (c.value?.timeline ?? []).filter((x) => tlKind.value === 'all' || x.kind === tlKind.value));
+function openItem(x: ContactDetail['timeline'][number]) {
+  if (x.kind === 'issue') router.push('/issues/' + x.id);
+  else if (x.kind === 'invoice') router.push('/invoices/' + x.id + '?status=all');
+  else if (x.kind === 'event') router.push({ path: '/calendar', query: { month: (x.day ?? x.date).slice(0, 7) } });
+  else document.querySelector('.journal')?.scrollIntoView({ behavior: 'smooth' });
+}
 const fmt = (s: string) => new Date(s).toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' });
 const fmtDate = (s: string | null | undefined) => (s ? new Date(s).toLocaleDateString(locale) : '');
 const link = (u: string) => (/^https?:\/\//i.test(u) ? u : `http://${u}`);
@@ -157,9 +169,20 @@ const ed = computed(() => !!c.value?.editable);
         <h3>{{ t('ct.deals') }}</h3>
         <ul class="ct-list"><li v-for="d in c.deals" :key="d.id"><a :href="`${config.root}/deals/${d.id}`">{{ d.name }}</a> <span class="muted small">{{ d.status }}<template v-if="d.price"> · {{ d.price }} {{ d.currency }}</template></span></li></ul>
       </template>
-      <template v-if="c.issues.length">
-        <h3>{{ t('ct.issues') }}</h3>
-        <ul class="ct-list"><li v-for="i in c.issues" :key="i.id"><a href="#" @click.prevent="$router.push('/issues/' + i.id)">#{{ i.id }} {{ i.subject }}</a> <span class="muted small">{{ i.status.name }} · {{ i.project }}</span></li></ul>
+      <template v-if="c.timeline.length">
+        <h3>{{ t('ct.timeline') }}</h3>
+        <div class="seg tl-filter" role="group" :aria-label="t('ct.timeline')">
+          <button v-for="k in ['all', 'note', 'issue', 'invoice', 'event']" v-show="k === 'all' || kinds.has(k as 'note')" :key="k" class="seg-btn" :class="{ on: tlKind === k }" :aria-pressed="tlKind === k" @click="tlKind = k">{{ t('ct.tl.' + k) }}</button>
+        </div>
+        <ol class="timeline">
+          <li v-for="x in timeline" :key="x.kind + x.id" class="tl-item" :class="'tl-' + x.kind">
+            <span class="tl-icon" aria-hidden="true"><component :is="icons[x.kind]" :size="14" /></span>
+            <div class="tl-body">
+              <a href="#" class="tl-title" @click.prevent="openItem(x)">{{ x.title }}</a>
+              <div class="muted small">{{ t('ct.tl.' + x.kind) }} · {{ x.day_only ? fmtDate(x.date) : fmt(x.date) }}<template v-if="x.meta"> · {{ x.meta }}</template></div>
+            </div>
+          </li>
+        </ol>
       </template>
 
       <h3>{{ t('ct.notes') }}</h3>

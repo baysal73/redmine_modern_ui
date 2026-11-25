@@ -203,8 +203,36 @@ module ModernUi
           employees: c.is_company? ? c.company_contacts.merge(Contact.visible).limit(100).map { |e| { id: e.id, name: e.name, job_title: e.job_title.to_s } } : [],
           custom_fields: c.custom_field_values.filter_map { |cv| serializers.custom_field_form(cv, nil) },
           deals: deals(c, user), issues: c.related_issues.includes(:status).order(updated_on: :desc).limit(50).map { |i| issue_ref(i) },
+          timeline: timeline(c, user),
           notes: ContactNote.where(source_type: 'Contact', source_id: c.id).includes(:author).order(created_on: :desc).limit(100).map { |n| note_json(n) }
         }
+      end
+
+      TIMELINE_MAX = 80
+
+      # Everything that happened around a contact in one list, newest first: notes, tickets, invoices and calendar events.
+      # Each source respects its own visibility rules; the optional plugins (invoices, events) are only asked when installed.
+      def timeline(c, user)
+        out = []
+        ContactNote.where(source_type: 'Contact', source_id: c.id).includes(:author).order(created_on: :desc).limit(40).each do |n|
+          text = n.subject.presence || ActionController::Base.helpers.strip_tags(n.content.to_s).squish.truncate(90)
+          out << { kind: 'note', id: n.id, date: n.created_on, title: text, meta: n.author&.name.to_s }
+        end
+        c.related_issues.includes(:status, :project).order(updated_on: :desc).limit(40).each do |i|
+          out << { kind: 'issue', id: i.id, date: i.updated_on, title: "##{i.id} #{i.subject}", meta: "#{i.status.name} · #{i.project.name}" }
+        end
+        if defined?(::Invoice) && user.allowed_to_globally?(:view_invoices, {})
+          Invoice.visible.where(contact_id: c.id).includes(:project).order(invoice_date: :desc).limit(40).each do |i|
+            out << { kind: 'invoice', id: i.id, date: i.invoice_date&.to_time, day_only: true, title: i.number.to_s,
+                     meta: "#{view_context.number_with_precision(i.amount.to_f, precision: 2)} #{i.currency} · #{Invoice.available_statuses[i.status_id]}" }
+          end
+        end
+        if defined?(::CalendarEvent) && defined?(::CalendarPlugin::Access) && CalendarPlugin::Access.can_view?(user)
+          CalendarEvent.where(contact_id: c.id).order(starts_at: :desc).limit(40).each do |e|
+            out << { kind: 'event', id: e.id, date: e.starts_at, title: e.title, meta: e.location.to_s, day: e.starts_at.to_date.iso8601 }
+          end
+        end
+        out.select { |x| x[:date] }.sort_by { |x| x[:date] }.reverse.first(TIMELINE_MAX).map { |x| x.merge(date: x[:date].iso8601) }
       end
 
       def avatar_url(c)
