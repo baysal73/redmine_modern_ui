@@ -152,7 +152,7 @@ main:focus { outline: none; }
 .shell { display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100vh; }
 .sidebar { position: sticky; top: 0; height: 100vh; overflow-y: auto; background: var(--surface); border-right: 1px solid var(--border); padding: 14px 6px 12px; display: flex; flex-direction: column; }
 .brand { font-weight: 700; font-size: 1.05rem; color: var(--fg); letter-spacing: -0.01em; }
-.brand-logo { display: block; max-height: 36px; max-width: 180px; }
+.brand-logo { display: block; max-height: 64px; max-width: 100%; }
 .nav-item svg { color: var(--brand-grey, currentColor); }
 .nav-item.active svg { color: var(--accent); }
 .nav-item.active { box-shadow: inset 3px 0 0 var(--brand-gold, transparent); }

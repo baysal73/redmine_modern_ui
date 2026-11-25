@@ -64,7 +64,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
     <button class="mobile-menu icon-btn" :aria-label="t('nav.menu')" @click="navOpen = true"><Menu :size="18" /></button>
     <div v-if="navOpen" class="scrim" @click="navOpen = false" />
     <aside class="sidebar" :class="{ open: navOpen }" :aria-label="t('nav.menu')">
-      <div class="flex items-center justify-between px-3 pb-3 pt-1">
+      <div class="flex items-center justify-between px-3 pb-4 pt-2">
         <router-link to="/home" class="brand"><img v-if="logo" :src="logo" :alt="t('app.title')" class="brand-logo"><template v-else>{{ t('app.title') }}</template></router-link>
         <button class="icon-btn md:hidden" :aria-label="t('detail.close')" @click="navOpen = false"><X :size="16" /></button>
       </div>
