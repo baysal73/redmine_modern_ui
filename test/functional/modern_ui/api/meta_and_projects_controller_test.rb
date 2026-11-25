@@ -188,12 +188,18 @@ class ModernUi::Api::InvoiceWritesTest < Redmine::ControllerTest
     assert_response :unauthorized
     delete :remove_payment, params: { id: 1, payment_id: 1 }
     assert_response :unauthorized
+    post :create, params: { invoice: { project_id: 1 } }
+    assert_response :unauthorized
+    get :new_defaults, params: { project_id: 1 }
+    assert_response :unauthorized
   end
 
   def test_writes_not_found_without_the_invoices_plugin
     skip 'Invoices plugin installed' if defined?(::Invoice)
     log_in 2
     patch :update, params: { id: 1, invoice: { subject: 'x' } }
+    assert_response :not_found
+    post :create, params: { invoice: { project_id: 1 } }
     assert_response :not_found
   end
 end

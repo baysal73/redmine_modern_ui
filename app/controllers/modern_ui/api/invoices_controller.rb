@@ -37,8 +37,55 @@ module ModernUi
       def options
         render json: {
           statuses: Invoice.available_statuses.map { |id, name| { id: id, name: name } },
-          projects: Project.visible.active.sorted.select { |p| User.current.allowed_to?(:view_invoices, p) }.map { |p| { id: p.id, identifier: p.identifier, name: p.name } }
+          projects: Project.visible.active.sorted.select { |p| User.current.allowed_to?(:view_invoices, p) }.map { |p| { id: p.id, identifier: p.identifier, name: p.name } },
+          addable_projects: Project.visible.active.sorted.select { |p| User.current.allowed_to?(:add_invoices, p) }.map { |p| { id: p.id, identifier: p.identifier, name: p.name } }
         }
+      end
+
+      # GET /app/api/invoices/new?project_id=ID - suggested values for the create form (number from the plugin's number format)
+      def new_defaults
+        project = addable_project(params[:project_id])
+        return render_json_error(403, l(:modern_ui_error_forbidden)) unless project
+
+        draft = Invoice.new(project: project)
+        render json: {
+          number: Invoice.generate_invoice_number(draft).to_s, invoice_date: User.current.today, currency: ContactsSetting.default_currency.to_s,
+          currencies: ContactsSetting.major_currencies, tax: ContactsSetting.default_tax.to_f,
+          statuses: Invoice.available_statuses.map { |id, name| { id: id, name: name } },
+          assignees: project.assignable_users.map { |u| serializers.user_ref(u) }, assigned_to_id: User.current.id
+        }
+      end
+
+      # POST /app/api/invoices { invoice: { project_id, contact_id, number, subject, invoice_date, due_date, currency, description,
+      #                                     order_number, status_id, assigned_to_id, discount, lines: [...] } }
+      def create
+        raw = params.require(:invoice)
+        project = addable_project(raw[:project_id])
+        return render_json_error(403, l(:modern_ui_error_forbidden)) unless project
+
+        contact_id = raw[:contact_id].presence && raw[:contact_id].to_i
+        return render_json_error(422, l(:modern_ui_error_invoice_contact)) if contact_id && !Contact.visible.exists?(contact_id)
+
+        invoice = Invoice.new
+        attrs = raw.permit(*EDITABLE, :number, :currency).to_h
+        attrs['discount'] = raw[:discount].to_s.tr(',', '.').to_f if raw.key?(:discount)
+        attrs['contact_id'] = contact_id
+        attrs['project_id'] = project.id
+        attrs['lines_attributes'] = new_lines(raw[:lines]) if raw[:lines].is_a?(Array)
+        invoice.safe_attributes = attrs
+        invoice.project = project
+        invoice.author = User.current
+        invoice.number = Invoice.apply_invoice_macros(invoice.number.presence || Invoice.generate_invoice_number(invoice), invoice)
+        invoice.subject = Invoice.apply_invoice_macros(invoice.subject, invoice)
+        invoice.assigned_to_id = nil unless invoice.assigned_to_id.nil? || project.assignable_users.map(&:id).include?(invoice.assigned_to_id)
+        saved = false
+        Invoice.transaction do
+          saved = invoice.save && invoice.lines.reload.each(&:save)
+          raise ActiveRecord::Rollback unless saved
+        end
+        return render_invoice_errors(invoice) unless saved
+
+        render json: { invoice: detail(Invoice.find(invoice.id)) }, status: :created
       end
 
       # GET /app/api/invoices/:id
@@ -120,6 +167,21 @@ module ModernUi
       end
 
       private
+
+      def addable_project(id)
+        project = Project.visible.active.find_by(id: id.to_s.to_i)
+        project if project && User.current.allowed_to?(:add_invoices, project)
+      end
+
+      def new_lines(raw)
+        raw.first(200).each_with_index.filter_map do |l, i|
+          next unless l.respond_to?(:permit)
+
+          a = l.permit(*(LINE_FIELDS - %i[id _destroy])).to_h
+          a['position'] = i + 1
+          a
+        end
+      end
 
       def can_pay?(invoice)
         User.current.allowed_to?(:edit_invoice_payments, invoice.project)

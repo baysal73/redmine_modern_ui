@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { Search } from 'lucide-vue-next';
+import { Plus, Search } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ApiError, api } from '../api/client';
+import InvoiceCreate from '../components/InvoiceCreate.vue';
 import InvoiceDetail from '../components/InvoiceDetail.vue';
 import { locale, t } from '../i18n';
 import { money } from '../lib/money';
@@ -13,6 +14,7 @@ const router = useRouter();
 const list = ref<InvoiceList | null>(null);
 const opts = ref<InvoiceOptions | null>(null);
 const loading = ref(false);
+const creating = ref(false);
 const error = ref('');
 const searchText = ref('');
 const searchBox = ref<HTMLInputElement | null>(null);
@@ -59,7 +61,9 @@ const anyFilter = computed(() => !!(s('q') || s('status') || s('project') || s('
 
 <template>
   <section class="list-view">
-    <div class="page-head"><h1>{{ t('nav.invoices') }}</h1><span v-if="list" class="muted">{{ t('inv.results', { total: list.total }) }}</span></div>
+    <div class="page-head"><h1>{{ t('nav.invoices') }}</h1><span v-if="list" class="muted">{{ t('inv.results', { total: list.total }) }}</span>
+      <span class="spacer" /><button v-if="opts?.addable_projects.length" class="btn primary" @click="creating = !creating"><Plus :size="15" class="inline" /> {{ t('inv.new') }}</button></div>
+    <InvoiceCreate v-if="creating" :opts="opts" @close="creating = false" @created="(id) => { creating = false; load(); openInvoice(id); }" />
 
     <div class="list-toolbar">
       <div class="fbar" role="search">

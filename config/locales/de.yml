@@ -23,3 +23,4 @@ de:
   modern_ui_error_upload_missing: "Keine Datei empfangen"
   modern_ui_error_bulk_empty: "Bitte mindestens ein Ticket und eine Änderung wählen"
   modern_ui_error_bulk_too_many: "Zu viele Tickets (höchstens %{max})"
+  modern_ui_error_invoice_contact: "Kontakt nicht gefunden oder nicht sichtbar."

@@ -23,6 +23,8 @@ scope "#{base}/api", module: 'modern_ui/api', as: 'modern_ui_api' do
   post 'contacts/:id/notes', to: 'contacts#add_note', constraints: { id: /\d+/ }
   get 'invoices', to: 'invoices#index'
   get 'invoices/options', to: 'invoices#options'
+  get 'invoices/new', to: 'invoices#new_defaults'
+  post 'invoices', to: 'invoices#create'
   get 'invoices/:id', to: 'invoices#show', constraints: { id: /\d+/ }
   get 'invoices/:id/form', to: 'invoices#form', constraints: { id: /\d+/ }
   patch 'invoices/:id', to: 'invoices#update', constraints: { id: /\d+/ }

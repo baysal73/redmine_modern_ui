@@ -23,3 +23,4 @@ en:
   modern_ui_error_upload_missing: "No file received"
   modern_ui_error_bulk_empty: "Select at least one issue and a change"
   modern_ui_error_bulk_too_many: "Too many issues (maximum %{max})"
+  modern_ui_error_invoice_contact: "Contact not found or not visible."

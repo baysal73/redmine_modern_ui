@@ -46,7 +46,8 @@ export interface InvoiceDetail extends InvoiceRow {
   payments: { id: number; date: string | null; amount: number; description: string; can_remove: boolean }[];
 }
 export interface InvoiceForm { statuses: Ref[]; assignees: Ref[]; finance: { enabled: boolean; accounts: Ref[]; categories: Ref[] } }
-export interface InvoiceOptions { statuses: Ref[]; projects: { id: number; identifier: string; name: string }[] }
+export interface InvoiceOptions { statuses: Ref[]; projects: { id: number; identifier: string; name: string }[]; addable_projects: { id: number; identifier: string; name: string }[] }
+export interface InvoiceDefaults { number: string; invoice_date: string; currency: string; currencies: string[]; tax: number; statuses: Ref[]; assignees: Ref[]; assigned_to_id: number }
 export interface AppConfig { base: string; root: string; lang: string; csrf: string }
 
 export interface JournalDetail { property: string; name: string; text: string }
