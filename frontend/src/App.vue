@@ -65,14 +65,14 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
         <router-link to="/home" class="brand">{{ t('app.title') }}</router-link>
         <button class="icon-btn md:hidden" :aria-label="t('detail.close')" @click="navOpen = false"><X :size="16" /></button>
       </div>
-      <button class="btn primary mx-2 mb-3 flex items-center justify-center gap-2" @click="ui.quickCreate = true">
+      <button class="btn primary mx-2 mb-2 flex items-center justify-center gap-2" @click="ui.quickCreate = true">
         <Plus :size="16" /> {{ t('create.button') }} <kbd class="ml-auto">c</kbd>
       </button>
-      <router-link v-if="store.meta?.features?.contacts_add" :to="{ path: '/contacts', query: { new: '1' } }" class="btn mx-2 mb-2 flex items-center justify-center gap-2">
-        <Users :size="16" /> {{ t('ct.new') }}
+      <router-link v-if="store.meta?.features?.contacts_add" :to="{ path: '/contacts', query: { new: '1' } }" class="btn primary mx-2 mb-2 flex items-center justify-center gap-2">
+        <Plus :size="16" /> {{ t('ct.new') }}
       </router-link>
-      <router-link v-if="store.meta?.features?.invoices_add" :to="{ path: '/invoices', query: { new: '1' } }" class="btn mx-2 mb-3 flex items-center justify-center gap-2">
-        <Receipt :size="16" /> {{ t('inv.new') }}
+      <router-link v-if="store.meta?.features?.invoices_add" :to="{ path: '/invoices', query: { new: '1' } }" class="btn primary mx-2 mb-3 flex items-center justify-center gap-2">
+        <Plus :size="16" /> {{ t('inv.new') }}
       </router-link>
       <nav class="flex flex-col gap-0.5 px-2" aria-label="Main">
         <router-link v-for="n in nav" :key="n.to" :to="n.to" class="nav-item" :class="{ active: isActive(n.to) }">
