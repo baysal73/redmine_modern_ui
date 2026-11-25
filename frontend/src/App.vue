@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { CalendarCheck, ExternalLink, Keyboard, ListChecks, Receipt, Users, Menu, Moon, Plus, Sun, X } from 'lucide-vue-next';
+import { CalendarCheck, ExternalLink, Keyboard, ListChecks, Receipt, Search, Users, Menu, Moon, Plus, Sun, X } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { readConfig } from './api/client';
 import QuickCreate from './components/QuickCreate.vue';
+import CommandPalette from './components/CommandPalette.vue';
 import ShortcutHelp from './components/ShortcutHelp.vue';
 import Avatar from './components/ui/Avatar.vue';
 import { t } from './i18n';
@@ -35,11 +36,12 @@ watch(() => route.fullPath, () => { navOpen.value = false; });
 let chord = false; let chordTimer: number | undefined;
 function onKey(e: KeyboardEvent) {
   const el = e.target as HTMLElement;
+  if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'k') { e.preventDefault(); ui.palette = !ui.palette; return; }
   if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z' && !['INPUT', 'SELECT', 'TEXTAREA'].includes(el.tagName) && !el.isContentEditable && hasUndo()) {
     e.preventDefault(); undoLast(); return;
   }
   if (['INPUT', 'SELECT', 'TEXTAREA'].includes(el.tagName) || el.isContentEditable || e.ctrlKey || e.metaKey || e.altKey) return;
-  if (ui.quickCreate || ui.help) return;
+  if (ui.quickCreate || ui.help || ui.palette) return;
   if (chord) {
     chord = false; window.clearTimeout(chordTimer);
     if (e.key === 'i') router.push('/issues'); else if (e.key === 'h') router.push('/home'); else if (e.key === 'k' && store.meta?.features?.contacts) router.push('/contacts'); else if (e.key === 'r' && store.meta?.features?.invoices) router.push('/invoices');
@@ -80,6 +82,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
         </nav>
       </div>
       <div class="mt-auto flex flex-col gap-1 border-t border-line px-2 pt-3">
+        <button class="nav-item" @click="ui.palette = true"><Search :size="17" /> {{ t('palette.open') }} <kbd class="ml-auto">Ctrl K</kbd></button>
         <button class="nav-item" @click="ui.help = true"><Keyboard :size="17" /> {{ t('nav.help') }} <kbd class="ml-auto">?</kbd></button>
         <button class="nav-item" @click="flipTheme"><component :is="dark ? Sun : Moon" :size="17" /> {{ t('nav.theme') }}</button>
         <a class="nav-item" :href="classicUrl"><ExternalLink :size="17" /> {{ t('nav.classic') }}</a>
@@ -92,6 +95,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
   </div>
   <QuickCreate v-if="ui.quickCreate" />
   <ShortcutHelp v-if="ui.help" />
+  <CommandPalette v-if="ui.palette" />
   <div class="toasts" aria-live="polite">
     <div v-for="x in toasts" :key="x.id" class="toast" :class="x.kind" role="status">{{ x.text }}
       <button v-if="x.action" class="toast-action" @click="x.action.run(); dismiss(x.id)">{{ x.action.label }}</button></div>

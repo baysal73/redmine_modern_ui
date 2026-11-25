@@ -42,12 +42,14 @@ module ModernUi
       # point to everything it does not replace yet. Items we cover ourselves are left out.
       COVERED = %w[home my_page issues modern_ui].freeze
       COVERED_CRM = %w[contacts invoices].freeze
+      # RedmineUP People lists the same persons as Contacts in this installation; hidden whenever Contacts is shown
+      COVERED_PEOPLE = %w[people].freeze
 
       def classic_menu
         helper = view_context
         %i[application_menu top_menu].flat_map do |menu|
           Redmine::MenuManager.items(menu).root.children.filter_map do |node|
-            next if COVERED.include?(node.name.to_s) || ((crm_contacts? || invoices?) && COVERED_CRM.include?(node.name.to_s) && !(node.name.to_s == 'contacts' && !crm_contacts?) && !(node.name.to_s == 'invoices' && !invoices?))
+            next if COVERED.include?(node.name.to_s) || (crm_contacts? && COVERED_PEOPLE.include?(node.name.to_s)) || ((crm_contacts? || invoices?) && COVERED_CRM.include?(node.name.to_s) && !(node.name.to_s == 'contacts' && !crm_contacts?) && !(node.name.to_s == 'invoices' && !invoices?))
             next unless node.allowed?(User.current, nil)
 
             caption, url, = helper.send(:extract_node_details, node, nil)

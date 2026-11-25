@@ -9,7 +9,7 @@ let release: (() => void) | null = null;
 const close = () => { ui.help = false; };
 const rows: [string, string][] = [
   ['c', 'help.create'], ['/', 'help.search'], ['j / k', 'help.next_prev'], ['Esc', 'help.close'],
-  ['g i', 'help.go_issues'], ['Ctrl + Enter', 'help.send'], ['Ctrl + Z', 'help.undo'], ['?', 'help.this'],
+  ['g i', 'help.go_issues'], ['Ctrl + Enter', 'help.send'], ['Ctrl + K', 'help.palette'], ['Ctrl + Z', 'help.undo'], ['?', 'help.this'],
 ];
 onMounted(() => { release = trapFocus(root.value!, close); });
 onUnmounted(() => release?.());
