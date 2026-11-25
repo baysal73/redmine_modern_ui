@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CalendarCheck, ExternalLink, Keyboard, ListChecks, Users, Menu, Moon, Plus, Sun, X } from 'lucide-vue-next';
+import { CalendarCheck, ExternalLink, Keyboard, ListChecks, Receipt, Users, Menu, Moon, Plus, Sun, X } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { readConfig } from './api/client';
@@ -25,6 +25,7 @@ const nav = computed(() => [
   { to: '/home', label: 'nav.home', icon: CalendarCheck },
   { to: '/issues', label: 'nav.issues', icon: ListChecks },
   ...(store.meta?.features?.contacts ? [{ to: '/contacts', label: 'nav.contacts', icon: Users }] : []),
+  ...(store.meta?.features?.invoices ? [{ to: '/invoices', label: 'nav.invoices', icon: Receipt }] : []),
 ]);
 const isActive = (to: string) => route.path === to || route.path.startsWith(to + '/');
 function flipTheme() { toggleTheme(); dark.value = document.documentElement.dataset.theme === 'dark'; }
@@ -41,7 +42,7 @@ function onKey(e: KeyboardEvent) {
   if (ui.quickCreate || ui.help) return;
   if (chord) {
     chord = false; window.clearTimeout(chordTimer);
-    if (e.key === 'i') router.push('/issues'); else if (e.key === 'h') router.push('/home'); else if (e.key === 'k' && store.meta?.features?.contacts) router.push('/contacts');
+    if (e.key === 'i') router.push('/issues'); else if (e.key === 'h') router.push('/home'); else if (e.key === 'k' && store.meta?.features?.contacts) router.push('/contacts'); else if (e.key === 'r' && store.meta?.features?.invoices) router.push('/invoices');
     return;
   }
   if (e.key === 'c') { e.preventDefault(); ui.quickCreate = true; }

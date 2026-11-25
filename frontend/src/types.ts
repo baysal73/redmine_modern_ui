@@ -10,7 +10,7 @@ export interface IssueRow {
 export interface IssueList { issues: IssueRow[]; total: number; page: number; per_page: number; pages: number }
 export interface Meta {
   user: { id: number; name: string; admin: boolean; language: string };
-  features?: { contacts: boolean };
+  features?: { contacts: boolean; invoices: boolean };
   statuses: Status[]; trackers: Ref[]; priorities: Ref[]; users: Ref[];
   addable_project_ids: number[];
   classic_menu: { name: string; caption: string; url: string }[];
@@ -33,6 +33,19 @@ export interface ContactDetail {
   issues: { id: number; subject: string; status: Status; project: string }[]; notes: ContactNote[];
 }
 export interface ContactOptions { can_add: boolean; projects: { id: number; identifier: string; name: string }[]; custom_fields: { id: number; name: string; values: string[] }[]; assignees: Ref[] }
+export interface InvoiceRow {
+  id: number; number: string; subject: string; invoice_date: string | null; due_date: string | null; status: Ref; currency: string;
+  amount: number; balance: number; remaining: number; overdue: boolean; contact: Ref | null; project: string;
+}
+export interface InvoiceList { invoices: InvoiceRow[]; total: number; page: number; per_page: number; pages: number; sums: { currency: string; amount: number; open: number }[] }
+export interface InvoiceDetail extends InvoiceRow {
+  project_identifier: string; description: string; order_number: string; paid_date: string | null; discount: number;
+  assigned_to: Ref | null; author: Ref | null; contact_visible: boolean; can_edit: boolean; can_pay: boolean;
+  subtotal: number; tax_amount: number; discount_amount: number;
+  lines: { id: number; description: string; quantity: number; units: string; price: number; tax: number | null; discount: number | null; total: number }[];
+  payments: { id: number; date: string | null; amount: number; description: string }[];
+}
+export interface InvoiceOptions { statuses: Ref[]; projects: { id: number; identifier: string; name: string }[] }
 export interface AppConfig { base: string; root: string; lang: string; csrf: string }
 
 export interface JournalDetail { property: string; name: string; text: string }

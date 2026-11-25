@@ -9,7 +9,7 @@ module ModernUi
         render json: {
           user: { id: User.current.id, name: User.current.name, admin: User.current.admin?,
                   language: current_language.to_s },
-          features: { contacts: crm_contacts? },
+          features: { contacts: crm_contacts?, invoices: invoices? },
           statuses: IssueStatus.sorted.map { |s| serializers.status(s) },
           trackers: Tracker.sorted.map { |t| serializers.ref(t) },
           priorities: IssuePriority.active.map { |p| serializers.ref(p).merge(is_default: p.is_default?) },
@@ -25,6 +25,10 @@ module ModernUi
       private
 
       # The Contacts screens need the RedmineUP CRM plugin and the right to see contacts somewhere
+      def invoices?
+        !!(defined?(::Invoice) && User.current.allowed_to_globally?(:view_invoices, {}))
+      end
+
       def crm_contacts?
         !!(defined?(::Contact) && User.current.allowed_to_globally?(:view_contacts, {}))
       end
@@ -37,13 +41,13 @@ module ModernUi
       # Links of Redmine's own global menus (including those added by other plugins, e.g. CRM), so the new UI can
       # point to everything it does not replace yet. Items we cover ourselves are left out.
       COVERED = %w[home my_page issues modern_ui].freeze
-      COVERED_CRM = %w[contacts].freeze
+      COVERED_CRM = %w[contacts invoices].freeze
 
       def classic_menu
         helper = view_context
         %i[application_menu top_menu].flat_map do |menu|
           Redmine::MenuManager.items(menu).root.children.filter_map do |node|
-            next if COVERED.include?(node.name.to_s) || (crm_contacts? && COVERED_CRM.include?(node.name.to_s))
+            next if COVERED.include?(node.name.to_s) || ((crm_contacts? || invoices?) && COVERED_CRM.include?(node.name.to_s) && !(node.name.to_s == 'contacts' && !crm_contacts?) && !(node.name.to_s == 'invoices' && !invoices?))
             next unless node.allowed?(User.current, nil)
 
             caption, url, = helper.send(:extract_node_details, node, nil)

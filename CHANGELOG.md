@@ -5,6 +5,7 @@ All notable changes are documented here. The project follows [Semantic Versionin
 ## [Unreleased]
 
 ### Added
+- Invoices (when the RedmineUP Invoices plugin is installed): read-only list with search, status/overdue/project filters, totals per currency, and a detail panel with items, totals and payments; creating payments and editing amounts stay in the plugin's screens (`/app/api/invoices`).
 - Contacts (when the RedmineUP Contacts plugin is installed): searchable, filterable list (type, mine, list custom fields), detail panel with click-to-edit fields incl. address, tags and custom fields, notes with type, related deals/issues/employees, quick create, undo. Permissions come from the plugin (`/app/api/contacts`).
 - Reports via the Redmine Reporter plugin (when installed): a "Report" menu on the issue list (selected issues, or the current page) and in each issue lists the user's report templates and opens the plugin's own preview/download page, so templates, prompts, e-mailing and permissions are exactly as in the classic UI (`GET /app/api/report_templates`).
 - Undo: every saved field change, inline edit and bulk edit offers "Undo" in the toast (and Ctrl/⌘ + Z outside text fields).

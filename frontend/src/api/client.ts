@@ -1,4 +1,4 @@
-import type { ContactDetail, ContactList, ContactNote, ContactOptions, AppConfig, ReportTemplates, Home, IssueForm, NewIssueOptions, IssueDetail, IssueList, IssueOptions, IssueRow, Meta, Upload } from '../types';
+import type { InvoiceDetail, InvoiceList, InvoiceOptions, ContactDetail, ContactList, ContactNote, ContactOptions, AppConfig, ReportTemplates, Home, IssueForm, NewIssueOptions, IssueDetail, IssueList, IssueOptions, IssueRow, Meta, Upload } from '../types';
 
 export function readConfig(): AppConfig {
   const el = document.getElementById('app');
@@ -55,6 +55,9 @@ export const api = {
   updateContact: (id: number, contact: Record<string, unknown>) => request<{ contact: ContactDetail }>(`contacts/${id}`, { method: 'PATCH', body: JSON.stringify({ contact }) }),
   createContact: (contact: Record<string, unknown>) => request<{ contact: ContactDetail }>('contacts', { method: 'POST', body: JSON.stringify({ contact }) }),
   addContactNote: (id: number, note: Record<string, unknown>) => request<{ note: ContactNote }>(`contacts/${id}/notes`, { method: 'POST', body: JSON.stringify({ note }) }),
+  invoices: (params: Record<string, string | number | undefined>) => request<InvoiceList>(`invoices${toQuery(params)}`),
+  invoiceOptions: () => request<InvoiceOptions>('invoices/options'),
+  invoice: (id: number) => request<{ invoice: InvoiceDetail }>(`invoices/${id}`),
   home: () => request<Home>('home'),
   meta: () => request<Meta>('meta'),
   issues: (params: Record<string, string | number | undefined>) => request<IssueList>(`issues${toQuery(params)}`),

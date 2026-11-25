@@ -158,3 +158,20 @@ class ModernUi::Api::ContactsControllerTest < Redmine::ControllerTest
     assert_equal false, json['features']['contacts']
   end
 end
+
+class ModernUi::Api::InvoicesControllerTest < Redmine::ControllerTest
+  include ModernUiTestHelpers
+  fixtures(*FIXTURES)
+
+  def test_requires_login
+    get :index
+    assert_response :unauthorized
+  end
+
+  def test_not_found_without_the_invoices_plugin
+    skip 'Invoices plugin installed' if defined?(::Invoice)
+    log_in 2
+    get :index
+    assert_response :not_found
+  end
+end
