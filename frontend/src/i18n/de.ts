@@ -141,7 +141,7 @@ export default {
   'create.cancel': 'Abbrechen', 'create.submit': 'Ticket anlegen', 'create.created': 'Ticket #{id} angelegt', 'create.no_projects': 'Sie dürfen in keinem Projekt Tickets anlegen.',
   'create.classic': 'Klassisches Formular nutzen', 'a11y.skip': 'Zum Inhalt springen',
   'help.title': 'Tastaturkürzel', 'help.create': 'Neues Ticket', 'help.search': 'Suchen', 'help.next_prev': 'Nächstes / voriges Ticket', 'help.close': 'Panel oder Dialog schließen',
-  'help.go_issues': 'Zur Ticketliste', 'help.send': 'Kommentar senden', 'help.this': 'Diese Hilfe anzeigen',
+  'help.go_contacts': 'Zu den Kontakten', 'help.go_invoices': 'Zu den Rechnungen', 'help.go_products': 'Zu den Produkten', 'help.go_calendar': 'Zum Kalender', 'help.go_issues': 'Zur Ticketliste', 'help.send': 'Kommentar senden', 'help.this': 'Diese Hilfe anzeigen',
   'edit.title': 'Ticket bearbeiten', 'edit.save': 'Speichern', 'edit.cancel': 'Abbrechen', 'edit.all': 'Alle Felder bearbeiten', 'edit.description_classic': 'Die Beschreibung nutzt den Rich-Text-Editor – bitte in der klassischen Ansicht bearbeiten.',
   'edit.category': 'Kategorie', 'edit.version': 'Zielversion', 'edit.estimated': 'Geschätzter Aufwand (h)', 'edit.private': 'Privates Ticket', 'edit.none': '—', 'edit.custom': 'Weitere Felder', 'edit.unchanged': 'Keine Änderungen.',
   'nav.home': 'Meine Woche', 'nav.more': 'Klassisches Redmine', 'nav.menu': 'Menü', 'nav.help': 'Tastaturkürzel',

@@ -141,7 +141,7 @@ export default {
   'create.cancel': 'İptal', 'create.submit': 'İşi oluştur', 'create.created': '#{id} numaralı iş oluşturuldu', 'create.no_projects': 'Hiçbir projede iş oluşturma yetkiniz yok.',
   'create.classic': 'Klasik formu kullan', 'a11y.skip': 'İçeriğe geç',
   'help.title': 'Klavye kısayolları', 'help.create': 'Yeni iş', 'help.search': 'Ara', 'help.next_prev': 'Sonraki / önceki iş', 'help.close': 'Paneli veya iletişim kutusunu kapat',
-  'help.go_issues': 'İş listesine git', 'help.send': 'Yorumu gönder', 'help.this': 'Bu yardımı göster',
+  'help.go_contacts': 'Kişilere git', 'help.go_invoices': 'Faturalara git', 'help.go_products': 'Ürünlere git', 'help.go_calendar': 'Takvime git', 'help.go_issues': 'İş listesine git', 'help.send': 'Yorumu gönder', 'help.this': 'Bu yardımı göster',
   'edit.title': 'İşi düzenle', 'edit.save': 'Kaydet', 'edit.cancel': 'İptal', 'edit.all': 'Tüm alanları düzenle', 'edit.description_classic': 'Açıklama zengin metin düzenleyici kullanıyor – lütfen klasik görünümde düzenleyin.',
   'edit.category': 'Kategori', 'edit.version': 'Hedef sürüm', 'edit.estimated': 'Tahmini süre (sa)', 'edit.private': 'Özel iş', 'edit.none': '—', 'edit.custom': 'Ek alanlar', 'edit.unchanged': 'Değişiklik yok.',
   'nav.home': 'Haftam', 'nav.more': 'Klasik Redmine', 'nav.menu': 'Menü', 'nav.help': 'Kısayollar',
