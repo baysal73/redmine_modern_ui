@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Building2, Plus, Search } from 'lucide-vue-next';
+import { Building2, Search } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ApiError, api } from '../api/client';
@@ -81,8 +81,7 @@ async function create() {
 
 <template>
   <section class="list-view">
-    <div class="page-head"><h1>{{ t('nav.contacts') }}</h1><span v-if="list" class="muted">{{ t('ct.results', { total: list.total }) }}</span>
-      <span class="spacer" /><button v-if="opts?.can_add" class="btn primary" @click="creating = !creating"><Plus :size="15" class="inline" /> {{ t('ct.new') }}</button></div>
+    <div class="page-head"><h1>{{ t('nav.contacts') }}</h1><span v-if="list" class="muted">{{ t('ct.results', { total: list.total }) }}</span></div>
 
     <form v-if="creating" class="ct-new" @submit.prevent="create">
       <label class="inline"><input v-model="draft.is_company" type="checkbox"> {{ t('ct.kind.company') }}</label>

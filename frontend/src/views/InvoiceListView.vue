@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Plus, Search } from 'lucide-vue-next';
+import { Search } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ApiError, api } from '../api/client';
@@ -64,8 +64,7 @@ const anyFilter = computed(() => !!(s('q') || s('status') || s('project') || s('
 
 <template>
   <section class="list-view">
-    <div class="page-head"><h1>{{ t('nav.invoices') }}</h1><span v-if="list" class="muted">{{ t('inv.results', { total: list.total }) }}</span>
-      <span class="spacer" /><button v-if="opts?.addable_projects.length" class="btn primary" @click="creating = !creating"><Plus :size="15" class="inline" /> {{ t('inv.new') }}</button></div>
+    <div class="page-head"><h1>{{ t('nav.invoices') }}</h1><span v-if="list" class="muted">{{ t('inv.results', { total: list.total }) }}</span></div>
     <InvoiceCreate v-if="creating" :opts="opts" @close="creating = false" @created="(id) => { creating = false; load(); openInvoice(id); }" />
 
     <div class="list-toolbar">
