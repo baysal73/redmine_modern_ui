@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // Ctrl/⌘ + K: one search over issues, contacts, invoices and projects, plus quick navigation.
-import { Building2, CalendarCheck, FolderKanban, ListChecks, Receipt, Users } from 'lucide-vue-next';
+import { Building2, CalendarCheck, FolderKanban, ListChecks, Package, Receipt, Users } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { api, readConfig } from '../api/client';
@@ -28,6 +28,7 @@ const nav = computed<Item[]>(() => [
   { key: 'n-issues', group: 'palette.go', label: t('nav.issues'), hint: 'g i', icon: ListChecks, run: go('/issues') },
   ...(features.value?.contacts ? [{ key: 'n-contacts', group: 'palette.go', label: t('nav.contacts'), hint: 'g k', icon: Users, run: go('/contacts') }] : []),
   ...(features.value?.invoices ? [{ key: 'n-invoices', group: 'palette.go', label: t('nav.invoices'), hint: 'g r', icon: Receipt, run: go('/invoices') }] : []),
+  ...(features.value?.products ? [{ key: 'n-products', group: 'palette.go', label: t('nav.products'), hint: 'g p', icon: Package, run: go('/products') }] : []),
   { key: 'n-new', group: 'palette.go', label: t('create.button'), hint: 'c', icon: ListChecks, run: () => { close(); ui.quickCreate = true; } },
 ]);
 const projectHits = computed<Item[]>(() => {
@@ -67,14 +68,16 @@ async function search(q: string) {
     api.issues({ q, status: 'all', per_page: 6, sort: 'updated_on:desc' }),
     features.value?.contacts ? api.contacts({ q, per_page: 5, sort: 'updated_on:desc' }) : Promise.resolve(null),
     features.value?.invoices ? api.invoices({ q, status: 'all', per_page: 5 }) : Promise.resolve(null),
+    features.value?.products ? api.products({ q, per_page: 5 }) : Promise.resolve(null),
   ]);
   if (mine !== seq) return;
   const out: Item[] = [];
   if (num) out.push({ key: 'i-open', group: 'palette.issues', label: `#${num[1]}`, hint: t('palette.open_id'), icon: ListChecks, run: go(`/issues/${num[1]}`) });
-  const [iss, con, inv] = jobs.map((j) => (j.status === 'fulfilled' ? j.value : null)) as any[];
+  const [iss, con, inv, prod] = jobs.map((j) => (j.status === 'fulfilled' ? j.value : null)) as any[];
   for (const i of iss?.issues ?? []) out.push({ key: 'i' + i.id, group: 'palette.issues', label: `#${i.id} ${i.subject}`, hint: `${i.project.name} · ${i.status.name}`, icon: ListChecks, run: go(`/issues/${i.id}`) });
   for (const c of con?.contacts ?? []) out.push({ key: 'c' + c.id, group: 'palette.contacts', label: c.name, hint: c.company || c.email, icon: c.is_company ? Building2 : Users, run: go(`/contacts/${c.id}`) });
   for (const v of inv?.invoices ?? []) out.push({ key: 'v' + v.id, group: 'palette.invoices', label: v.number, hint: `${v.contact?.name ?? ''} · ${v.status.name}`, icon: Receipt, run: go(`/invoices/${v.id}`) });
+  for (const x of prod?.products ?? []) out.push({ key: 'p' + x.id, group: 'palette.products', label: x.name, hint: [x.code, x.category].filter(Boolean).join(' · '), icon: Package, run: go(`/products/${x.id}`) });
   found.value = out; busy.value = false;
 }
 

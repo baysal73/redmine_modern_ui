@@ -5,6 +5,7 @@ import { readConfig } from './api/client';
 import HomeView from './views/HomeView.vue';
 import ContactListView from './views/ContactListView.vue';
 import InvoiceListView from './views/InvoiceListView.vue';
+import ProductListView from './views/ProductListView.vue';
 import IssueListView from './views/IssueListView.vue';
 import { applyTheme } from './lib/theme';
 import './tailwind.css';
@@ -20,6 +21,7 @@ const router = createRouter({
     { path: '/issues/:id(\\d+)?', name: 'issues', component: IssueListView },
     { path: '/contacts/:id(\\d+)?', name: 'contacts', component: ContactListView },
     { path: '/invoices/:id(\\d+)?', name: 'invoices', component: InvoiceListView },
+    { path: '/products/:id(\\d+)?', name: 'products', component: ProductListView },
     { path: '/:pathMatch(.*)*', redirect: '/home' },
   ],
 });

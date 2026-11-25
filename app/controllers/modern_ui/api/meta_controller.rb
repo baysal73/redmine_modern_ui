@@ -9,7 +9,7 @@ module ModernUi
         render json: {
           user: { id: User.current.id, name: User.current.name, admin: User.current.admin?,
                   language: current_language.to_s },
-          features: { contacts: crm_contacts?, invoices: invoices?, invoices_add: invoices_add?, contacts_add: contacts_add? },
+          features: { contacts: crm_contacts?, invoices: invoices?, invoices_add: invoices_add?, contacts_add: contacts_add?, products: products?, products_add: products_add? },
           statuses: IssueStatus.sorted.map { |s| serializers.status(s) },
           trackers: Tracker.sorted.map { |t| serializers.ref(t) },
           priorities: IssuePriority.active.map { |p| serializers.ref(p).merge(is_default: p.is_default?) },
@@ -33,6 +33,14 @@ module ModernUi
         !!(defined?(::Invoice) && User.current.allowed_to_globally?(:view_invoices, {}))
       end
 
+      def products?
+        !!(defined?(::Product) && User.current.allowed_to_globally?(:view_products, {}))
+      end
+
+      def products_add?
+        products? && User.current.allowed_to_globally?(:add_products, {})
+      end
+
       def contacts_add?
         crm_contacts? && User.current.allowed_to_globally?(:add_contacts, {})
       end
@@ -52,12 +60,13 @@ module ModernUi
       COVERED_CRM = %w[contacts invoices].freeze
       # RedmineUP People lists the same persons as Contacts in this installation; hidden whenever Contacts is shown
       COVERED_PEOPLE = %w[people].freeze
+      COVERED_PRODUCTS = %w[products].freeze
 
       def classic_menu
         helper = view_context
         %i[application_menu top_menu].flat_map do |menu|
           Redmine::MenuManager.items(menu).root.children.filter_map do |node|
-            next if COVERED.include?(node.name.to_s) || (crm_contacts? && COVERED_PEOPLE.include?(node.name.to_s)) || ((crm_contacts? || invoices?) && COVERED_CRM.include?(node.name.to_s) && !(node.name.to_s == 'contacts' && !crm_contacts?) && !(node.name.to_s == 'invoices' && !invoices?))
+            next if COVERED.include?(node.name.to_s) || (products? && COVERED_PRODUCTS.include?(node.name.to_s)) || (crm_contacts? && COVERED_PEOPLE.include?(node.name.to_s)) || ((crm_contacts? || invoices?) && COVERED_CRM.include?(node.name.to_s) && !(node.name.to_s == 'contacts' && !crm_contacts?) && !(node.name.to_s == 'invoices' && !invoices?))
             next unless node.allowed?(User.current, nil)
 
             caption, url, = helper.send(:extract_node_details, node, nil)

@@ -26,3 +26,4 @@ de:
   modern_ui_error_invoice_contact: "Kontakt nicht gefunden oder nicht sichtbar."
   modern_ui_error_issue_has_time: "Dieses Ticket hat gebuchte Zeiten. Bitte in der klassischen Ansicht löschen, dort wählen Sie, was mit den Stunden geschieht."
   modern_ui_error_issue_has_subtasks: "Dieses Ticket hat %{count} Unteraufgaben, die ebenfalls gelöscht würden."
+  modern_ui_error_product_used: "Dieses Produkt wird in Bestellungen oder Rechnungen verwendet und kann nicht gelöscht werden. Setzen Sie es stattdessen auf inaktiv."

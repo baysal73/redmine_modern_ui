@@ -26,3 +26,4 @@ tr:
   modern_ui_error_invoice_contact: "Kişi bulunamadı veya görünür değil."
   modern_ui_error_issue_has_time: "Bu işte kayıtlı süre var. Saatlerin ne olacağını seçebileceğiniz klasik görünümde silin."
   modern_ui_error_issue_has_subtasks: "Bu işin silinecek %{count} alt görevi var."
+  modern_ui_error_product_used: "Bu ürün siparişlerde veya faturalarda kullanılıyor ve silinemez. Bunun yerine pasif yapın."

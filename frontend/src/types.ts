@@ -10,7 +10,7 @@ export interface IssueRow {
 export interface IssueList { issues: IssueRow[]; total: number; page: number; per_page: number; pages: number }
 export interface Meta {
   user: { id: number; name: string; admin: boolean; language: string };
-  features?: { contacts: boolean; invoices: boolean; invoices_add?: boolean; contacts_add?: boolean };
+  features?: { contacts: boolean; invoices: boolean; invoices_add?: boolean; products?: boolean; products_add?: boolean; contacts_add?: boolean };
   statuses: Status[]; trackers: Ref[]; priorities: Ref[]; users: Ref[];
   addable_project_ids: number[];
   classic_menu: { name: string; caption: string; url: string }[];
@@ -85,3 +85,11 @@ export interface Home {
 }
 
 export interface Upload { token: string; filename: string; filesize: number; content_type?: string }
+
+export interface ProductRow { id: number; code: string; name: string; status: Ref; category: string | null; price: number | null; currency: string; project: string; bundle: boolean; image_url: string | null; updated_at: string }
+export interface ProductList { products: ProductRow[]; total: number; page: number; per_page: number; pages: number }
+export interface ProductDetail extends ProductRow {
+  project_identifier: string; description: string; category_id: number | null; tag_list: string[]; created_at: string; author: Ref | null;
+  can_edit: boolean; can_delete: boolean; used: boolean; bundle_items: { id: number; name: string; quantity: number }[];
+}
+export interface ProductOptions { can_add: boolean; projects: { id: number; identifier: string; name: string }[]; categories: Ref[]; statuses: Ref[]; currencies: string[]; default_currency: string; default_status_id: number }

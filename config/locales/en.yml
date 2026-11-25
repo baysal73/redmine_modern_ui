@@ -26,3 +26,4 @@ en:
   modern_ui_error_invoice_contact: "Contact not found or not visible."
   modern_ui_error_issue_has_time: "This issue has logged time. Delete it in the classic view, where you can choose what happens to the hours."
   modern_ui_error_issue_has_subtasks: "This issue has %{count} subtasks that would be deleted as well."
+  modern_ui_error_product_used: "This product is used on orders or invoices and cannot be deleted. Set it to inactive instead."

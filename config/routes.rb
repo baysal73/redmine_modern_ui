@@ -21,6 +21,12 @@ scope "#{base}/api", module: 'modern_ui/api', as: 'modern_ui_api' do
   get 'contacts/:id', to: 'contacts#show', constraints: { id: /\d+/ }
   patch 'contacts/:id', to: 'contacts#update', constraints: { id: /\d+/ }
   post 'contacts/:id/notes', to: 'contacts#add_note', constraints: { id: /\d+/ }
+  get 'products', to: 'products#index'
+  get 'products/options', to: 'products#options'
+  post 'products', to: 'products#create'
+  get 'products/:id', to: 'products#show', constraints: { id: /\d+/ }
+  patch 'products/:id', to: 'products#update', constraints: { id: /\d+/ }
+  delete 'products/:id', to: 'products#destroy', constraints: { id: /\d+/ }
   get 'invoices', to: 'invoices#index'
   get 'invoices/options', to: 'invoices#options'
   get 'invoices/new', to: 'invoices#new_defaults'

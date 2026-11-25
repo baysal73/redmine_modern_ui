@@ -1,4 +1,4 @@
-import type { InvoiceDefaults, InvoiceForm, InvoiceDetail, InvoiceList, InvoiceOptions, ContactDetail, ContactList, ContactNote, ContactOptions, AppConfig, ReportTemplates, Home, IssueForm, NewIssueOptions, IssueDetail, IssueList, IssueOptions, IssueRow, Meta, Upload } from '../types';
+import type { ProductDetail, ProductList, ProductOptions, InvoiceDefaults, InvoiceForm, InvoiceDetail, InvoiceList, InvoiceOptions, ContactDetail, ContactList, ContactNote, ContactOptions, AppConfig, ReportTemplates, Home, IssueForm, NewIssueOptions, IssueDetail, IssueList, IssueOptions, IssueRow, Meta, Upload } from '../types';
 
 export function readConfig(): AppConfig {
   const el = document.getElementById('app');
@@ -55,6 +55,12 @@ export const api = {
   updateContact: (id: number, contact: Record<string, unknown>) => request<{ contact: ContactDetail }>(`contacts/${id}`, { method: 'PATCH', body: JSON.stringify({ contact }) }),
   createContact: (contact: Record<string, unknown>) => request<{ contact: ContactDetail }>('contacts', { method: 'POST', body: JSON.stringify({ contact }) }),
   addContactNote: (id: number, note: Record<string, unknown>) => request<{ note: ContactNote }>(`contacts/${id}/notes`, { method: 'POST', body: JSON.stringify({ note }) }),
+  products: (params: Record<string, string | number | undefined>) => request<ProductList>(`products${toQuery(params)}`),
+  productOptions: () => request<ProductOptions>('products/options'),
+  product: (id: number) => request<{ product: ProductDetail }>(`products/${id}`),
+  createProduct: (product: Record<string, unknown>) => request<{ product: ProductDetail }>('products', { method: 'POST', body: JSON.stringify({ product }) }),
+  updateProduct: (id: number, product: Record<string, unknown>) => request<{ product: ProductDetail }>(`products/${id}`, { method: 'PATCH', body: JSON.stringify({ product }) }),
+  deleteProduct: (id: number) => request<null>(`products/${id}`, { method: 'DELETE' }),
   invoices: (params: Record<string, string | number | undefined>) => request<InvoiceList>(`invoices${toQuery(params)}`),
   invoiceOptions: () => request<InvoiceOptions>('invoices/options'),
   invoiceDefaults: (projectId: number) => request<InvoiceDefaults>(`invoices/new${toQuery({ project_id: projectId })}`),

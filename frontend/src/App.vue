@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CalendarCheck, ExternalLink, Keyboard, ListChecks, Receipt, Search, Users, Menu, Moon, Plus, Sun, X } from 'lucide-vue-next';
+import { CalendarCheck, ExternalLink, Keyboard, ListChecks, Package, Receipt, Search, Users, Menu, Moon, Plus, Sun, X } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { readConfig } from './api/client';
@@ -27,6 +27,7 @@ const nav = computed(() => [
   { to: '/issues', label: 'nav.issues', icon: ListChecks },
   ...(store.meta?.features?.contacts ? [{ to: '/contacts', label: 'nav.contacts', icon: Users }] : []),
   ...(store.meta?.features?.invoices ? [{ to: '/invoices', label: 'nav.invoices', icon: Receipt }] : []),
+  ...(store.meta?.features?.products ? [{ to: '/products', label: 'nav.products', icon: Package }] : []),
 ]);
 const isActive = (to: string) => route.path === to || route.path.startsWith(to + '/');
 function flipTheme() { toggleTheme(); dark.value = document.documentElement.dataset.theme === 'dark'; }
@@ -44,7 +45,7 @@ function onKey(e: KeyboardEvent) {
   if (ui.quickCreate || ui.help || ui.palette) return;
   if (chord) {
     chord = false; window.clearTimeout(chordTimer);
-    if (e.key === 'i') router.push('/issues'); else if (e.key === 'h') router.push('/home'); else if (e.key === 'k' && store.meta?.features?.contacts) router.push('/contacts'); else if (e.key === 'r' && store.meta?.features?.invoices) router.push('/invoices');
+    if (e.key === 'i') router.push('/issues'); else if (e.key === 'h') router.push('/home'); else if (e.key === 'k' && store.meta?.features?.contacts) router.push('/contacts'); else if (e.key === 'r' && store.meta?.features?.invoices) router.push('/invoices'); else if (e.key === 'p' && store.meta?.features?.products) router.push('/products');
     return;
   }
   if (e.key === 'c') { e.preventDefault(); ui.quickCreate = true; }
@@ -71,9 +72,13 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
       <router-link v-if="store.meta?.features?.contacts_add" :to="{ path: '/contacts', query: { new: '1' } }" class="btn primary mx-2 mb-2 flex items-center justify-start gap-2">
         <Plus :size="16" /> {{ t('ct.new') }}
       </router-link>
-      <router-link v-if="store.meta?.features?.invoices_add" :to="{ path: '/invoices', query: { new: '1' } }" class="btn primary mx-2 mb-3 flex items-center justify-start gap-2">
+      <router-link v-if="store.meta?.features?.invoices_add" :to="{ path: '/invoices', query: { new: '1' } }" class="btn primary mx-2 mb-2 flex items-center justify-start gap-2">
         <Plus :size="16" /> {{ t('inv.new') }}
       </router-link>
+      <router-link v-if="store.meta?.features?.products_add" :to="{ path: '/products', query: { new: '1' } }" class="btn primary mx-2 mb-2 flex items-center justify-start gap-2">
+        <Plus :size="16" /> {{ t('pr.new') }}
+      </router-link>
+      <div class="mb-1" />
       <nav class="flex flex-col gap-0.5 px-2" aria-label="Main">
         <router-link v-for="n in nav" :key="n.to" :to="n.to" class="nav-item" :class="{ active: isActive(n.to) }">
           <component :is="n.icon" :size="17" aria-hidden="true" /> {{ t(n.label) }}
