@@ -4,6 +4,8 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-26
+
 ### Fixed
 - After signing in from the plain address (`/`, `/home`, `/my/page`, also as a full URL in `back_url`) users landed in classic Redmine; those addresses no longer override the start page. Deep links such as `/issues/49` are still honoured.
 
