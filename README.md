@@ -18,6 +18,16 @@ from Redmine; the plugin only adds a new front end under `/app`.
 |---|---|---|
 | ![Quick create](docs/screenshots/quick-create.png) | ![Dark mode](docs/screenshots/list-dark.png) | ![Mobile](docs/screenshots/mobile.png) |
 
+| Search everything (Ctrl+K) | Keyboard shortcuts (?) |
+|---|---|
+| ![Command palette](docs/screenshots/command-palette.png) | ![Shortcuts](docs/screenshots/shortcuts.png) |
+
+### In motion
+
+| Create an issue with `c` | Edit in place | Search with Ctrl+K |
+|---|---|---|
+| ![Quick create](docs/gifs/quick-create.gif) | ![Inline edit](docs/gifs/inline-edit.gif) | ![Command palette](docs/gifs/command-palette.gif) |
+
 (All screenshots show fictional demo data.)
 
 ## Features
