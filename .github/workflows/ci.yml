@@ -12,8 +12,8 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: npm
@@ -37,10 +37,10 @@ jobs:
           - redmine: 7.0-stable
             ruby: '3.4'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           path: plugin
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           repository: redmine/redmine
           ref: ${{ matrix.redmine }}
