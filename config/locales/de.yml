@@ -45,3 +45,5 @@ de:
   modern_ui_error_invoice_paid: "Bezahlte Rechnungen können den Status nicht ändern."
   modern_ui_error_document_failed: "Die Datei konnte nicht gespeichert werden."
   modern_ui_error_calendar_invalid_time: "Ungültige Zeitangabe"
+  modern_ui_setting_modern_login: "Moderne Anmeldeseite"
+  modern_ui_setting_modern_login_info: "Gestaltet Anmelden, Passwort vergessen und Registrieren neu, mit den Firmenfarben und dem Logo unten. Abschalten, wenn ein eigenes Theme die Seite gestaltet."

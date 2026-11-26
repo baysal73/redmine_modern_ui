@@ -17,6 +17,22 @@ class LoginRedirectTest < Redmine::ControllerTest
     assert_redirected_to '/app'
   end
 
+  # Opening the plain address sends people to /login?back_url=/ - that is no deep link.
+  {
+    'the_start_address' => 'http://test.host/', 'a_relative_start_address' => '/',
+    'my_page' => 'http://test.host/my/page', 'the_home_page' => 'http://test.host/home'
+  }.each do |name, url|
+    define_method("test_back_url_to_#{name}_still_lands_in_the_new_ui") do
+      login(back_url: url)
+      assert_redirected_to '/app'
+    end
+  end
+
+  def test_back_url_to_a_specific_page_is_kept_even_with_a_query
+    login(back_url: 'http://test.host/projects/ecookbook/issues?status_id=*')
+    assert_redirected_to '/projects/ecookbook/issues?status_id=*'
+  end
+
   def test_back_url_wins
     login(back_url: 'http://test.host/issues/1')
     assert_redirected_to '/issues/1'

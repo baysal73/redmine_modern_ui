@@ -22,6 +22,12 @@ from Redmine; the plugin only adds a new front end under `/app`.
 |---|---|
 | ![Command palette](docs/screenshots/command-palette.png) | ![Shortcuts](docs/screenshots/shortcuts.png) |
 
+### Sign-in
+
+| Light | Dark |
+|---|---|
+| ![Sign-in](docs/screenshots/login.png) | ![Sign-in dark](docs/screenshots/login-dark.png) |
+
 ### In motion
 
 | Create an issue with `c` | Edit in place | Search with Ctrl+K |

@@ -1,0 +1,93 @@
+/* Modern sign-in page for Redmine (Redmine Modern UI). Styling only, the markup and the form stay Redmine's own.
+   Only loaded by the plugin's hook on the sign-in, lost-password and register pages.
+   Colours come from the plugin settings through --mui-primary / --mui-gold (set inline by the hook). */
+body.controller-account {
+  --mui-bg: #f6f7f9; --mui-surface: #ffffff; --mui-fg: #171a21; --mui-muted: #667085; --mui-border: #dfe3ea;
+  --mui-accent: var(--mui-primary, #4452c8); --mui-accent-fg: #ffffff; --mui-input: #ffffff;
+  margin: 0; min-height: 100vh; color: var(--mui-fg);
+  font: 14px/1.5 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background:
+    radial-gradient(900px 500px at 15% -10%, color-mix(in srgb, var(--mui-accent) 14%, transparent), transparent 60%),
+    radial-gradient(700px 420px at 100% 110%, color-mix(in srgb, var(--mui-gold, var(--mui-accent)) 12%, transparent), transparent 60%),
+    var(--mui-bg);
+}
+@media (prefers-color-scheme: dark) {
+  body.controller-account {
+    --mui-bg: #0e1014; --mui-surface: #15181e; --mui-fg: #e9ebf0; --mui-muted: #9099a8; --mui-border: #2a303b;
+    --mui-accent: var(--mui-gold, #8b9bff); --mui-accent-fg: #0e1014; --mui-input: #0f1217;
+  }
+}
+
+/* the classic chrome is not needed here */
+body.controller-account #top-menu, body.controller-account .flyout-menu, body.controller-account #sidebar, body.controller-account #quick-search,
+body.controller-account .mobile-toggle-button, body.controller-account #ajax-indicator { display: none !important; }
+body.controller-account #wrapper, body.controller-account #main, body.controller-account #content { background: transparent; border: 0; box-shadow: none; margin: 0; padding: 0; min-height: 0 !important; height: auto !important; width: auto; float: none; overflow: visible !important; }
+body.controller-account #wrapper { min-height: 100vh !important; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px 16px; box-sizing: border-box; }
+body.controller-account #main { width: 100%; max-width: 400px; flex: 0 0 auto !important; display: block !important; }
+
+/* brand: logo (optional) and site title above the card */
+body.controller-account #header { position: static !important; block-size: auto !important; inline-size: 100% !important; display: block !important; background: transparent; border: 0; box-shadow: none; padding: 0; margin: 0 0 22px; min-height: 0; height: auto; text-align: center; width: 100%; max-width: 400px; box-sizing: border-box; }
+body.controller-account #header h1 { display: block !important; margin: 0; padding: 0; text-align: center; float: none; position: static; font-size: 1.15rem; font-weight: 650; letter-spacing: -0.01em; color: var(--mui-fg); }
+body.controller-account #header h1::before {
+  content: ''; display: block; margin: 0 auto 14px; width: 56px; height: 56px; border-radius: 14px;
+  background: var(--mui-accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='10' width='16' height='11' rx='2.5'/%3E%3Cpath d='M8 10V7a4 4 0 0 1 8 0v3'/%3E%3C/svg%3E") center / 28px no-repeat;
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--mui-accent) 35%, transparent);
+}
+
+/* the card */
+body.controller-account #login-form, body.controller-account.action-lost_password #content, body.controller-account.action-register #content {
+  background: var(--mui-surface); border: 1px solid var(--mui-border); border-radius: 16px;
+  padding: 28px; box-shadow: 0 8px 30px rgb(15 20 40 / 0.08); box-sizing: border-box; width: 100%; margin: 0;
+}
+body.controller-account #login-form form { margin: 0; }
+body.controller-account #content h2 { margin: 0 0 16px; font-size: 1.15rem; font-weight: 650; color: var(--mui-fg); border: 0; padding: 0; }
+
+body.controller-account .box { background: transparent; border: 0; padding: 0; margin: 0; }
+body.controller-account .tabular p { padding: 0; margin: 0 0 14px; min-height: 0; }
+body.controller-account .tabular label { float: none; width: auto; margin: 0 0 6px; text-align: left; font-weight: 600; }
+body.controller-account .tabular p input { margin-left: 0; }
+body.controller-account #content > div[style*='clear'] { display: none; }
+body.controller-account label { display: flex; align-items: baseline; justify-content: space-between; margin: 0 0 6px; font-size: 0.82rem; font-weight: 600; color: var(--mui-muted); float: none; width: auto; text-align: left; padding: 0; }
+body.controller-account #login-form input[type=text], body.controller-account #login-form input[type=password],
+body.controller-account.action-lost_password input[type=text], body.controller-account.action-register input[type=text],
+body.controller-account.action-register input[type=password], body.controller-account.action-register input[type=email], body.controller-account.action-lost_password input[type=password] {
+  display: block; width: 100% !important; max-width: none !important; box-sizing: border-box; height: 44px; margin: 0 0 16px; padding: 0 12px;
+  font: inherit; color: var(--mui-fg); background: var(--mui-input); border: 1px solid var(--mui-border); border-radius: 10px;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+body.controller-account input:focus { outline: none; border-color: var(--mui-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--mui-accent) 22%, transparent); }
+body.controller-account #login-form input[type=submit], body.controller-account.action-lost_password input[type=submit], body.controller-account.action-register input[type=submit] {
+  display: block; width: 100% !important; max-width: none !important; box-sizing: border-box; height: 44px; margin: 8px 0 0; padding: 0 16px; font: inherit; font-weight: 650; cursor: pointer;
+  color: var(--mui-accent-fg); background: var(--mui-accent); border: 1px solid var(--mui-accent); border-radius: 10px;
+  transition: filter 0.12s, transform 0.05s;
+}
+body.controller-account input[type=submit]:hover { filter: brightness(1.08); }
+body.controller-account input[type=submit]:active { transform: translateY(1px); }
+body.controller-account input[type=submit]:focus-visible { outline: 2px solid var(--mui-accent); outline-offset: 2px; }
+
+body.controller-account a { color: var(--mui-accent); text-decoration: none; }
+body.controller-account a:hover { text-decoration: underline; }
+body.controller-account a.lost_password { font-weight: 500; font-size: 0.8rem; float: none; }
+body.controller-account #login-form .box, body.controller-account #login-form p { margin: 0 0 14px; }
+body.controller-account #login-form label.inline, body.controller-account #autologin { display: inline-flex; align-items: center; gap: 8px; font-weight: 500; }
+
+/* messages */
+body.controller-account #flash_error, body.controller-account #flash_notice, body.controller-account #flash_warning, body.controller-account div.flash {
+  max-width: 400px; width: 100%; box-sizing: border-box; margin: 0 0 14px; padding: 11px 14px; border-radius: 10px; font-size: 0.9rem;
+  border: 1px solid var(--mui-border); background: var(--mui-surface); color: var(--mui-fg);
+}
+body.controller-account div.flash::before, body.controller-account #flash_error::before { display: none !important; }
+body.controller-account div.flash svg, body.controller-account #flash_error svg, body.controller-account #flash_notice svg { display: none !important; }
+body.controller-account div.flash, body.controller-account #flash_error, body.controller-account #flash_notice, body.controller-account #flash_warning { background-image: none; text-indent: 0; }
+body.controller-account #flash_error, body.controller-account #flash_notice, body.controller-account #flash_warning { background-image: none !important; }
+body.controller-account #flash_error, body.controller-account div.flash.error { border-color: #e5a1a1; background: color-mix(in srgb, #d93025 10%, var(--mui-surface)); }
+body.controller-account #flash_notice, body.controller-account div.flash.notice { border-color: #9fd3ae; background: color-mix(in srgb, #1e8e3e 10%, var(--mui-surface)); }
+
+body.controller-account #footer { position: static !important; background: transparent; border: 0; margin: 22px 0 0; padding: 0; text-align: center; font-size: 0.75rem; color: var(--mui-muted); width: 100%; }
+body.controller-account #footer a { color: inherit; text-decoration: underline; }
+
+@media (max-width: 480px) {
+  body.controller-account #wrapper { justify-content: flex-start; padding-top: 12vh; }
+  body.controller-account #login-form, body.controller-account.action-lost_password #content, body.controller-account.action-register #content { padding: 22px; border-radius: 14px; box-shadow: none; }
+}
+@media (prefers-reduced-motion: reduce) { body.controller-account * { transition: none !important; } }

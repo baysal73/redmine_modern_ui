@@ -4,7 +4,12 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 ## [Unreleased]
 
+### Fixed
+- After signing in from the plain address (`/`, `/home`, `/my/page`, also as a full URL in `back_url`) users landed in classic Redmine; those addresses no longer override the start page. Deep links such as `/issues/49` are still honoured.
+
 ### Added
+- Modern sign-in page (sign-in, lost password, register): card layout, light/dark, phones, company logo and colours; styling only, Redmine's own form stays. Can be switched off in the plugin settings (`modern_login`).
+- Turkish greeting on the home screen: "Selamünaleyküm" (morning) and "Hayırlı akşamlar" (evening).
 - Phones: slimmer lists (fewer columns), detail panels and dialogs that fit the screen, calendar month as coloured bars with a day list underneath, larger touch targets. Checked in Firefox at 390 px width only.
 - Contact detail: activity timeline (notes, tickets, invoices and, with an events plugin, calendar events) with filter chips; replaces the plain ticket list.
 - Invoices: "Send by e-mail" dialog (recipient, subject and text with the plugin's macros, PDF attached by the plugin, optional "mark as sent"; needs `send_invoices`) and a visible PDF button.

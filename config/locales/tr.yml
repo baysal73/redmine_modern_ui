@@ -45,3 +45,5 @@ tr:
   modern_ui_error_invoice_paid: "Ödenmiş faturaların durumu değiştirilemez."
   modern_ui_error_document_failed: "Dosya kaydedilemedi."
   modern_ui_error_calendar_invalid_time: "Geçersiz zaman değeri"
+  modern_ui_setting_modern_login: "Modern giriş sayfası"
+  modern_ui_setting_modern_login_info: "Giriş, parola sıfırlama ve kayıt sayfalarını aşağıdaki kurumsal renkler ve logo ile yeniden biçimlendirir. Bu sayfaları kendi temanız biçimlendiriyorsa kapatın."

@@ -180,7 +180,7 @@ export default {
   'edit.title': 'İşi düzenle', 'edit.save': 'Kaydet', 'edit.cancel': 'İptal', 'edit.all': 'Tüm alanları düzenle', 'edit.description_classic': 'Açıklama zengin metin düzenleyici kullanıyor – lütfen klasik görünümde düzenleyin.',
   'edit.category': 'Kategori', 'edit.version': 'Hedef sürüm', 'edit.estimated': 'Tahmini süre (sa)', 'edit.private': 'Özel iş', 'edit.none': '—', 'edit.custom': 'Ek alanlar', 'edit.unchanged': 'Değişiklik yok.',
   'nav.home': 'Haftam', 'nav.more': 'Klasik Redmine', 'nav.menu': 'Menü', 'nav.help': 'Kısayollar',
-  'home.greeting_morning': 'Günaydın', 'home.greeting_day': 'Merhaba', 'home.greeting_evening': 'İyi akşamlar',
+  'home.greeting_morning': 'Selamünaleyküm', 'home.greeting_day': 'Merhaba', 'home.greeting_evening': 'Hayırlı akşamlar',
   'home.subtitle': 'İlgilenmeniz gerekenler burada.',
   'home.overdue': 'Gecikmiş', 'home.due_soon': 'Önümüzdeki 7 gün içinde', 'home.undated': 'Bitiş tarihi yok', 'home.recent': 'Son güncellenenler',
   'home.assigned_open': 'Açık, bana atanan', 'home.nothing': 'Burada bir şey yok – harika.', 'home.show_all': 'Tümünü göster',

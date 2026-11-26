@@ -45,3 +45,5 @@ en:
   modern_ui_error_invoice_paid: "Paid invoices cannot change status."
   modern_ui_error_document_failed: "The file could not be saved."
   modern_ui_error_calendar_invalid_time: "Invalid time value"
+  modern_ui_setting_modern_login: "Modern sign-in page"
+  modern_ui_setting_modern_login_info: "Restyles sign-in, lost password and registration with the brand colours and logo below. Turn off if your own theme styles these pages."

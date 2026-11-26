@@ -8,6 +8,7 @@ module RedmineModernUi
   DEFAULTS = {
     'redirect_after_login' => '1', # send users to the new UI after login
     'base_path' => 'app',          # mount point; changing it needs a restart
+    'modern_login' => '1',         # modern sign-in page
     'brand_primary' => '',         # company colours (hex); empty = built-in colours
     'brand_gold' => '',
     'brand_grey' => '',
@@ -20,6 +21,10 @@ module RedmineModernUi
     DEFAULTS.merge(Setting.plugin_redmine_modern_ui.to_h)
   rescue StandardError
     DEFAULTS
+  end
+
+  def modern_login?
+    settings['modern_login'].to_s != '0'
   end
 
   # Mount path without slashes. Read at boot for the routes (needs restart to change).
