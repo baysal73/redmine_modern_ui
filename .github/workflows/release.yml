@@ -29,7 +29,7 @@ jobs:
           mkdir -p "dist/redmine_modern_ui"
           rsync -a --exclude '.git' --exclude '.github' --exclude 'frontend' --exclude 'dev' --exclude 'docs' --exclude 'dist' ./ dist/redmine_modern_ui/
           (cd dist && zip -qr "../${name}.zip" redmine_modern_ui && tar czf "../${name}.tar.gz" redmine_modern_ui)
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           files: |
             redmine_modern_ui-*.zip
