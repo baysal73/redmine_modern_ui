@@ -46,7 +46,8 @@ jobs:
           ref: ${{ matrix.redmine }}
           path: redmine
       - name: Database config (the Redmine Gemfile reads it during bundle install)
-        run: printf 'test:\n  adapter: sqlite3\n  database: db/test.sqlite3\n' > redmine/config/database.yml
+        run: |
+          printf 'test:\n  adapter: sqlite3\n  database: db/test.sqlite3\n' > redmine/config/database.yml
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
