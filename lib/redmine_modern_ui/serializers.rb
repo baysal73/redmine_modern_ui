@@ -81,8 +81,9 @@ module RedmineModernUi
     SUPPORTED_FORMATS = (SELECT_FORMATS + %w[string text link int float date]).freeze
 
     # Definition of one custom field for the edit form (nil for formats the UI cannot edit, e.g. attachments)
-    def custom_field_form(cv, issue)
+    def custom_field_form(cv, issue, attachments: false)
       cf = cv.custom_field
+      return attachment_field_form(cv) if attachments && cf.field_format == 'attachment'
       return nil unless SUPPORTED_FORMATS.include?(cf.field_format)
 
       kind = SELECT_FORMATS.include?(cf.field_format) ? 'select' : cf.field_format
@@ -91,6 +92,16 @@ module RedmineModernUi
         description: cf.description.to_s, value: cf.multiple? ? Array.wrap(cv.value).map(&:to_s) : cv.value.to_s,
         options: kind == 'select' ? cf.possible_values_options(issue).map { |label, value| { label: label.to_s, value: (value || label).to_s } } : []
       }
+    end
+
+    # File custom field (contacts): the current file, if any; uploads go through /app/api/uploads and are saved as { token }
+    def attachment_field_form(cv)
+      cf = cv.custom_field
+      a = cv.value.present? ? Attachment.find_by(id: cv.value.to_i) : nil
+      file = a && { id: a.id, filename: a.filename, filesize: a.filesize, content_type: a.content_type,
+                    url: "#{Redmine::Utils.relative_url_root}/attachments/download/#{a.id}/#{ERB::Util.url_encode(a.filename)}" }
+      { id: cf.id, name: cf.name, format: 'attachment', kind: 'attachment', multiple: false, required: cf.is_required?,
+        description: cf.description.to_s, value: '', options: [], file: file }
     end
 
     def attachment(a)

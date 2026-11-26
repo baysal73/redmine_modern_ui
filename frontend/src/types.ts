@@ -28,7 +28,7 @@ export interface ContactDetail {
   values: Record<string, string | number | null | string[]>; address: Record<string, string>;
   assignees: Ref[]; assigned_to: Ref | null; author: Ref | null; created_on: string; updated_on: string; avatar_url: string | null;
   company_contact: Ref | null; employees: { id: number; name: string; job_title: string }[];
-  custom_fields: CustomFieldForm[];
+  custom_fields: CustomFieldForm[]; background_html: string;
   deals: { id: number; name: string; status: string | null; price: number | null; currency: string | null; project: string | null }[];
   issues: { id: number; subject: string; status: Status; project: string }[]; notes: ContactNote[];
   timeline: { kind: 'note' | 'issue' | 'invoice' | 'event'; id: number; date: string; title: string; meta: string; day?: string; day_only?: boolean }[];
@@ -71,6 +71,7 @@ export interface NewIssueOptions { trackers: Ref[]; priorities: (Ref & { is_defa
 export interface CustomFieldForm {
   id: number; name: string; format: string; kind: string; multiple: boolean; required: boolean; description: string;
   value: string | string[]; options: { label: string; value: string }[];
+  file?: { id: number; filename: string; filesize: number; content_type: string; url: string } | null;
 }
 export interface IssueForm {
   project_id: string;

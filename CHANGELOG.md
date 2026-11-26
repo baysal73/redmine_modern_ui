@@ -4,6 +4,11 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-11-27
+
+### Fixed
+- Contacts: file custom fields (e.g. company logo and pictures) are now shown with a preview, can be uploaded, replaced and removed; the contact's "Info" (background) text is shown (read-only, editing stays in classic Redmine).
+
 ## [0.1.1] - 2026-11-26
 
 ### Fixed

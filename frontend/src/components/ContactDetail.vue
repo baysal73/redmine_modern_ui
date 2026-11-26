@@ -72,6 +72,18 @@ async function patch(fields: Record<string, unknown>) {
 const field = (k: string, v: unknown) => patch({ [k]: v });
 const saveAddr = (k: string, v: unknown) => patch({ address: { [k]: v ?? '' } });
 const saveCf = (f: CustomFieldForm, v: unknown) => patch({ custom_field_values: { [f.id]: Array.isArray(v) && !v.length ? [''] : (v ?? '') } });
+async function saveFile(f: CustomFieldForm, file: File | null) {
+  try {
+    const value = file ? { token: (await api.upload(file)).token } : '';
+    const r = await api.updateContact(props.id, { custom_field_values: { [f.id]: value } });
+    c.value = r.contact; emit('updated'); toast(t('edit.saved'));
+  } catch (e) { toast(t('edit.failed', { message: (e as Error).message }), 'error'); await load(false); }
+}
+function pickFile(f: CustomFieldForm, ev: Event) {
+  const input = ev.target as HTMLInputElement; const file = input.files?.[0]; input.value = '';
+  if (file) void saveFile(f, file);
+}
+const isImage = (f: CustomFieldForm) => !!f.file && /^image\//.test(f.file.content_type);
 const opts = (list: { id: number; name: string }[] = []) => list.map((o) => ({ value: String(o.id), label: o.name }));
 const visOpts = computed(() => ['0', '1', '2'].map((v) => ({ value: v, label: t('ct.vis.' + v) })));
 
@@ -155,9 +167,21 @@ const ed = computed(() => !!c.value?.editable);
         <dd><EditableField kind="select" :editable="ed" :label="t('ct.visibility')" :model-value="String(c.values.visibility)" :options="visOpts" @save="(v) => field('visibility', Number(v))">{{ t('ct.vis.' + c.values.visibility) }}</EditableField></dd>
         <template v-for="f in c.custom_fields" :key="f.id">
           <dt>{{ f.name }}</dt>
-          <dd><EditableField :kind="cfKind(f)" allow-empty :editable="ed" :label="f.name" :step="f.kind === 'int' ? '1' : 'any'" :options="f.options" :model-value="f.value" @save="(v) => saveCf(f, v)">
+          <dd v-if="f.kind === 'attachment'" class="cf-file">
+            <template v-if="f.file">
+              <a :href="f.file.url" target="_blank" rel="noopener noreferrer"><img v-if="isImage(f)" :src="f.file.url" :alt="f.file.filename" class="cf-thumb"><span v-else>{{ f.file.filename }}</span></a>
+              <button v-if="ed" class="icon-btn" :aria-label="t('ct.file.remove')" :title="t('ct.file.remove')" @click="saveFile(f, null)">✕</button>
+            </template>
+            <span v-else class="muted">—</span>
+            <label v-if="ed" class="cf-upload small"><input type="file" hidden @change="pickFile(f, $event)">{{ t('ct.file.upload') }}</label>
+          </dd>
+          <dd v-else><EditableField :kind="cfKind(f)" allow-empty :editable="ed" :label="f.name" :step="f.kind === 'int' ? '1' : 'any'" :options="f.options" :model-value="f.value" @save="(v) => saveCf(f, v)">
             <template v-if="cfText(f)"><a v-if="f.kind === 'link'" :href="link(cfText(f))" target="_blank" rel="noopener noreferrer">{{ cfText(f) }}</a><span v-else>{{ f.kind === 'select' ? cfText(f) : cfText(f) }}</span></template><span v-else class="muted">—</span>
           </EditableField></dd>
+        </template>
+        <template v-if="c.background_html">
+          <dt>{{ t('ct.background') }}</dt>
+          <dd><div class="wiki" v-html="c.background_html" /><a v-if="ed" :href="classic + '/edit'" class="muted small">{{ t('ct.background.classic') }}</a></dd>
         </template>
         <dt>{{ t('detail.created') }}</dt><dd>{{ fmt(c.created_on) }}<template v-if="c.author"> · {{ c.author.name }}</template></dd>
       </dl>
@@ -214,5 +238,8 @@ const ed = computed(() => !!c.value?.editable);
 .ct-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
 .ct-list { margin: 0; padding-left: 18px; display: grid; gap: 3px; }
 .tags { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.cf-file { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.cf-thumb { max-height: 64px; max-width: 160px; border-radius: 6px; border: 1px solid var(--border, #dfe3ea); display: block; }
+.cf-upload { cursor: pointer; color: var(--accent, #4452c8); }
 .tag { background: var(--hover); border-radius: 999px; padding: 1px 9px; font-size: 0.85em; }
 </style>

@@ -197,11 +197,12 @@ module ModernUi
           address: ADDRESS_FIELDS.index_with { |f| c.address&.send(f).to_s },
           assignees: User.visible.active.sorted.limit(500).map { |u| serializers.user_ref(u) },
           assigned_to: serializers.user_ref(c.assigned_to), author: serializers.user_ref(c.author),
+          background_html: c.background.present? ? serializers.safe_html(view_context.textilizable(c, :background)) : '',
           created_on: c.created_on, updated_on: c.updated_on,
           avatar_url: avatar_url(c),
           company_contact: company && Contact.visible.exists?(company.id) ? { id: company.id, name: company.name } : nil,
           employees: c.is_company? ? c.company_contacts.merge(Contact.visible).limit(100).map { |e| { id: e.id, name: e.name, job_title: e.job_title.to_s } } : [],
-          custom_fields: c.custom_field_values.filter_map { |cv| serializers.custom_field_form(cv, nil) },
+          custom_fields: c.custom_field_values.filter_map { |cv| serializers.custom_field_form(cv, nil, attachments: true) },
           deals: deals(c, user), issues: c.related_issues.includes(:status).order(updated_on: :desc).limit(50).map { |i| issue_ref(i) },
           timeline: timeline(c, user),
           notes: ContactNote.where(source_type: 'Contact', source_id: c.id).includes(:author).order(created_on: :desc).limit(100).map { |n| note_json(n) }
