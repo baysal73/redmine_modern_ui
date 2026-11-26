@@ -47,6 +47,32 @@ from Redmine; the plugin only adds a new front end under `/app`.
 - Optional **redirect after login** to the new UI (admin switch, opt-out per user under *My account*).
 - Links in both directions: *New interface* in the classic menu, *Classic view* in the new UI.
 
+## Optional modules
+
+The screens below appear in the sidebar **only when the matching plugin is installed** and the signed-in user may use it.
+Without the plugin the menu entry, the API endpoints (they answer 404) and the keyboard shortcut are simply not there –
+nothing to configure. Redmine's own menu entry for a covered area is hidden for non-admins once the new screen is shown.
+
+| Module | Needs | What you get |
+|---|---|---|
+| **Contacts** | [RedmineUP Contacts (CRM)](https://www.redmineup.com/pages/plugins/crm) | Searchable list of companies and people, in-place editing, notes, deals, issues and a timeline |
+| **Invoices** | [RedmineUP Invoices](https://www.redmineup.com/pages/plugins/invoices) | Open / overdue filters, totals, line items, payments, PDF and e-mail sending |
+| **Products** | [RedmineUP Products](https://www.redmineup.com/pages/plugins/products) | Product list and details with category, price and tags |
+| **Documents** | [DMSF](https://github.com/picman/dmsf) | Folders and files per project, upload with drag & drop, new versions, trash with undo |
+| **Calendar** | the in-house `calendar_events` plugin (not published, so only useful if you have it) | Month and list view of events and issue dates |
+
+RedmineUP plugins are commercial products and are not part of this repository.
+
+| Contacts | Invoices |
+|---|---|
+| ![Contacts](docs/screenshots/contacts.png) | ![Invoices](docs/screenshots/invoices.png) |
+
+| Products | Documents | Calendar |
+|---|---|---|
+| ![Products](docs/screenshots/products.png) | ![Documents](docs/screenshots/documents.png) | ![Calendar](docs/screenshots/calendar.png) |
+
+*These five images are renderings of the real interface with invented data – they are not taken from a live system.*
+
 ## Requirements
 
 | | |
@@ -135,6 +161,9 @@ Tastaturkürzel; Deutsch, Englisch, Türkisch). Redmine bleibt im Hintergrund Da
 die Oberfläche zeigt und ändert nur, was der angemeldete Benutzer auch im klassischen Redmine dürfte.
 
 - **Voraussetzung:** Redmine 7.0 oder 6.1. Keine zusätzlichen Gems, keine Migrationen, kein Node.js auf dem Server.
+- **Optionale Module:** Kontakte, Rechnungen, Produkte (RedmineUP CRM, Invoices, Products) und Dokumente (DMSF) erscheinen
+  in der Seitenleiste nur, wenn das jeweilige Plugin installiert ist und der Benutzer es nutzen darf. Ohne das Plugin
+  gibt es den Menüpunkt nicht, Einstellen muss man nichts. Der Kalender braucht das nicht veröffentlichte Plugin `calendar_events`.
 - **Installation:** `cd redmine/plugins && git clone https://github.com/baysal73/redmine_modern_ui.git`, Redmine neu starten,
   dann `https://ihr-redmine/app` öffnen.
 - **Einstellungen:** *Administration → Plugins → Redmine Modern UI*: Weiterleitung nach dem Login (jeder Benutzer kann sie
