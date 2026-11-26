@@ -58,7 +58,7 @@ jobs:
         env:
           RAILS_ENV: test
         run: |
-          ln -s "$GITHUB_WORKSPACE/plugin" plugins/redmine_modern_ui
+          cp -R "$GITHUB_WORKSPACE/plugin" plugins/redmine_modern_ui
           bundle exec rake db:migrate
       - name: Run plugin tests
         working-directory: redmine
