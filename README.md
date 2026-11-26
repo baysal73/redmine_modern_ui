@@ -59,7 +59,7 @@ nothing to configure. Redmine's own menu entry for a covered area is hidden for 
 | **Invoices** | [RedmineUP Invoices](https://www.redmineup.com/pages/plugins/invoices) | Open / overdue filters, totals, line items, payments, PDF and e-mail sending |
 | **Products** | [RedmineUP Products](https://www.redmineup.com/pages/plugins/products) | Product list and details with category, price and tags |
 | **Documents** | [DMSF](https://github.com/picman/dmsf) | Folders and files per project, upload with drag & drop, new versions, trash with undo |
-| **Calendar** | the in-house `calendar_events` plugin (not published, so only useful if you have it) | Month and list view of events and issue dates |
+| **Calendar** | an events plugin with Google Calendar sync that offers the small interface described in [`calendar_backend.rb`](lib/redmine_modern_ui/calendar_backend.rb) (found automatically, nothing to configure) | Month and list view of events and issue dates, create / edit / delete in a dialog |
 
 RedmineUP plugins are commercial products and are not part of this repository.
 
@@ -163,7 +163,7 @@ die Oberfläche zeigt und ändert nur, was der angemeldete Benutzer auch im klas
 - **Voraussetzung:** Redmine 7.0 oder 6.1. Keine zusätzlichen Gems, keine Migrationen, kein Node.js auf dem Server.
 - **Optionale Module:** Kontakte, Rechnungen, Produkte (RedmineUP CRM, Invoices, Products) und Dokumente (DMSF) erscheinen
   in der Seitenleiste nur, wenn das jeweilige Plugin installiert ist und der Benutzer es nutzen darf. Ohne das Plugin
-  gibt es den Menüpunkt nicht, Einstellen muss man nichts. Der Kalender braucht das nicht veröffentlichte Plugin `calendar_events`.
+  gibt es den Menüpunkt nicht, Einstellen muss man nichts. Der Kalender braucht ein Termin-Plugin mit Google-Kalender-Anbindung, das die in `lib/redmine_modern_ui/calendar_backend.rb` beschriebene Schnittstelle bietet; es wird automatisch erkannt.
 - **Installation:** `cd redmine/plugins && git clone https://github.com/baysal73/redmine_modern_ui.git`, Redmine neu starten,
   dann `https://ihr-redmine/app` öffnen.
 - **Einstellungen:** *Administration → Plugins → Redmine Modern UI*: Weiterleitung nach dem Login (jeder Benutzer kann sie

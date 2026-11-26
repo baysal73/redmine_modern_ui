@@ -6,12 +6,12 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 ### Added
 - Phones: slimmer lists (fewer columns), detail panels and dialogs that fit the screen, calendar month as coloured bars with a day list underneath, larger touch targets. Checked in Firefox at 390 px width only.
-- Contact detail: activity timeline (notes, tickets, invoices and, with events plugin, calendar events) with filter chips; replaces the plain ticket list.
+- Contact detail: activity timeline (notes, tickets, invoices and, with an events plugin, calendar events) with filter chips; replaces the plain ticket list.
 - Invoices: "Send by e-mail" dialog (recipient, subject and text with the plugin's macros, PDF attached by the plugin, optional "mark as sent"; needs `send_invoices`) and a visible PDF button.
 - Bulk actions with checkboxes in the invoice, contact and product lists: set status (invoices, products), delete, CSV export of the selection. Every record is checked with the plugin's own permission rules and failures are reported per record.
 - Sidebar: "My account" and "Sign out" for everyone (sign-out was only reachable through the classic menu, which only administrators see now). The lower part of the sidebar stays pinned to the bottom, search / help / dark mode are icons, and the list of classic Redmine pages (administrators) is collapsible.
 - Documents (when the DMSF plugin is installed; "Dosyalar" in Turkish): browse projects, folders and files, upload by button or drag and drop (a file with an existing name becomes a new version), new folder, rename, move to trash with undo, version list with downloads (`g d`, Ctrl+K). DMSF's own permissions, locks, folder rights and trash apply; downloads and previews still go through DMSF (`/app/api/documents`). Not included: links, workflows, approvals, e-mailing files, restore from the trash.
-- Calendar (when the events plugin plugin is installed): month and list view with events and dated tickets, search, category and "mine" filters, create / edit / delete events in a dialog (`g c`, sidebar button, Ctrl+K). Permissions and the Google Calendar sync stay in calendar_events; administrators get a "Sync with Google" button (`/app/api/calendar`). Dragging events is still classic-only.
+- Calendar (when a compatible events plugin with Google Calendar sync is installed, found automatically): month and list view with events and dated tickets, search, category and "mine" filters, create / edit / delete events in a dialog (`g c`, sidebar button, Ctrl+K). Permissions and the Google Calendar sync stay in that plugin; administrators get a "Sync with Google" button (`/app/api/calendar`). Dragging events is still classic-only.
 - Branding in the plugin settings: upload a company logo (shown in the sidebar) and set three company colours (main, accent, grey). Empty = built-in colours.
 
 ### Added

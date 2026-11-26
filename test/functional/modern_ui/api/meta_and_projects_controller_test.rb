@@ -327,7 +327,7 @@ class ModernUi::Api::CalendarControllerTest < Redmine::ControllerTest
   end
 
   def test_not_found_without_the_events_plugin
-    skip 'events plugin plugin installed' if defined?(::CalendarEvent)
+    skip 'an events plugin is installed' if RedmineModernUi::CalendarBackend.current
     log_in 2
     get :index
     assert_response :not_found
@@ -354,5 +354,40 @@ class ModernUi::Api::DocumentsControllerTest < Redmine::ControllerTest
     assert_response :not_found
     post :create_files, params: { project: 'ecookbook', uploads: [{ token: 'x' }] }
     assert_response :not_found
+  end
+end
+
+class ModernUiCalendarBackendTest < ActiveSupport::TestCase
+  module GoodEvents
+    module Access; def self.can_view?(_u) = true; def self.can_manage?(_u) = true; end
+    module Config
+      def self.gcal_ready? = false
+      def self.categories = []
+      def self.tracker_ids = []
+      def self.time_zone = 'UTC'
+      def self.flag?(_n) = false
+    end
+    module Syncer; def self.run_async; end; def self.run_soon; end; end
+  end
+  class GoodEvent; def self.between(*) = []; def self.table_name = 'good_events'; end
+
+  module BareEvents; end
+  module HalfEvents
+    module Access; def self.can_view?(_u) = true; end
+  end
+  class HalfEvent; def self.between(*) = []; end
+
+  def test_a_plugin_with_the_whole_interface_qualifies
+    backend = RedmineModernUi::CalendarBackend.from_namespace('good_events', GoodEvents)
+    assert_equal GoodEvent, backend.event_class
+    assert_equal 'good_events', backend.plugin_id
+    assert_equal 'good_events', backend.table
+    assert_equal '#6366f1', backend.issue_color
+  end
+
+  def test_incomplete_plugins_do_not_qualify
+    assert_nil RedmineModernUi::CalendarBackend.from_namespace('bare_events', BareEvents)
+    assert_nil RedmineModernUi::CalendarBackend.from_namespace('nothing', nil)
+    assert_nil RedmineModernUi::CalendarBackend.from_namespace('half_events', HalfEvents)
   end
 end

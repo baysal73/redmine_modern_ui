@@ -44,3 +44,4 @@ en:
   modern_ui_error_bulk_status: "Please choose a valid status."
   modern_ui_error_invoice_paid: "Paid invoices cannot change status."
   modern_ui_error_document_failed: "The file could not be saved."
+  modern_ui_error_calendar_invalid_time: "Invalid time value"

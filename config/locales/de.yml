@@ -44,3 +44,4 @@ de:
   modern_ui_error_bulk_status: "Bitte einen gültigen Status wählen."
   modern_ui_error_invoice_paid: "Bezahlte Rechnungen können den Status nicht ändern."
   modern_ui_error_document_failed: "Die Datei konnte nicht gespeichert werden."
+  modern_ui_error_calendar_invalid_time: "Ungültige Zeitangabe"

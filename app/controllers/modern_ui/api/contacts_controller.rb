@@ -227,8 +227,9 @@ module ModernUi
                      meta: "#{view_context.number_with_precision(i.amount.to_f, precision: 2)} #{i.currency} · #{Invoice.available_statuses[i.status_id]}" }
           end
         end
-        if defined?(::CalendarEvent) && defined?(::CalendarPlugin::Access) && CalendarPlugin::Access.can_view?(user)
-          CalendarEvent.where(contact_id: c.id).order(starts_at: :desc).limit(40).each do |e|
+        calendar = RedmineModernUi::CalendarBackend.current
+        if calendar && calendar.access.can_view?(user)
+          calendar.event_class.where(contact_id: c.id).order(starts_at: :desc).limit(40).each do |e|
             out << { kind: 'event', id: e.id, date: e.starts_at, title: e.title, meta: e.location.to_s, day: e.starts_at.to_date.iso8601 }
           end
         end

@@ -33,13 +33,17 @@ module ModernUi
         !!(defined?(::Invoice) && User.current.allowed_to_globally?(:view_invoices, {}))
       end
 
-      # The calendar needs the events plugin plugin (events, permissions and Google sync live there)
+      # The calendar needs an events plugin (events, permissions and Google sync live there), see CalendarBackend
+      def calendar_backend
+        @calendar_backend ||= RedmineModernUi::CalendarBackend.current
+      end
+
       def calendar?
-        !!(defined?(::CalendarEvent) && defined?(::CalendarPlugin::Access) && CalendarPlugin::Access.can_view?(User.current))
+        !!calendar_backend&.access&.can_view?(User.current)
       end
 
       def calendar_add?
-        calendar? && CalendarPlugin::Access.can_manage?(User.current)
+        calendar? && calendar_backend.access.can_manage?(User.current)
       end
 
       # Documents need the DMSF plugin and the right to see its folders in at least one project
@@ -79,7 +83,6 @@ module ModernUi
       # RedmineUP People lists the same persons as Contacts in this installation; hidden whenever Contacts is shown
       COVERED_PEOPLE = %w[people].freeze
       COVERED_PRODUCTS = %w[products].freeze
-      COVERED_CALENDAR = %w[calendar_events].freeze
       COVERED_DOCUMENTS = %w[dmsf].freeze
 
       def classic_menu
@@ -88,7 +91,7 @@ module ModernUi
         helper = view_context
         %i[application_menu top_menu].flat_map do |menu|
           Redmine::MenuManager.items(menu).root.children.filter_map do |node|
-            next if COVERED.include?(node.name.to_s) || (products? && COVERED_PRODUCTS.include?(node.name.to_s)) || (calendar? && COVERED_CALENDAR.include?(node.name.to_s)) || (documents? && COVERED_DOCUMENTS.include?(node.name.to_s)) || (crm_contacts? && COVERED_PEOPLE.include?(node.name.to_s)) || ((crm_contacts? || invoices?) && COVERED_CRM.include?(node.name.to_s) && !(node.name.to_s == 'contacts' && !crm_contacts?) && !(node.name.to_s == 'invoices' && !invoices?))
+            next if COVERED.include?(node.name.to_s) || (products? && COVERED_PRODUCTS.include?(node.name.to_s)) || (calendar? && calendar_backend.plugin_id == node.name.to_s) || (documents? && COVERED_DOCUMENTS.include?(node.name.to_s)) || (crm_contacts? && COVERED_PEOPLE.include?(node.name.to_s)) || ((crm_contacts? || invoices?) && COVERED_CRM.include?(node.name.to_s) && !(node.name.to_s == 'contacts' && !crm_contacts?) && !(node.name.to_s == 'invoices' && !invoices?))
             next unless node.allowed?(User.current, nil)
 
             caption, url, = helper.send(:extract_node_details, node, nil)

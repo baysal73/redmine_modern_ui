@@ -2,9 +2,9 @@
 
 module ModernUi
   module Api
-    # Calendar on top of the events plugin plugin (calendar_events): events plus issues with dates. The plugin owns the data,
-    # the permissions (CalendarPlugin::Access) and the Google Calendar sync; this controller only exposes them to the SPA.
-    # Without the plugin every action answers 404.
+    # Calendar on top of an events plugin (see RedmineModernUi::CalendarBackend): events plus issues with dates. The plugin
+    # owns the data, the permissions and the Google Calendar sync; this controller only exposes them to the SPA.
+    # Without such a plugin every action answers 404.
     class CalendarController < BaseController
       before_action :require_calendar
       before_action :require_view
@@ -33,7 +33,7 @@ module ModernUi
 
       # POST /app/api/calendar/events
       def create
-        ev = CalendarEvent.new
+        ev = backend.event_class.new
         ev.author = User.current
         save(ev, status: :created)
       end
@@ -52,20 +52,26 @@ module ModernUi
 
       # POST /app/api/calendar/sync (administrators): start the Google sync now
       def sync
-        return render_json_error(422, l(:modern_ui_error_calendar_sync)) unless CalendarPlugin::Config.gcal_ready?
+        return render_json_error(422, l(:modern_ui_error_calendar_sync)) unless backend.config.gcal_ready?
 
-        CalendarPlugin::Syncer.run_async
+        backend.syncer.run_async
         render json: { ok: true }
       end
 
       private
 
       def require_calendar
-        render_json_error(404, l(:modern_ui_error_not_found)) unless defined?(::CalendarEvent) && defined?(::CalendarPlugin::Access)
+        render_json_error(404, l(:modern_ui_error_not_found)) unless backend
+      end
+
+      def backend
+        return @backend if defined?(@backend)
+
+        @backend = RedmineModernUi::CalendarBackend.current
       end
 
       def require_view
-        deny_access unless CalendarPlugin::Access.can_view?(User.current)
+        deny_access unless backend.access.can_view?(User.current)
       end
 
       def require_manage
@@ -77,15 +83,15 @@ module ModernUi
       end
 
       def manage?
-        CalendarPlugin::Access.can_manage?(User.current)
+        backend.access.can_manage?(User.current)
       end
 
       def find_event
-        @event = CalendarEvent.find(params[:id])
+        @event = backend.event_class.find(params[:id])
       end
 
       def tz
-        User.current.time_zone || ActiveSupport::TimeZone[CalendarPlugin::Config.time_zone] || ActiveSupport::TimeZone['Europe/Berlin']
+        User.current.time_zone || ActiveSupport::TimeZone[backend.config.time_zone] || ActiveSupport::TimeZone['Europe/Berlin']
       end
 
       def parse_date(value)
@@ -95,17 +101,17 @@ module ModernUi
       end
 
       def sync_soon
-        CalendarPlugin::Syncer.run_soon
+        backend.syncer.run_soon
       rescue StandardError => e
         Rails.logger.error("[modern_ui] calendar sync: #{e.message}")
       end
 
       def google_state
-        { enabled: CalendarPlugin::Config.gcal_ready?, admin: User.current.admin? }
+        { enabled: backend.config.gcal_ready?, admin: User.current.admin? }
       end
 
       def categories_json
-        CalendarPlugin::Config.categories.map { |c| { name: c[:name], color: c[:color] } }
+        backend.config.categories.map { |c| { name: c[:name], color: c[:color] } }
       end
 
       def like(term)
@@ -115,24 +121,24 @@ module ModernUi
       def load_events(from, to, q, category, mine)
         lo = tz.local(from.year, from.month, from.day).utc
         hi = tz.local(to.year, to.month, to.day).utc + 1.day
-        scope = CalendarEvent.between(lo, hi)
+        scope = backend.event_class.between(lo, hi)
         scope = scope.where(category: category) if category
         scope = scope.where(author_id: User.current.id) if mine
         if q.present?
           t = like(q)
-          scope = scope.where('LOWER(calendar_events.title) LIKE ? OR LOWER(calendar_events.location) LIKE ? OR LOWER(calendar_events.description) LIKE ?', t, t, t)
+          scope = scope.where("LOWER(#{backend.table}.title) LIKE ? OR LOWER(#{backend.table}.location) LIKE ? OR LOWER(#{backend.table}.description) LIKE ?", t, t, t)
         end
         scope.includes(:project).order(:starts_at).limit(1000).to_a
       end
 
       def load_issues(from, to, q, category, mine)
-        ids = CalendarPlugin::Config.tracker_ids
+        ids = backend.config.tracker_ids
         return [] if ids.empty? || category
 
         scope = Issue.visible(User.current).where(tracker_id: ids)
                      .where('(issues.start_date IS NOT NULL AND issues.start_date <= ? AND COALESCE(issues.due_date, issues.start_date) >= ?) OR ' \
                             '(issues.start_date IS NULL AND issues.due_date BETWEEN ? AND ?)', to, from, from, to)
-        scope = scope.joins(:status).where(issue_statuses: { is_closed: false }) unless CalendarPlugin::Config.flag?(:issue_include_closed)
+        scope = scope.joins(:status).where(issue_statuses: { is_closed: false }) unless backend.config.flag?(:issue_include_closed)
         scope = scope.where(assigned_to_id: User.current.id) if mine
         scope = scope.where('LOWER(issues.subject) LIKE ?', like(q)) if q.present?
         scope.includes(:project, :tracker, :status, :assigned_to).order(:id).limit(1000).to_a
@@ -154,7 +160,7 @@ module ModernUi
         {
           id: issue.id, subject: issue.subject, tracker: issue.tracker.name, status: issue.status.name,
           project: issue.project.name, start_date: issue.start_date&.iso8601, due_date: issue.due_date&.iso8601,
-          assigned_to: issue.assigned_to&.name, color: CalendarPlugin::ISSUE_COLOR
+          assigned_to: issue.assigned_to&.name, color: backend.issue_color
         }
       end
 
@@ -185,7 +191,7 @@ module ModernUi
         ev.all_day = ActiveModel::Type::Boolean.new.cast(p[:all_day]) if p.key?(:all_day)
         assign_times(ev, p)
       rescue ArgumentError
-        ev.errors.add(:base, l(:label_calendar_event_invalid_time))
+        ev.errors.add(:base, l(:modern_ui_error_calendar_invalid_time))
         false
       end
 

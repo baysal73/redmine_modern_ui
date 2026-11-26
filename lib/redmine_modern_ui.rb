@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative 'redmine_modern_ui/calendar_backend'
+
 module RedmineModernUi
   VERSION = '0.1.0'
 
