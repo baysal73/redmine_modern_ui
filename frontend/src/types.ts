@@ -121,3 +121,10 @@ export interface DocList {
   can: { upload: boolean; folder: boolean; delete_file: boolean; delete_folder: boolean };
 }
 export interface DocUploadResult { done: number; files: { id: number; name: string }[]; failed: { name: string; error: string }[] }
+
+export interface FilterDef {
+  name: string; label: string; type: string; remote: boolean;
+  operators: { id: string; label: string }[]; values: { label: string; value: string }[] | null;
+}
+export interface AdvFilter { field: string; op: string; values: string[] }
+export interface SavedQuery { id: number; name: string; project: string | null; state: Record<string, string> }

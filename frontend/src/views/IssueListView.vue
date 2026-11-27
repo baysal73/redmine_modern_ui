@@ -12,11 +12,11 @@ import PriorityIcon from '../components/ui/PriorityIcon.vue';
 import StatusBadge from '../components/ui/StatusBadge.vue';
 import { loadMeta, store } from '../lib/store';
 import { locale, t } from '../i18n';
-import { GROUPS, defaultState, nextSort, stateFromQuery, stateToQuery, toApiParams, type ListState } from '../lib/listQuery';
+import { GROUPS, defaultState, nextSort, stateFromQuery, stateToQuery, toApiParams, toSaveParams, type ListState } from '../lib/listQuery';
 import { toast } from '../lib/toast';
 import { offerUndo } from '../lib/undo';
 import { ui } from '../lib/ui';
-import type { IssueList, IssueOptions, IssueRow } from '../types';
+import type { IssueList, IssueOptions, IssueRow, SavedQuery } from '../types';
 
 const route = useRoute();
 const router = useRouter();
@@ -218,31 +218,54 @@ const entries = computed<Entry[]>(() => {
   return out;
 });
 
-// ---- saved views (kept in this browser) ----
-interface SavedView { name: string; query: Record<string, string> }
-const views = ref<SavedView[]>(loadViews());
+// ---- saved views: the user's own private saved queries (Redmine's, so they also exist in the classic list) ----
+const views = ref<SavedQuery[]>([]);
+const canSave = ref(true);
 const newViewName = ref('');
-function loadViews(): SavedView[] {
+const sameQuery = (q: Record<string, string>) => JSON.stringify(Object.entries(stateToQuery({ ...stateFromQuery(q), page: 1 })).sort());
+async function loadViews() {
+  try {
+    const r = await api.issueQueries();
+    views.value = r.queries; canSave.value = r.can_save;
+    if (r.can_save) await moveLocalViews();
+  } catch { /* the list works without saved views */ }
+}
+// Views from earlier versions lived in this browser only; move them to the account once
+async function moveLocalViews() {
+  let local: { name: string; query: Record<string, string> }[] = [];
   try {
     const v = JSON.parse(safeGet('modern_ui_views') ?? '[]');
-    return Array.isArray(v) ? v.filter((x) => x && typeof x.name === 'string' && x.query && typeof x.query === 'object') : [];
-  } catch { return []; }
+    local = Array.isArray(v) ? v.filter((x) => x && typeof x.name === 'string' && x.query && typeof x.query === 'object') : [];
+  } catch { /* nothing to move */ }
+  if (!local.length) return;
+  let moved = 0;
+  for (const v of local) {
+    try { await api.saveIssueQuery(v.name, toSaveParams(stateFromQuery(v.query))); moved++; } catch { /* keep it for the next time */ }
+  }
+  if (moved === local.length) safeSet('modern_ui_views', '[]');
+  if (moved) { toast(t('views.moved', { n: moved })); views.value = (await api.issueQueries()).queries; }
 }
-function persistViews() { safeSet('modern_ui_views', JSON.stringify(views.value)); }
-function saveView() {
+onMounted(loadViews);
+async function saveView() {
   const name = newViewName.value.trim();
   if (!name) return;
-  const q = stateToQuery({ ...state.value, page: 1 });
-  views.value = [...views.value.filter((v) => v.name !== name), { name, query: q }];
-  persistViews();
-  newViewName.value = '';
-  toast(t('views.saved', { name }));
+  try {
+    const same = views.value.find((v) => v.name === name);
+    if (same) { await api.deleteIssueQuery(same.id); views.value = views.value.filter((v) => v.id !== same.id); }
+    const r = await api.saveIssueQuery(name, toSaveParams(state.value));
+    views.value = [...views.value, r.query].sort((x, y) => x.name.localeCompare(y.name));
+    newViewName.value = '';
+    toast(t('views.saved', { name }));
+  } catch (e) { toast(t('edit.failed', { message: (e as Error).message }), 'error'); }
 }
-function applyView(v: SavedView) { router.push({ query: v.query }); viewsMenu.value = false; }
-function deleteView(name: string) { views.value = views.value.filter((v) => v.name !== name); persistViews(); }
+function applyView(v: SavedQuery) { router.push({ query: stateToQuery(stateFromQuery(v.state)) }); viewsMenu.value = false; }
+async function deleteView(v: SavedQuery) {
+  try { await api.deleteIssueQuery(v.id); views.value = views.value.filter((x) => x.id !== v.id); }
+  catch (e) { toast(t('edit.failed', { message: (e as Error).message }), 'error'); }
+}
 const currentViewName = computed(() => {
   const cur = JSON.stringify(Object.entries(stateToQuery({ ...state.value, page: 1 })).sort());
-  return views.value.find((v) => JSON.stringify(Object.entries(v.query).sort()) === cur)?.name ?? '';
+  return views.value.find((v) => sameQuery(v.state) === cur)?.name ?? '';
 });
 
 // ---- helpers ----
@@ -299,11 +322,12 @@ onUnmounted(() => { window.removeEventListener('keydown', onKey); document.remov
         <button class="btn tb-btn" aria-haspopup="true" :aria-expanded="viewsMenu" @click.stop="viewsMenu = !viewsMenu"><Bookmark :size="14" /> {{ currentViewName || t('views.title') }} <ChevronDown :size="13" /></button>
         <div v-if="viewsMenu" class="col-menu views-menu" role="menu" @click.stop>
           <p v-if="!views.length" class="muted small px-2 py-1">{{ t('views.empty') }}</p>
-          <div v-for="v in views" :key="v.name" class="view-row">
+          <div v-for="v in views" :key="v.id" class="view-row">
             <button class="view-name" :class="{ on: v.name === currentViewName }" @click="applyView(v)">{{ v.name }}</button>
-            <button class="icon-btn view-del" :aria-label="t('views.delete', { name: v.name })" @click="deleteView(v.name)"><Trash2 :size="13" /></button>
+            <button class="icon-btn view-del" :aria-label="t('views.delete', { name: v.name })" @click="deleteView(v)"><Trash2 :size="13" /></button>
           </div>
-          <form class="view-save" @submit.prevent="saveView">
+          <p v-if="!canSave" class="muted small px-2">{{ t('views.cant_save') }}</p>
+          <form v-else class="view-save" @submit.prevent="saveView">
             <input v-model="newViewName" :placeholder="t('views.name_ph')" :aria-label="t('views.name_ph')" maxlength="60">
             <button class="btn primary" :disabled="!newViewName.trim()">{{ t('views.save') }}</button>
           </form>

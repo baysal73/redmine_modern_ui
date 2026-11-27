@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import AdvancedFilters from '../components/AdvancedFilters.vue';
+import SavedViews from '../components/SavedViews.vue';
 import { Search } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -59,7 +61,7 @@ function go(patch: Record<string, string>, resetPage = true) {
 let seq = 0;
 async function load() {
   const mine = ++seq; loading.value = true; error.value = '';
-  try { const r = await api.invoices({ q: s('q'), status: status.value, project_id: s('project'), overdue: s('overdue'), sort: sort.value, page: s('page') || 1 }); if (mine === seq) list.value = r; }
+  try { const r = await api.invoices({ q: s('q'), status: status.value, project_id: s('project'), overdue: s('overdue'), sort: sort.value, page: s('page') || 1, filters: s('filters') }); if (mine === seq) list.value = r; }
   catch (e) { if (mine === seq) error.value = (e as ApiError).message; }
   finally { if (mine === seq) loading.value = false; }
 }
@@ -83,7 +85,7 @@ function sortBy(col: string) { go({ sort: sortCol.value === col ? `${col}:${sort
 const arrow = (c: string) => (sortCol.value === c ? (sortDir.value === 'asc' ? ' ▲' : ' ▼') : '');
 const fmtDate = (d: string | null) => (d ? new Date(d).toLocaleDateString(locale) : '');
 const presets = ['open', 'all'];
-const anyFilter = computed(() => !!(s('q') || s('status') || s('project') || s('overdue')));
+const anyFilter = computed(() => !!(s('q') || s('status') || s('project') || s('overdue') || s('filters')));
 </script>
 
 <template>
@@ -106,6 +108,8 @@ const anyFilter = computed(() => !!(s('q') || s('status') || s('project') || s('
         <select class="tb-select-plain" :value="s('project')" :aria-label="t('col.project')" @change="go({ project: ($event.target as HTMLSelectElement).value })">
           <option value="">{{ t('col.project') }}…</option><option v-for="p in opts?.projects" :key="p.id" :value="p.identifier">{{ p.name }}</option>
         </select>
+        <AdvancedFilters :filters="s('filters')" module="invoices" @change="(json) => go({ filters: json })" />
+        <SavedViews module="invoices" path="/invoices" :current="q as Record<string, string>" />
         <button v-if="anyFilter" class="link-btn" @click="router.push({ path: '/invoices' })">{{ t('filter.reset') }}</button>
       </div>
     </div>

@@ -3,6 +3,7 @@
 module ModernUi
   module Api
     class IssuesController < BaseController
+      include RedmineModernUi::SavedFilters
       helper :issues, :custom_fields, :attachments
       MAX_PER_PAGE = 100
       DEFAULT_PER_PAGE = 50
@@ -23,6 +24,8 @@ module ModernUi
       #   page, per_page
       def index
         query = build_query
+        return render_json_error(422, query.errors.full_messages.to_sentence) unless query.valid?
+
         per_page = per_page_param
         page = [params[:page].to_i, 1].max
         total = query.issue_count
@@ -32,6 +35,38 @@ module ModernUi
           issues: issues.map { |i| serializers.issue_row(i) },
           total: total, page: page, per_page: per_page, pages: (total.to_f / per_page).ceil
         }
+      end
+
+      # GET /app/api/issues/queries - the saved filters of the current user (Redmine's own saved queries, so they also
+      # show up in the classic ticket list)
+      def queries
+        user = User.current
+        list = IssueQuery.where(user_id: user.id).includes(:project).order(:name).map do |q|
+          { id: q.id, name: q.name, project: q.project&.identifier, state: query_state(q) }
+        end
+        render json: { queries: list, can_save: user.allowed_to?(:save_queries, nil, global: true) }
+      end
+
+      # POST /app/api/issues/queries { name, project_id?, + the same filter parameters as GET /issues }
+      def create_query
+        name = params[:name].to_s.strip
+        return render_json_error(422, l(:modern_ui_error_query_name)) if name.empty?
+
+        project = optional_project
+        unless User.current.allowed_to?(:save_queries, project, global: project.nil?)
+          return render_json_error(403, l(:modern_ui_error_forbidden))
+        end
+
+        query = build_query(for_save: true)
+        query.name = name[0, 255]
+        query.user = User.current
+        query.visibility = IssueQuery::VISIBILITY_PRIVATE
+        query.group_by = params[:group].to_s if IssueQuery.new.groupable_columns.map { |c| c.name.to_s }.include?(params[:group].to_s)
+        if query.save
+          render json: { query: { id: query.id, name: query.name, project: query.project&.identifier, state: query_state(query) } }, status: :created
+        else
+          render_json_error(422, query.errors.full_messages.to_sentence)
+        end
       end
 
       # GET /app/api/issues/:id
@@ -232,19 +267,64 @@ module ModernUi
         issue.save ? nil : issue.errors.full_messages.to_sentence
       end
 
-      def build_query(status: nil, sort: nil)
-        project = params[:project_id].present? ? find_visible_project(params[:project_id]) : nil
+      def build_query(status: nil, sort: nil, for_save: false)
+        project = optional_project
         query = IssueQuery.new(name: '_', project: project)
-        query.build_from_params(filter_params(status))
+        query.build_from_params(filter_params(status, for_save: for_save))
+        free_filters(query).each { |f| query.add_filter(f['field'], f['op'], f['values']) }
         query.sort_criteria = sort_criteria(sort)
         query
+      end
+
+      def optional_project
+        params[:project_id].present? ? find_visible_project(params[:project_id]) : nil
+      end
+
+      def filter_query_class = IssueQuery
+      def filter_project = optional_project
+      def save_permission = :save_queries
+
+      # The saved query as state for the list screen: the simple filters map to the quick chips, everything else stays a
+      # free filter.
+      def query_state(q)
+        s = { 'status' => 'all', 'tracker' => '', 'priority' => '', 'assignee' => '', 'due' => '', 'q' => '' }
+        free = []
+        q.filters.each do |field, cfg|
+          op = cfg[:operator].to_s
+          vals = Array(cfg[:values]).map(&:to_s).reject(&:empty?)
+          ok = case field
+               when 'status_id'
+                 st = { 'o' => 'open', 'c' => 'closed', '*' => 'all' }[op] || (op == '=' && vals.any? ? vals.join(',') : nil)
+                 st && (s['status'] = st)
+               when 'tracker_id' then op == '=' && vals.any? && (s['tracker'] = vals.join(','))
+               when 'priority_id' then op == '=' && vals.any? && (s['priority'] = vals.join(','))
+               when 'assigned_to_id'
+                 if op == '!*' then s['assignee'] = 'none'
+                 elsif op == '=' && vals.any? then s['assignee'] = vals.join(',')
+                 end
+               when 'subject' then op == '~' && vals.size == 1 && (s['q'] = vals.first)
+               when 'due_date'
+                 d = if op == '<t-' && vals == ['0'] then 'overdue'
+                     elsif op == '><t+' && vals == ['7'] then 'week'
+                     elsif op == '!*' then 'none'
+                     end
+                 d && (s['due'] = d)
+               end
+          free << { 'field' => field, 'op' => op, 'values' => Array(cfg[:values]).map(&:to_s) } unless ok
+        end
+        sort = q.sort_criteria.to_a.filter_map { |col, dir| "#{col}:#{dir}" if SORTABLE.include?(col.to_s) }.join(',')
+        s['sort'] = sort.presence || 'updated_on:desc'
+        s['group'] = %w[status priority assigned_to project tracker].include?(q.group_by.to_s) ? q.group_by.to_s : ''
+        s['filters'] = free.empty? ? '' : free.to_json
+        s['project'] = q.project&.identifier.to_s
+        s
       end
 
       def ids(value)
         value.to_s.split(',').map(&:strip).reject(&:blank?)
       end
 
-      def filter_params(status_override = nil)
+      def filter_params(status_override = nil, for_save: false)
         f = []
         op = {}
         v = {}
@@ -273,8 +353,11 @@ module ModernUi
         end
         today = User.current.today
         case params[:due]
-        when 'overdue' then add.('due_date', '<=', [(today - 1).to_s]) && add.('status_id', *RedmineModernUi.open_status_filter) # open issues only
-        when 'week'    then add.('due_date', '><', [today.to_s, (today + 7).to_s])
+        # a saved filter must stay correct tomorrow, so it uses Redmine's relative operators instead of fixed dates
+        when 'overdue'
+          for_save ? add.('due_date', '<t-', ['0']) : add.('due_date', '<=', [(today - 1).to_s])
+          add.('status_id', *RedmineModernUi.open_status_filter) # open issues only
+        when 'week'    then for_save ? add.('due_date', '><t+', ['7']) : add.('due_date', '><', [today.to_s, (today + 7).to_s])
         when 'none'    then add.('due_date', '!*')
         end
         add.('subject', '~', [params[:q].to_s]) if params[:q].present?

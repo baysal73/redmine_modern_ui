@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import AdvancedFilters from '../components/AdvancedFilters.vue';
+import SavedViews from '../components/SavedViews.vue';
 import { Building2, Search } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -57,7 +59,7 @@ function go(patch: Record<string, string>, resetPage = true) {
   router.push({ path: selectedId.value ? `/contacts/${selectedId.value}` : '/contacts', query: next });
 }
 function params() {
-  const p: Record<string, string | number | undefined> = { q: s('q'), kind: s('kind'), assigned_to_id: s('mine') ? 'me' : '', sort: sort.value, page: s('page') || 1, per_page: 50 };
+  const p: Record<string, string | number | undefined> = { q: s('q'), kind: s('kind'), assigned_to_id: s('mine') ? 'me' : '', sort: sort.value, page: s('page') || 1, per_page: 50, filters: s('filters') };
   for (const [k, v] of Object.entries(q.value)) if (k.startsWith('cf') && v) p[`cf[${k.slice(2)}]`] = String(v);
   return p;
 }
@@ -86,7 +88,7 @@ function openContact(id: number | null) { router.push({ path: id ? `/contacts/${
 function sortBy(col: string) { go({ sort: sortCol.value === col ? `${col}:${sortDir.value === 'asc' ? 'desc' : 'asc'}` : `${col}:asc` }, false); }
 const kinds = ['', 'company', 'person'];
 const fmtShort = (d: string) => new Date(d).toLocaleDateString(locale, { dateStyle: 'medium' });
-const anyFilter = computed(() => Object.keys(q.value).some((k) => ['q', 'kind', 'mine'].includes(k) || k.startsWith('cf')));
+const anyFilter = computed(() => Object.keys(q.value).some((k) => ['q', 'kind', 'mine', 'filters'].includes(k) || k.startsWith('cf')));
 
 async function create() {
   if (saving.value || !draft.value.first_name.trim() || !draft.value.project_id) return;
@@ -129,6 +131,8 @@ async function create() {
         <select v-for="f in opts?.custom_fields" :key="f.id" class="tb-select-plain" :value="s('cf' + f.id)" :aria-label="f.name" @change="go({ ['cf' + f.id]: ($event.target as HTMLSelectElement).value })">
           <option value="">{{ f.name }}</option><option v-for="v in f.values" :key="v" :value="v">{{ v }}</option>
         </select>
+        <AdvancedFilters :filters="s('filters')" module="contacts" @change="(json) => go({ filters: json })" />
+        <SavedViews module="contacts" path="/contacts" :current="q as Record<string, string>" />
         <button v-if="anyFilter" class="link-btn" @click="router.push({ path: '/contacts' })">{{ t('filter.reset') }}</button>
       </div>
     </div>

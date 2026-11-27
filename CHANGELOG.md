@@ -4,6 +4,12 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-11-27
+
+### Added
+- Ticket, contact, invoice and product lists: "More filters" offers every filter the plugin's own query knows (standard attributes, custom fields, relations, ...) with the operators Redmine allows for each, including "between", "in the last n days" and "none" (`/app/api/{issues,contacts,invoices,products}/filters`).
+- Saved views (all four lists) are stored in the user's account as private Redmine queries (visible only to the user, also in the classic list) instead of in the browser; ticket views saved in the browser are moved over automatically. Needs the plugin's "save queries" permission (`save_queries`, `save_contacts_queries`, `save_invoices_queries`, `save_products_queries`). For contacts, invoices and products a view restores the whole screen state; the classic list only applies its free filters. Quick "overdue" / "this week" filters are saved with relative dates.
+
 ## [0.1.2] - 2026-11-27
 
 ### Fixed

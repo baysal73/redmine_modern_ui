@@ -2,9 +2,10 @@
 export interface ListState {
   project: string; status: string; tracker: string; priority: string; assignee: string; due: string;
   q: string; sort: string; group: string; page: number;
+  filters: string; // free filters as JSON [{ field, op, values }]
 }
 export const defaultState: ListState = {
-  project: '', status: 'open', tracker: '', priority: '', assignee: '', due: '', q: '', sort: 'updated_on:desc', group: '', page: 1,
+  project: '', status: 'open', tracker: '', priority: '', assignee: '', due: '', q: '', sort: 'updated_on:desc', group: '', page: 1, filters: '',
 };
 export const GROUPS = ['status', 'priority', 'assigned_to', 'project', 'tracker'];
 type Q = Record<string, string | (string | null)[] | null | undefined>;
@@ -16,7 +17,7 @@ export function stateFromQuery(query: Q): ListState {
     tracker: one(query.tracker), priority: one(query.priority), assignee: one(query.assignee), due: one(query.due),
     q: one(query.q), sort: one(query.sort) || defaultState.sort,
     group: GROUPS.includes(one(query.group)) ? one(query.group) : '',
-    page: Math.max(parseInt(one(query.page), 10) || 1, 1),
+    page: Math.max(parseInt(one(query.page), 10) || 1, 1), filters: one(query.filters),
   };
 }
 
@@ -32,7 +33,15 @@ export function stateToQuery(s: ListState): Record<string, string> {
 export function toApiParams(s: ListState, perPage: number) {
   return {
     project_id: s.project, status: s.status, tracker_id: s.tracker, priority_id: s.priority,
-    assigned_to_id: s.assignee, due: s.due, q: s.q, sort: sortWithGroup(s), page: s.page, per_page: perPage,
+    assigned_to_id: s.assignee, due: s.due, q: s.q, sort: sortWithGroup(s), page: s.page, per_page: perPage, filters: s.filters,
+  };
+}
+
+// Parameters for saving the current filter as a view (sort and group are kept apart, unlike in a list request)
+export function toSaveParams(s: ListState) {
+  return {
+    project_id: s.project, status: s.status, tracker_id: s.tracker, priority_id: s.priority, assigned_to_id: s.assignee,
+    due: s.due, q: s.q, sort: s.sort, group: s.group, filters: s.filters,
   };
 }
 

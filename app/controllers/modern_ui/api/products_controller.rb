@@ -6,6 +6,7 @@ module ModernUi
     # writes go through the plugin's safe_attributes and its own permission methods (editable_by?, destroyable_by?,
     # :add_products). Bundle members and the picture stay classic-only. Without the plugin every action answers 404.
     class ProductsController < BaseController
+      include RedmineModernUi::SavedFilters
       before_action :require_products
 
       DEFAULT_PER_PAGE = 50
@@ -19,7 +20,9 @@ module ModernUi
       # GET /app/api/products
       #   q (name, code, description), status (all|1|2), category_id, project_id, bundle=1, sort, page, per_page
       def index
-        scope = filtered(Product.visible)
+        scope = apply_free_filters(filtered(Product.visible))
+        return render_json_error(422, @filter_error) unless scope
+
         per_page = (params[:per_page].presence || DEFAULT_PER_PAGE).to_i.clamp(1, MAX_PER_PAGE)
         page = [params[:page].to_i, 1].max
         total = scope.count
@@ -105,6 +108,10 @@ module ModernUi
       end
 
       private
+
+      def filter_query_class = ProductQuery
+      def filter_model = Product
+      def save_permission = :save_products_queries
 
       def bulk_delete_error(product)
         return l(:modern_ui_error_forbidden) unless product.destroyable_by?(User.current)

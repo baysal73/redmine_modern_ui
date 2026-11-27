@@ -6,6 +6,7 @@ module ModernUi
     # permission checks (Contact.visible, #editable?, :add_contacts, :add_notes), so users only see and change what
     # they may in the classic UI. Without the plugin every action answers 404.
     class ContactsController < BaseController
+      include RedmineModernUi::SavedFilters
       before_action :require_crm
       helper :custom_fields
 
@@ -25,6 +26,9 @@ module ModernUi
       #   q, kind (all|company|person), assigned_to_id (me|id), project_id, cf[ID]=value, sort (name|company|updated_on|created_on[:desc]), page, per_page
       def index
         scope = filtered(Contact.visible)
+        scope = apply_free_filters(scope)
+        return render_json_error(422, @filter_error) unless scope
+
         per_page = (params[:per_page].presence || DEFAULT_PER_PAGE).to_i.clamp(1, MAX_PER_PAGE)
         page = [params[:page].to_i, 1].max
         total = scope.count
@@ -120,6 +124,10 @@ module ModernUi
       end
 
       private
+
+      def filter_query_class = ContactQuery
+      def filter_model = Contact
+      def save_permission = :save_contacts_queries
 
       def require_crm
         render_json_error(404, l(:modern_ui_error_not_found)) unless defined?(::Contact) && defined?(::ContactNote)

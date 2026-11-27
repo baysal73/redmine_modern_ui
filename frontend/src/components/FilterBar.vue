@@ -3,6 +3,7 @@
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
 import { ListFilter, Plus, Search, X } from 'lucide-vue-next';
 import { t } from '../i18n';
+import AdvancedFilters from './AdvancedFilters.vue';
 import { joinIds, splitIds, type ListState } from '../lib/listQuery';
 import type { Meta } from '../types';
 
@@ -31,7 +32,7 @@ const values = computed<Record<Key, string>>(() => ({
 // status is always shown (it filters by default); the others only when set
 const active = computed(() => ORDER.filter((k) => k === 'status' || values.value[k] !== ''));
 const addable = computed(() => ORDER.filter((k) => !active.value.includes(k)));
-const anyActive = computed(() => active.value.some((k) => k !== 'status') || props.state.status !== 'open' || props.state.q !== '');
+const anyActive = computed(() => active.value.some((k) => k !== 'status') || props.state.status !== 'open' || props.state.q !== '' || props.state.filters !== '');
 
 const nameOf = (list: { id: number | string; name: string }[] | undefined, id: string) =>
   list?.find((x) => String(x.id) === id)?.name ?? id;
@@ -132,6 +133,8 @@ const shown = computed(() => {
         </template>
       </div>
     </div>
+
+    <AdvancedFilters :filters="state.filters" :project="state.project" @change="(json) => emit('change', { filters: json })" />
 
     <div v-if="addable.length" class="chip-wrap">
       <button class="fadd" :aria-expanded="open === 'add'" aria-haspopup="true" @click.stop="toggleOpen('add')"><Plus :size="14" /> {{ t('filter.add') }}</button>

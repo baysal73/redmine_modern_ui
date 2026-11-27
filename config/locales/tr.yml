@@ -13,6 +13,7 @@ tr:
   modern_ui_error_not_found: "Bulunamadı"
   modern_ui_error_login_required: "Lütfen giriş yapın"
   modern_ui_error_forbidden: "Bu işlem için yetkiniz yok"
+  modern_ui_error_query_name: "Lütfen bir ad girin"
   modern_ui_error_invoice_changed: "Bu fatura bu arada değiştirildi. Yeniden yükleyip tekrar deneyin."
   modern_ui_error_invoice_line: "Kalemlerden biri bu faturaya ait değil."
   modern_ui_error_payment_amount: "Sıfırdan büyük bir tutar girin."

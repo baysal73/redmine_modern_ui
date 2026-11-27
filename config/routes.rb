@@ -16,7 +16,17 @@ scope "#{base}/api", module: 'modern_ui/api', as: 'modern_ui_api' do
   post 'uploads', to: 'uploads#create'
   post 'issues/bulk', to: 'issues#bulk'
   get 'issues', to: 'issues#index'
+  get 'issues/filters', to: 'issues#filters'
+  get 'issues/filter_values', to: 'issues#filter_values'
+  get 'issues/queries', to: 'issues#queries'
+  post 'issues/queries', to: 'issues#create_query'
+  delete 'issues/queries/:id', to: 'issues#destroy_query', constraints: { id: /\d+/ }
   get 'contacts', to: 'contacts#index'
+  get 'contacts/filters', to: 'contacts#filters'
+  get 'contacts/filter_values', to: 'contacts#filter_values'
+  get 'contacts/queries', to: 'contacts#queries'
+  post 'contacts/queries', to: 'contacts#create_query'
+  delete 'contacts/queries/:id', to: 'contacts#destroy_query', constraints: { id: /\d+/ }
   post 'contacts', to: 'contacts#create'
   post 'contacts/bulk', to: 'contacts#bulk'
   get 'contacts/options', to: 'contacts#options'
@@ -29,6 +39,11 @@ scope "#{base}/api", module: 'modern_ui/api', as: 'modern_ui_api' do
   delete 'calendar/events/:id', to: 'calendar#destroy', constraints: { id: /\d+/ }
   post 'calendar/sync', to: 'calendar#sync'
   get 'products', to: 'products#index'
+  get 'products/filters', to: 'products#filters'
+  get 'products/filter_values', to: 'products#filter_values'
+  get 'products/queries', to: 'products#queries'
+  post 'products/queries', to: 'products#create_query'
+  delete 'products/queries/:id', to: 'products#destroy_query', constraints: { id: /\d+/ }
   get 'products/options', to: 'products#options'
   post 'products', to: 'products#create'
   post 'products/bulk', to: 'products#bulk'
@@ -36,6 +51,11 @@ scope "#{base}/api", module: 'modern_ui/api', as: 'modern_ui_api' do
   patch 'products/:id', to: 'products#update', constraints: { id: /\d+/ }
   delete 'products/:id', to: 'products#destroy', constraints: { id: /\d+/ }
   get 'invoices', to: 'invoices#index'
+  get 'invoices/filters', to: 'invoices#filters'
+  get 'invoices/filter_values', to: 'invoices#filter_values'
+  get 'invoices/queries', to: 'invoices#queries'
+  post 'invoices/queries', to: 'invoices#create_query'
+  delete 'invoices/queries/:id', to: 'invoices#destroy_query', constraints: { id: /\d+/ }
   get 'invoices/options', to: 'invoices#options'
   get 'invoices/new', to: 'invoices#new_defaults'
   post 'invoices', to: 'invoices#create'

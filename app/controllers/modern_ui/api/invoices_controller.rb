@@ -8,6 +8,7 @@ module ModernUi
     # plugin, never by this code. Every change checks the plugin's permissions and a version token (409 if the
     # invoice changed since the client loaded it). Number, contact, project and currency stay classic-only.
     class InvoicesController < BaseController
+      include RedmineModernUi::SavedFilters
       before_action :require_invoices
 
       EDITABLE = %i[subject invoice_date due_date description order_number status_id assigned_to_id].freeze
@@ -23,6 +24,9 @@ module ModernUi
       #   q (number, subject, contact), status (open | all | 0..4), project_id, contact_id, overdue=1, sort, page, per_page
       def index
         scope = filtered(Invoice.visible)
+        scope = apply_free_filters(scope)
+        return render_json_error(422, @filter_error) unless scope
+
         per_page = (params[:per_page].presence || DEFAULT_PER_PAGE).to_i.clamp(1, MAX_PER_PAGE)
         page = [params[:page].to_i, 1].max
         total = scope.count
@@ -227,6 +231,10 @@ module ModernUi
       end
 
       private
+
+      def filter_query_class = InvoiceQuery
+      def filter_model = Invoice
+      def save_permission = :save_invoices_queries
 
       def addable_project(id)
         project = Project.visible.active.find_by(id: id.to_s.to_i)

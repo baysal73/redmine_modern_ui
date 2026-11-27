@@ -13,6 +13,7 @@ de:
   modern_ui_error_not_found: "Nicht gefunden"
   modern_ui_error_login_required: "Bitte anmelden"
   modern_ui_error_forbidden: "Dafür fehlt die Berechtigung"
+  modern_ui_error_query_name: "Bitte einen Namen eingeben"
   modern_ui_error_invoice_changed: "Diese Rechnung wurde inzwischen geändert. Bitte neu laden und erneut versuchen."
   modern_ui_error_invoice_line: "Eine der Positionen gehört nicht zu dieser Rechnung."
   modern_ui_error_payment_amount: "Bitte einen Betrag größer als null eingeben."

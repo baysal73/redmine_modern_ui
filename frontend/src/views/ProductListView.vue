@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import AdvancedFilters from '../components/AdvancedFilters.vue';
+import SavedViews from '../components/SavedViews.vue';
 import { Package, Search } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -60,7 +62,7 @@ function go(patch: Record<string, string>, resetPage = true) {
 let seq = 0;
 async function load() {
   const mine = ++seq; loading.value = true; error.value = '';
-  try { const r = await api.products({ q: s('q'), status: status.value === 'all' ? '' : status.value, category_id: s('category'), sort: sort.value, page: s('page') || 1 }); if (mine === seq) list.value = r; }
+  try { const r = await api.products({ q: s('q'), status: status.value === 'all' ? '' : status.value, category_id: s('category'), sort: sort.value, page: s('page') || 1, filters: s('filters') }); if (mine === seq) list.value = r; }
   catch (e) { if (mine === seq) error.value = (e as ApiError).message; }
   finally { if (mine === seq) loading.value = false; }
 }
@@ -88,7 +90,7 @@ function onKey(e: KeyboardEvent) {
 function openProduct(id: number | null) { router.push({ path: id ? `/products/${id}` : '/products', query: q.value }); }
 function sortBy(col: string) { go({ sort: sortCol.value === col ? `${col}:${sortDir.value === 'asc' ? 'desc' : 'asc'}` : `${col}:asc` }, false); }
 const arrow = (c: string) => (sortCol.value === c ? (sortDir.value === 'asc' ? ' ▲' : ' ▼') : '');
-const anyFilter = computed(() => !!(s('q') || s('status') || s('category')));
+const anyFilter = computed(() => !!(s('q') || s('status') || s('category') || s('filters')));
 
 async function create() {
   const d = draft.value;
@@ -131,6 +133,8 @@ async function create() {
         <select v-if="opts?.categories.length" class="tb-select-plain" :value="s('category')" :aria-label="t('pr.category')" @change="go({ category: ($event.target as HTMLSelectElement).value })">
           <option value="">{{ t('pr.category') }}…</option><option v-for="c in opts.categories" :key="c.id" :value="String(c.id)">{{ c.name }}</option>
         </select>
+        <AdvancedFilters :filters="s('filters')" module="products" @change="(json) => go({ filters: json })" />
+        <SavedViews module="products" path="/products" :current="q as Record<string, string>" />
         <button v-if="anyFilter" class="link-btn" @click="router.push({ path: '/products' })">{{ t('filter.reset') }}</button>
       </div>
     </div>
