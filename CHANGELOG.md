@@ -4,6 +4,11 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-11-27
+
+### Added
+- "My week" is a configurable dashboard: *Customize* adds, removes, reorders (drag or arrows) and resizes widgets (⅓, ½, ⅔, full width) and sets the number of rows. Widgets: overview tiles, overdue / due in 7 days / no due date / assigned to me / reported by me / watched, recently updated, any saved ticket view, and – with an events plugin – a calendar day and a calendar week (with navigation; a click opens the event). The layout is stored in the user's Redmine preferences (`/app/api/home/layout`), so it follows the user to every device; "Reset to default" restores the standard layout.
+
 ## [0.1.3] - 2026-11-27
 
 ### Added

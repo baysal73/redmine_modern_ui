@@ -6,7 +6,8 @@ import { ApiError, api, readConfig } from '../api/client';
 import { t } from '../i18n';
 import { store } from '../lib/store';
 import { toast } from '../lib/toast';
-import type { CalendarData, CalEvent, CalIssue } from '../types';
+import { addDays, byDay as dayBuckets, calItems, type CalItem as Item, iso, pad, parse, todayIso } from '../lib/calendar';
+import type { CalendarData, CalEvent } from '../types';
 
 const route = useRoute();
 const router = useRouter();
@@ -24,12 +25,7 @@ const onMq = () => { mobile.value = mq.matches; };
 const dayPick = ref<string | null>(null);
 const onDay = (d: string) => { if (mobile.value) dayPick.value = d; else if (canManage.value) openNew(d, true); };
 
-// ---- dates as plain YYYY-MM-DD strings (the server already delivers them in the user's time zone) ----
-const pad = (n: number) => String(n).padStart(2, '0');
-const iso = (d: Date) => `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
-const parse = (s: string) => { const [y, m, d] = s.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d)); };
-const addDays = (s: string, n: number) => { const d = parse(s); d.setUTCDate(d.getUTCDate() + n); return iso(d); };
-const today = (() => { const n = new Date(); return `${n.getFullYear()}-${pad(n.getMonth() + 1)}-${pad(n.getDate())}`; })();
+const today = todayIso();
 
 const q = computed(() => route.query);
 const s = (k: string) => String(q.value[k] ?? '');
@@ -54,26 +50,8 @@ const weekdays = computed(() => weeks.value[0].map((d) => new Intl.DateTimeForma
 const dayLabel = (d: string) => new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(parse(d));
 
 // ---- items per day ----
-interface Item { key: string; kind: 'event' | 'issue'; label: string; time: string; color: string; ev?: CalEvent; issue?: CalIssue; first: string; last: string }
-function evRange(e: CalEvent): [string, string] {
-  if (e.all_day) return [e.start_date!, e.end_date!];
-  const first = e.starts_at!.slice(0, 10);
-  let last = e.ends_at!.slice(0, 10);
-  if (last > first && e.ends_at!.slice(11, 16) === '00:00') last = addDays(last, -1);
-  return [first, last < first ? first : last];
-}
-const items = computed<Item[]>(() => {
-  const out: Item[] = [];
-  for (const e of data.value?.events ?? []) { const [first, last] = evRange(e); out.push({ key: 'e' + e.id, kind: 'event', label: e.title, time: e.all_day ? '' : e.starts_at!.slice(11, 16), color: e.color, ev: e, first, last }); }
-  for (const i of data.value?.issues ?? []) { const first = i.start_date ?? i.due_date!; const last = i.due_date ?? first; out.push({ key: 'i' + i.id, kind: 'issue', label: `#${i.id} ${i.subject}`, time: '', color: i.color, issue: i, first, last: last < first ? first : last }); }
-  return out;
-});
-const byDay = computed(() => {
-  const m = new Map<string, Item[]>();
-  for (const it of items.value) for (let d = it.first < gridStart.value ? gridStart.value : it.first; d <= it.last && d <= gridEnd.value; d = addDays(d, 1)) { if (!m.has(d)) m.set(d, []); m.get(d)!.push(it); }
-  for (const list of m.values()) list.sort((a, b) => Number(!!b.ev?.all_day) - Number(!!a.ev?.all_day) || a.time.localeCompare(b.time));
-  return m;
-});
+const items = computed(() => calItems(data.value));
+const byDay = computed(() => dayBuckets(items.value, gridStart.value, gridEnd.value));
 const listDays = computed(() => [...byDay.value.keys()].filter((d) => d >= monthStart.value && d <= monthEnd.value).sort());
 const shown = (d: string) => { const l = byDay.value.get(d) ?? []; return expanded.value.has(d) ? l : l.slice(0, 3); };
 
@@ -83,7 +61,12 @@ async function load() {
   const mine_ = ++seq; loading.value = true; error.value = '';
   try {
     const r = await api.calendar({ from: gridStart.value, to: gridEnd.value, q: s('q'), category: category.value, mine: mine.value ? 1 : undefined });
-    if (mine_ === seq) data.value = r;
+    if (mine_ !== seq) return;
+    data.value = r;
+    // ?event=ID (links from the start page) opens that event once it is loaded
+    const ev = s('event') && r.events.find((e) => String(e.id) === s('event'));
+    if (s('event')) { const { event: _e, ...rest } = route.query; router.replace({ path: route.path, query: rest }); }
+    if (ev) openEvent(ev);
   } catch (e) { if (mine_ === seq) error.value = (e as ApiError).message; }
   finally { if (mine_ === seq) loading.value = false; }
 }

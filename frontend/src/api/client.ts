@@ -1,4 +1,4 @@
-import type { BulkResult, DocFileDetail, DocFolder, DocList, DocUploadResult, CalEvent, CalendarData, ProductDetail, ProductList, ProductOptions, InvoiceDefaults, InvoiceForm, InvoiceDetail, InvoiceList, InvoiceOptions, ContactDetail, ContactList, ContactNote, ContactOptions, AppConfig, ReportTemplates, Home, IssueForm, NewIssueOptions, IssueDetail, IssueList, IssueOptions, IssueRow, Meta, Upload } from '../types';
+import type { BulkResult, DocFileDetail, DocFolder, DocList, DocUploadResult, CalEvent, CalendarData, ProductDetail, ProductList, ProductOptions, InvoiceDefaults, InvoiceForm, InvoiceDetail, InvoiceList, InvoiceOptions, ContactDetail, ContactList, ContactNote, ContactOptions, AppConfig, ReportTemplates, Home, HomeWidget, IssueForm, NewIssueOptions, IssueDetail, IssueList, IssueOptions, IssueRow, Meta, Upload } from '../types';
 
 export function readConfig(): AppConfig {
   const el = document.getElementById('app');
@@ -86,6 +86,9 @@ export const api = {
   removeInvoicePayment: (id: number, paymentId: number, lock: string) => request<{ invoice: InvoiceDetail }>(`invoices/${id}/payments/${paymentId}${toQuery({ lock })}`, { method: 'DELETE' }),
   invoice: (id: number) => request<{ invoice: InvoiceDetail }>(`invoices/${id}`),
   home: () => request<Home>('home'),
+  homeLayout: () => request<{ widgets: HomeWidget[] | null }>('home/layout'),
+  saveHomeLayout: (widgets: HomeWidget[]) => request<{ widgets: HomeWidget[] }>('home/layout', { method: 'PUT', body: JSON.stringify({ widgets }) }),
+  resetHomeLayout: () => request<void>('home/layout', { method: 'DELETE' }),
   meta: () => request<Meta>('meta'),
   issues: (params: Record<string, string | number | undefined>) => request<IssueList>(`issues${toQuery(params)}`),
   newIssueOptions: (projectId: number) => request<NewIssueOptions>(`projects/${projectId}/new_issue_options`),

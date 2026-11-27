@@ -86,6 +86,11 @@ export interface Home {
   counts: { overdue: number; due_soon: number; undated: number; assigned_open: number };
 }
 
+// One widget on the start page; the layout is stored per user on the server
+export type WidgetType = 'stats' | 'overdue' | 'due_soon' | 'undated' | 'assigned' | 'reported' | 'watched' | 'recent' | 'query' | 'cal_day' | 'cal_week';
+export type WidgetSize = 's' | 'm' | 'l' | 'full';
+export interface HomeWidget { id: string; type: WidgetType; size: WidgetSize; limit?: number; query_id?: number }
+
 export interface Upload { token: string; filename: string; filesize: number; content_type?: string }
 
 export interface ProductRow { id: number; code: string; name: string; status: Ref; category: string | null; price: number | null; currency: string; project: string; bundle: boolean; image_url: string | null; updated_at: string }

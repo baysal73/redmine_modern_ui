@@ -4,7 +4,7 @@ require_relative 'redmine_modern_ui/calendar_backend'
 require_relative 'redmine_modern_ui/saved_filters'
 
 module RedmineModernUi
-  VERSION = '0.1.3'
+  VERSION = '0.1.4'
 
   DEFAULTS = {
     'redirect_after_login' => '1', # send users to the new UI after login
